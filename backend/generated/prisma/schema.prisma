@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -9,18 +8,18 @@ datasource db {
 }
 
 model User {
-  id               String  @id @default(uuid())
+  id               String    @id @default(uuid())
   user_name        String?
-  email            String  @unique
+  email            String    @unique
   profile_pic_link String?
-  name          String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts     Account[]
-  events 	Event[]
+  name             String
+  emailVerified    Boolean   @default(false)
+  image            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  events           Event[]
 
   @@map("user")
 }
@@ -35,7 +34,7 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testField String? 
+  testField String?
 
   @@unique([token])
   @@index([userId])
@@ -75,15 +74,14 @@ model Verification {
 }
 
 model Event {
-id String @id @default(uuid())
-eventName String 
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-userId    String
-user      User @relation(fields: [userId], references :[id] , onDelete : Cascade)
+  id        String   @id @default(uuid())
+  eventName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-@@index([userId])
-@@unique ([eventName , userId])
-@@map("event")
+  @@unique([eventName, userId])
+  @@index([userId])
+  @@map("event")
 }
-
