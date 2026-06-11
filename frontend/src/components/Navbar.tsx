@@ -16,7 +16,7 @@ import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { handleLogOut } from '../api/sign-out';
- const pages : string[] = [];
+const pages: string[] = [];
 // let's refrain from using pages right now
 const settings = ['Profile', 'Account', 'Logout'];
 
@@ -46,12 +46,12 @@ function ResponsiveAppBar() {
   };
 
   return (
-    <AppBar position="static" 
-	sx={
-	    {
-	    background: "#585289" ,
-	    }
-	}
+    <AppBar position="static"
+      sx={
+        {
+          background: "#585289",
+        }
+      }
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
@@ -69,7 +69,7 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            DIPPER
+            SpotMe
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -139,10 +139,10 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-		{
-		    (!profilePicLink) ? <div className="rounded-[100%] bg-white text-[#585289] p-2  text-sm"> {twoInitials}</div> : 
-                <Avatar alt={twoInitials}  />
-		}
+                {
+                  (!profilePicLink) ? <div className="rounded-[100%] bg-white text-[#585289] p-2  text-sm"> {twoInitials}</div> :
+                    <Avatar alt={twoInitials} />
+                }
               </IconButton>
             </Tooltip>
             <Menu
@@ -162,12 +162,12 @@ function ResponsiveAppBar() {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={()=>{
-		    if(setting === "Logout"){
-			handleLogOut(navigation , userContext?.setContextState)
-		    }
-		    handleCloseUserMenu()
-		}}>
+                <MenuItem key={setting} onClick={() => {
+                  if (setting === "Logout") {
+                    handleLogOut(navigation, userContext?.setContextState)
+                  }
+                  handleCloseUserMenu()
+                }}>
                   <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                 </MenuItem>
               ))}
