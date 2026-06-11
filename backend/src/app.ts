@@ -13,9 +13,9 @@ const app = express()
 app.get("/", (req, res)=>{res.redirect(process.env.FRONTEND_ORIGIN as string)})
 app.use(cookieParser())
 app.use(cors(corsOptions))
-app.all("/api/auth/*splat" , toNodeHandler(auth))
+app.all("/api/auth/*" , toNodeHandler(auth))
 app.use(helmet());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
