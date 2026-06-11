@@ -1,8 +1,8 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
-import { prisma } from "../config/prismaClientConfig.js";
+import { prisma } from "../config/prismaClientConfig";
 import type {Request , Response} from "express"
-import dbErrorHash from "../utils/dbErrorHash.js";
-import type { dbErrorType } from "../utils/dbErrorHash.js";
+import dbErrorHash from "../utils/dbErrorHash";
+import type { dbErrorType } from "../utils/dbErrorHash";
 
 type postRequestPayloadType = {
     eventName : string;
