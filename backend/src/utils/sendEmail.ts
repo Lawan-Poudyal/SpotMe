@@ -13,7 +13,7 @@ const sendEmail = async (email : string , text : string)=>{
 	)
 
     await transporter.sendMail({
-      from: "Dipper",
+      from: "SpotME",
       to: email,
       subject: "Clink the link below",
       html : `<a href="${text}">link</a>` 
@@ -24,7 +24,6 @@ const sendEmail = async (email : string , text : string)=>{
 
 	if(err instanceof Error){
 	    console.log(err.name)
-	    console.log(err.cause)
 	    console.log(err.stack)
 	    throw new Error("couldn't send an email")
 	}
