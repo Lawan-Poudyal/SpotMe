@@ -1,10 +1,10 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "./prismaClientConfig.js";
+import { prisma } from "./prismaClientConfig";
 import { createAuthMiddleware  , APIError} from "better-auth/api";
-import {checkEmailValidity, checkPasswordValidity, checkUsernameValidity} from "../utils/formValidation.js"
-import type { passwordError } from "../utils/formValidation.js";
-import { sendEmail } from "../utils/sendEmail.js";
+import {checkEmailValidity, checkPasswordValidity, checkUsernameValidity} from "../utils/formValidation"
+import type { passwordError } from "../utils/formValidation";
+import { sendEmail } from "../utils/sendEmail";
 export const auth = betterAuth({
     emailVerification:{
 	sendVerificationEmail : async({user, url})=>{
