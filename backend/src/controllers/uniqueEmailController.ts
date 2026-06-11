@@ -1,4 +1,4 @@
-import { prisma } from "../config/prismaClientConfig.js"
+import { prisma } from "../config/prismaClientConfig"
 import type {Request , Response} from 'express'
 
 type uniqueEmailPayload = {
