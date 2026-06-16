@@ -25,7 +25,7 @@ const updateEvent = async(eventName : string , userId : string , currentName : s
     try{
 
 	setIsLoading(true)
-	const response = await axios.post(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
+	const response = await axios.put(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
 	    eventName : eventName,
 	    ownerId : userId,
 	    currentName : currentName
