@@ -11,7 +11,7 @@ type FolderCardProps = {
 
 const FolderCard: React.FC<FolderCardProps> = ({
   name,
-  color = "#60a5fa",
+  color = "#F97316",
   onEdit,
   onRemove,
   onClick,
@@ -24,37 +24,48 @@ const FolderCard: React.FC<FolderCardProps> = ({
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
       onMouseLeave={() => setIsPressed(false)}
-      className={`relative flex items-center justify-between gap-3 p-4 rounded-xl border 
-        bg-white shadow-sm cursor-pointer transition-all duration-150
-        hover:shadow-md hover:-translate-y-0.5
-        ${isPressed ? "scale-95" : "scale-100"}`}
+      className={`
+        relative flex items-center justify-between gap-3 p-4 rounded-xl
+        bg-[#1A1A2E] border border-white/[0.07]
+        cursor-pointer transition-all duration-150
+        hover:bg-[#20203A] hover:border-[#F97316]/25
+        ${isPressed ? "scale-95" : "scale-100"}
+      `}
     >
       {/* Left side */}
-      <div className="flex items-center gap-3">
-        <Folder size={28} color={color} fill={color} />
-        <span className="font-medium text-gray-800">{name}</span>
+      <div className="flex items-center gap-3 min-w-0">
+        <Folder
+          size={26}
+          color={color}
+          fill={color}
+          className="shrink-0"
+        />
+        <span className="font-medium text-[#C8C8E0] text-sm truncate">
+          {name}
+        </span>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onEdit();
           }}
-          className="p-2 rounded-md hover:bg-gray-100 transition"
+          className="p-1.5 rounded-lg hover:bg-[#F97316]/10 transition group"
+          aria-label="Edit"
         >
-          <Pencil size={18} className="text-gray-600" />
+          <Pencil size={15} className="text-white/25 group-hover:text-[#F97316] transition" />
         </button>
-
         <button
           onClick={(e) => {
             e.stopPropagation();
             onRemove();
           }}
-          className="p-2 rounded-md hover:bg-red-100 transition"
+          className="p-1.5 rounded-lg hover:bg-red-500/10 transition group"
+          aria-label="Delete"
         >
-          <Trash2 size={18} className="text-red-500" />
+          <Trash2 size={15} className="text-white/25 group-hover:text-red-500 transition" />
         </button>
       </div>
     </div>
