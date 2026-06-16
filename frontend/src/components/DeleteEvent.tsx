@@ -1,5 +1,10 @@
 import React from "react";
 import { Modal, Box, Typography, Button, Fade, Backdrop } from "@mui/material";
+import type { Dispatch , SetStateAction } from "react";
+import type { eventType } from "../types/eventType";
+import { useState } from "react";
+import { onDeleteEvent, onUpdateEvent } from "../utility/eventUtils";
+
 
 const style = {
   position: "absolute" as const,
@@ -17,17 +22,36 @@ const style = {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onDelete: (id: number) => void;
-  eventId: number;
-  eventName?: string;
+  events  : eventType[];
+  setTitleError : Dispatch<SetStateAction<string>>;
+  setSubTitleError : Dispatch<SetStateAction<string>>;
+  setIsErrorOpen : Dispatch<SetStateAction<boolean>>;
+  setEvents : Dispatch<SetStateAction<eventType[]>>
+  eventName : string;
+  userId : string;
+  eventId : string;
+
 };
 
-const DeleteEventModal: React.FC<Props> = ({ open, onClose, onDelete, eventId, eventName }) => {
+const DeleteEventModal: React.FC<Props> = ({ 
+    open,
+    onClose,
+    events,
+    setTitleError,
+    setSubTitleError,
+    setIsErrorOpen,
+    setEvents,
+    eventName,
+    userId,
+    eventId
+}) => {
   
-  const handleDelete = () => {
-    onDelete(eventId);
-    onClose();
-  };
+    const [isLoading , setIsLoading] = useState<boolean>(false)
+
+    const handleDelete = async()=>{
+	await onDeleteEvent(eventName , eventId , events , setTitleError , setSubTitleError , setIsErrorOpen , setEvents , setIsLoading , userId)
+	onClose()
+    }
 
   return (
     <Modal
@@ -105,6 +129,7 @@ const DeleteEventModal: React.FC<Props> = ({ open, onClose, onDelete, eventId, e
               <Button
                 variant="contained"
                 onClick={handleDelete}
+		disabled={isLoading}
                 disableElevation
                 sx={{
                   flex: 1,

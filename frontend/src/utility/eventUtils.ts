@@ -1,6 +1,6 @@
 import type { eventType } from "../types/eventType"
 import type { Dispatch , SetStateAction } from "react"
-import { addEvent , getEvent, updateEvent} from "../api/eventApi"
+import { addEvent , getEvent, updateEvent , deleteEvent} from "../api/eventApi"
 
 type errType = {
     name : string;
@@ -58,6 +58,18 @@ export const onUpdateEvent = async (currentName : string , eventName : string ,e
 	if (event.id !== eventId) return event
 	else return {...event , eventName : eventName}	
     }))
+}
+
+export const onDeleteEvent = async (eventName : string ,eventId :string, events : eventType[] , setTitleError : Dispatch<SetStateAction<string>> , setSubTitleError : Dispatch<SetStateAction<string>> , setIsErrorOpen : Dispatch<SetStateAction<boolean>> ,setEvents : Dispatch<SetStateAction<eventType[]>> , setIsLoading : Dispatch<SetStateAction<boolean>>, userId : string)=>{
+   const data = await deleteEvent(eventName , userId , setIsLoading) as eventType & {success : boolean , err : errType} 
+    if(!data.success){
+	setTitleError(data.err.name)
+	setSubTitleError(data.err.message)
+	setIsErrorOpen(true)
+	return
+    }
+    setEvents(events.filter(event => (event.id !== eventId))) // errorProne
+
 }
 
 export const onGetEvent = async ( setTitleError : Dispatch<SetStateAction<string>> , setSubTitleError : Dispatch<SetStateAction<string>> , setIsErrorOpen : Dispatch<SetStateAction<boolean>> ,setEvents : Dispatch<SetStateAction<eventType[]>> , userId : string)=>{
