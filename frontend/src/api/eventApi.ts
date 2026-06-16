@@ -41,6 +41,27 @@ const updateEvent = async(eventName : string , userId : string , currentName : s
 	setIsLoading(false)
     }
 }
+const deleteEvent = async(eventName : string , userId : string ,setIsLoading : Dispatch<SetStateAction<boolean>>)=>{
+    try{
+
+	setIsLoading(true)
+	await axios.delete(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
+	    data:{
+		eventName : eventName,
+		ownerId : userId
+	    }
+	})
+	return {success  :true}
+    }
+    catch(err : unknown){
+	if(axios.isAxiosError(err)){
+	    return {success : false}
+	}
+    }
+    finally{
+	setIsLoading(false)
+    }
+}
 const getEvent = async(userId : string)=>{
     try{
 
@@ -59,5 +80,5 @@ const getEvent = async(userId : string)=>{
 }
 
 
-export {addEvent, getEvent ,updateEvent}
+export {addEvent, getEvent ,updateEvent ,deleteEvent}
 
