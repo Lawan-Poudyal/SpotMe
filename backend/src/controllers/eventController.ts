@@ -18,6 +18,11 @@ type getRequestPaylaodType = {
     ownerId : string;
 }
 
+type deleteRequestPayloadType = {
+    ownerId : string;
+    eventName : string;
+}
+
 
 type eventType = {
     id : string;
@@ -65,7 +70,7 @@ const createEventHandler = async(req : Request , res : Response)=>{
 		const dbErrorCode = dbError.code
 		const dbErrorName : dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType 
 		if(dbErrorName === "ForeignKeyConstraintViolation"){
-		    return res.status(404).json({
+		    return res.status(401).json({
 			success : false,
 			err : {
 			    name : "Owner doesn't exist",
@@ -143,7 +148,7 @@ const getEventHandler = async(req : Request , res : Response)=>{
 		const dbErrorCode = dbError.code
 		const dbErrorName : dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType 
 		if(dbErrorName === "ForeignKeyConstraintViolation"){
-		    return res.status(404).json({
+		    return res.status(401).json({
 			success : false,
 			err : {
 			    name : "Owner doesn't exist",
@@ -237,20 +242,87 @@ const updateEventHandler = async(req : Request , res : Response)=>{
 		    return res.status(404).json({
 			success : false,
 			err : {
-			    name : "Doesn't belong to you",
-			    message : "This event doesn't belong to you"
+			    name : `Couldn't find ${eventName}`,
+			    message : `You have never created a event named ${eventName}`
 			}
 		    })
 
 		}
-		else if(dbErrorName === "UniqueConstraintViolation"){
-		    return res.status(409).json({
+		else throw dbError
+	    }
+	else throw dbError
+	}
+
+	
+
+    }
+    catch(err : unknown){
+	if(err instanceof Error){
+	    console.log(err.name)
+	    console.log(err.stack)
+	    console.log(err.message)
+	    return res.status(500).json({
+		success : false,
+		err :{
+		    name : err.name,
+		    message : err.message
+		}
+	    })
+	}
+
+    }
+} 
+const deleteEventHandler = async(req : Request , res : Response)=>{
+    try {
+
+	let {ownerId , eventName} = req.body as deleteRequestPayloadType
+	if(!ownerId || ownerId.trim()=== "") { // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
+	    return res.status(400).json({
+		success : false,
+		err : {
+		    name : 'Bad request payload',
+		    message : 'Missing owner id in the request payload'
+		}
+	    })
+	}
+	if(!eventName || eventName.trim()=== "") {
+	    return res.status(400).json({
+		success : false,
+		err : {
+		    name : 'Bad request payload',
+		    message : 'Missing event name in the request payload'
+		}
+	    })
+	}
+
+	try{
+	 await prisma.event.delete({
+		where : {
+		    eventName_userId : {
+			userId : ownerId,
+			eventName : eventName
+		    }
+		}
+	    })
+
+	return res.status(200).json({
+	    success : true
+	})
+
+	}
+	catch(dbError : unknown){
+	    if(dbError instanceof PrismaClientKnownRequestError){
+		const dbErrorCode = dbError.code
+		const dbErrorName : dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType 
+		if(dbErrorName === "CompositeKeyViolation"){ 
+		    return res.status(404).json({
 			success : false,
 			err : {
-			    name : "Conflicting names exist",
-			    message : "Try using a different name which doesn't already exist in your events"
+			    name : `Couldn't find ${eventName}`,
+			    message : `You have never created a event named ${eventName}`
 			}
 		    })
+
 		}
 		else throw dbError
 	    }
@@ -277,4 +349,4 @@ const updateEventHandler = async(req : Request , res : Response)=>{
     }
 } 
 
-export {createEventHandler, getEventHandler, updateEventHandler}
+export {createEventHandler, getEventHandler, updateEventHandler , deleteEventHandler}
