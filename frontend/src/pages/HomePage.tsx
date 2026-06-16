@@ -175,6 +175,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {events.map((item) => (
                 <FolderCard
+		  createdAt={item.createdAt as Date}
                   name={item.eventName}
                   key={item.id}
                   onRemove={() => handleRemoveButtonPressed(item.id, item.eventName)}
