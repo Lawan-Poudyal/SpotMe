@@ -14,7 +14,7 @@ function App() {
 	</Route>
 	<Route path="/login" element={<LoginPage loggedIn={true}/>}/>
 	<Route path="/signup" element={<LoginPage loggedIn={false}/>}/>
-	<Route path="/" element={<Navigate to="/dashboard" replace/>}/>
+	<Route path="/" element={<Navigate to="/dashboard" replace />}/>
 	<Route path="*" element={<PageNotFound/>}/>
      </Routes> 
   )
