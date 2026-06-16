@@ -47,14 +47,6 @@ export default function HomePage(){
     const handleOnChangeEvent = ()=>{
 	setIsChangeEventModalOpen(false)
     }
-    const onDeleteEvent = (eventId : string)=>{
-	const newEvents = events.filter(item=> eventId !== item.id)
-	setEvents(newEvents)
-    }
-    const onChangeEvent = (eventId : string, newEventName : string)=>{
-	const newEvents = events.map(item=> (item.id === eventId) ? {...item , eventName : newEventName} : item)
-	setEvents(newEvents)
-    }
     return(
 	<div className="bg-white flex-1 p-2 flex flex-col flex-nowrap">
 	<PopUpBox title={titleError as string} subTitle={subTitleError as string} open={isErrorOpen} setOpen={setIsErrorOpen}/>
@@ -69,7 +61,18 @@ export default function HomePage(){
     currentName,
     userId,
     eventId
-	<DeleteEventModal open={isDeleteEventModalOpen} onDelete={onDeleteEvent} onClose={handleOnCloseDeleteEvent} eventId={selectedEventId as string} eventName={selectedEventName as string} />
+    <DeleteEventModal 
+	open={isDeleteEventModalOpen}
+	onClose = {handleOnCloseDeleteEvent}
+	events = {events}
+	setTitleError={setTitleError}
+	setSubTitleError={setSubTitleError}
+	setIsErrorOpen={setIsErrorOpen}
+	setEvents={setEvents}
+	eventName={selectedEventName as string}
+	userId = {userContext?.contextState?.id as string}
+	eventId = {selectedEventId as string}
+    />
 	<EditNameModal open={isChangeEventModalOpen} onClose={handleOnChangeEvent} eventId={selectedEventId as string} currentName={selectedEventName as string} events={events} setTitleError={setTitleError} setSubTitleError={setSubTitleError} setIsErrorOpen={setIsErrorOpen} setEvents={setEvents} userId={userContext?.contextState?.id as string} />
 	{
 	(events.length ===0) ?
