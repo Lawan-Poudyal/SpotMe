@@ -33,7 +33,7 @@ export default function HomePage() {
       setEvents,
       userContext?.contextState?.id as string
     );
-  }, []);
+  }, [setTitleError, setSubTitleError, setIsErrorOpen, setEvents, userContext]);
 
   const handleRemoveButtonPressed = (eventId: string, eventName: string) => {
     setSelectedEventId(eventId);
@@ -54,7 +54,7 @@ export default function HomePage() {
   const statsCards = [
     {
       label: "Events",
-      value: events.length,
+      value: events?.length ?? 0,
       icon: <CalendarDays size={22} />,
       sub: "events joined",
     },
@@ -143,7 +143,7 @@ export default function HomePage() {
         </div>
 
         {/* Events Section */}
-        {events.length === 0 ? (
+        {events?.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 gap-5">
             <div className="w-20 h-20 rounded-2xl bg-[#F97316]/10 flex items-center justify-center">
@@ -165,7 +165,7 @@ export default function HomePage() {
                 <span className="w-[3px] h-5 rounded-full bg-[#F97316] inline-block" />
                 <h2 className="text-sm font-bold text-[#EAEAF5] tracking-tight">Your Events</h2>
                 <span className="ml-1 text-[11px] font-medium bg-[#F97316]/10 text-[#F97316] px-2 py-0.5 rounded-full">
-                  {events.length}
+                  {events?.length}
                 </span>
               </div>
               <AddButton setOpen={setIsAddEventOpen} />
@@ -173,9 +173,9 @@ export default function HomePage() {
 
             {/* Folder grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {events.map((item) => (
+              {events?.map((item) => (
                 <FolderCard
-		  createdAt={item.createdAt as Date}
+                  createdAt={item.createdAt as Date}
                   name={item.eventName}
                   key={item.id}
                   onRemove={() => handleRemoveButtonPressed(item.id, item.eventName)}
