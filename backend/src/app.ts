@@ -16,6 +16,7 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(morgan('dev'));
 
+app.all('/api/auth/*', toNodeHandler(auth));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -24,7 +25,6 @@ app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_ORIGIN as string);
 });
 
-app.all('/api/auth/*', toNodeHandler(auth));
 
 app.use('/uniqueEmail', uniqueEmailController);
 app.use('/event', eventController);
