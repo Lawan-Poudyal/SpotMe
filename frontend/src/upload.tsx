@@ -1,8 +1,14 @@
+import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
+import { fileUploads } from './api/fileUpload';
 
 export default function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
-  const [response, setResponse] = useState('');
+  const eventId = '83e08a6a-7c12-451c-b341-266940e5ee39';
+
+  const uploadSignatureMutation = useMutation({
+    mutationFn: () => fileUploads.signRequest(eventId),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -11,24 +17,18 @@ export default function FileUpload() {
       alert('Please select a file');
       return;
     }
+    const data = await uploadSignatureMutation.mutateAsync();
+    console.log('Upload signature response:', data);
 
     const formData = new FormData();
-
-    // Replace "file" with the field name expected by multer
     formData.append('file', file);
+    formData.append('api_key', data.apiKey);
+    formData.append('timestamp', data.timestamp.toString());
+    formData.append('signature', data.signature);
+    formData.append('folder', data.folder);
 
-    try {
-      const res = await fetch('http://localhost:3000/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      setResponse(JSON.stringify(data, null, 2));
-    } catch (err) {
-      setResponse(err instanceof Error ? err.message : 'Something went wrong');
-    }
+    const uploadReponse = await fileUploads.uploadFile(formData, data.cloudName);
+    console.log('Upload response:', uploadReponse);
   };
 
   return (
@@ -71,9 +71,7 @@ export default function FileUpload() {
           padding: '10px',
           overflowX: 'auto',
         }}
-      >
-        {response}
-      </pre>
+      ></pre>
     </div>
   );
 }

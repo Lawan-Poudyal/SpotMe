@@ -17,14 +17,16 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
     throw new ValidationError('Missing or invalid eventId in the request body');
   }
 
-  const params = { timestamp, eventId, userId: session.user.id };
-  const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_SECRET!);
+  const folderName = `SpotMe/events/${eventId}/photos`;
+  const params = { timestamp, folder: folderName };
+  const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);
 
   res.status(200).json({
     success: true,
     data: {
       signature,
       timestamp,
+      folder: folderName,
       apiKey: process.env.CLOUDINARY_API_KEY!,
       cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
     },
