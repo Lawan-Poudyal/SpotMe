@@ -1,84 +1,84 @@
-import axios from 'axios'
-import type { Dispatch , SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react';
+import { api } from '../config/axios';
+import axios from 'axios';
 
+const addEvent = async (
+  eventName: string,
+  userId: string,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+) => {
+  try {
+    setIsLoading(true);
+    const response = await api.post('/event', {
+      eventName: eventName,
+      ownerId: userId,
+    });
+    return { success: true, ...response.data.data };
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return { success: false, ...err.response?.data };
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+const updateEvent = async (
+  eventName: string,
+  userId: string,
+  currentName: string,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+) => {
+  try {
+    setIsLoading(true);
+    const response = await api.put('/event', {
+      eventName: eventName,
+      ownerId: userId,
+      currentName: currentName,
+    });
+    return { success: true, ...response.data.data };
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return { success: false, ...err.response?.data };
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+const deleteEvent = async (
+  eventName: string,
+  userId: string,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+) => {
+  try {
+    setIsLoading(true);
+    await api.delete('/event', {
+      data: {
+        eventName: eventName,
+        ownerId: userId,
+      },
+    });
+    return { success: true };
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return { success: false };
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+const getEvent = async (userId: string) => {
+  try {
+    const response = await api.get('/event', {
+      params: {
+        ownerId: userId,
+      },
+    });
+    return { success: true, data: response.data.data };
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      return { success: false, ...err.response?.data };
+    }
+  }
+};
 
-const addEvent = async(eventName : string , userId : string , setIsLoading : Dispatch<SetStateAction<boolean>>)=>{
-    try{
-
-	setIsLoading(true)
-	const response = await axios.post(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    eventName : eventName,
-	    ownerId : userId
-	})
-	return {success  :true  , ...response.data.data}
-    }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false , ...err.response?.data}
-	}
-    }
-    finally{
-	setIsLoading(false)
-    }
-}
-const updateEvent = async(eventName : string , userId : string , currentName : string, setIsLoading : Dispatch<SetStateAction<boolean>>)=>{
-    try{
-
-	setIsLoading(true)
-	const response = await axios.put(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    eventName : eventName,
-	    ownerId : userId,
-	    currentName : currentName
-	})
-	return {success  :true  , ...response.data.data}
-    }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false , ...err.response?.data}
-	}
-    }
-    finally{
-	setIsLoading(false)
-    }
-}
-const deleteEvent = async(eventName : string , userId : string ,setIsLoading : Dispatch<SetStateAction<boolean>>)=>{
-    try{
-
-	setIsLoading(true)
-	await axios.delete(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    data:{
-		eventName : eventName,
-		ownerId : userId
-	    }
-	})
-	return {success  :true}
-    }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false}
-	}
-    }
-    finally{
-	setIsLoading(false)
-    }
-}
-const getEvent = async(userId : string)=>{
-    try{
-
-	const response = await axios.get(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    params : {
-		ownerId : userId
-	    }
-	})
-	return {success  :true  , data : response.data.data}
-    }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false , ...err.response?.data}
-	}
-    }
-}
-
-
-export {addEvent, getEvent ,updateEvent ,deleteEvent}
-
+export { addEvent, getEvent, updateEvent, deleteEvent };
