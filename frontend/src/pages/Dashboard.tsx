@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import { UserContext } from "../context/UserContext";
 import { Box } from "@mui/material";
 import ResponsiveAppBar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import type { SidebarSection } from "../components/Sidebar";
+import type { zuContextType } from "../context/zuContext";
+import { useProfile } from "../context/zuContext";
 
 const Dashboard: React.FC = () => {
-  const userInfo = useContext(UserContext);
+  const loggedIn = useProfile((s:zuContextType) => s.loggedIn)
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<SidebarSection>("home");
 
   useEffect(() => {
-    if (!userInfo?.contextState?.loggedIn) {
+    if (!loggedIn) {
       navigate("/signup", { replace: true });
     }
-  }, [userInfo?.contextState?.loggedIn, navigate]);
+  }, [loggedIn, navigate]);
 
-  if (!userInfo?.contextState?.loggedIn) return null;
+  if (!loggedIn) return null;
 
   return (
     <Box

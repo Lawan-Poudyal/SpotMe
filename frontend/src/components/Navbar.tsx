@@ -10,23 +10,23 @@ import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
 import { handleLogOut } from '../api/sign-out';
 import { CalendarDays } from 'lucide-react';
+import type { zuContextType } from '../context/zuContext';
+import { useProfile } from '../context/zuContext';
 
 const pages: string[] = [];
 const settings = ['Profile', 'Account', 'Logout'];
 
 function ResponsiveAppBar() {
+  const setProfile = useProfile((s:zuContextType) => s.setProfile)
+  const profilePicLink = useProfile((s:zuContextType)=>s.profilePicLink)
+  const fullName = useProfile((s:zuContextType) =>s.userName)
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-  const userContext = useContext(UserContext);
   const navigation = useNavigate();
 
-  const fullName = userContext?.contextState?.userName as string;
-  const profilePicLink = userContext?.contextState?.profilePicLink as string;
   const twoInitials = fullName.split(' ').map(item => item[0].toUpperCase()).join("");
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -225,7 +225,7 @@ function ResponsiveAppBar() {
                   key={setting}
                   onClick={() => {
                     if (setting === "Logout") {
-                      handleLogOut(navigation, userContext?.setContextState);
+                      handleLogOut(navigation,setProfile);
                     }
                     handleCloseUserMenu();
                   }}

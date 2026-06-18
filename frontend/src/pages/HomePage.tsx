@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import SearchBar from "../components/SearchBar";
 import AddButton from "../components/AddButton";
 import FolderCard from "../components/Folder";
 import AddEvent from "../components/Addfolder";
@@ -8,8 +7,8 @@ import EditNameModal from "../components/ChangeEvent";
 import PopUpBox from "../components/PopupBox";
 import type { eventType } from "../types/eventType";
 import { onGetEvent } from "../utility/eventUtils";
-import { UserContext } from "../context/UserContext";
-import { useContext } from "react";
+import { useProfile } from "../context/zuContext";
+import type { zuContextType } from "../context/zuContext";
 import { CalendarDays, ImageIcon, Users, FolderOpen } from "lucide-react";
 
 export default function HomePage() {
@@ -23,17 +22,16 @@ export default function HomePage() {
   const [titleError, setTitleError] = useState<string>("");
   const [subTitleError, setSubTitleError] = useState<string>("");
   const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
-  const userContext = useContext(UserContext);
-
+  const userId = useProfile((s:zuContextType)=>s.id)
   useEffect(() => {
     onGetEvent(
       setTitleError,
       setSubTitleError,
       setIsErrorOpen,
       setEvents,
-      userContext?.contextState?.id as string
+      userId
     );
-  }, [setTitleError, setSubTitleError, setIsErrorOpen, setEvents, userContext]);
+  }, [setTitleError, setSubTitleError, setIsErrorOpen, setEvents, userId]);
 
   const handleRemoveButtonPressed = (eventId: string, eventName: string) => {
     setSelectedEventId(eventId);
@@ -89,7 +87,7 @@ export default function HomePage() {
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
         setEvents={setEvents}
-        userId={userContext?.contextState?.id as string}
+        userId={userId}
       />
       <DeleteEventModal
         open={isDeleteEventModalOpen}
@@ -100,7 +98,7 @@ export default function HomePage() {
         setIsErrorOpen={setIsErrorOpen}
         setEvents={setEvents}
         eventName={selectedEventName as string}
-        userId={userContext?.contextState?.id as string}
+        userId={userId}
         eventId={selectedEventId as string}
       />
       <EditNameModal
@@ -113,7 +111,7 @@ export default function HomePage() {
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
         setEvents={setEvents}
-        userId={userContext?.contextState?.id as string}
+        userId={userId}
       />
 
       {/* Page content */}
