@@ -18,11 +18,11 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(morgan('dev'));
 
+app.all('/api/auth/*', toNodeHandler(auth));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.all('/api/auth/*', toNodeHandler(auth));
 app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_ORIGIN as string);
 });
@@ -30,6 +30,6 @@ app.get('/', (req, res) => {
 
 app.use('/uniqueEmail', uniqueEmailController);
 app.use('/event', eventController);
-app.use('/api/sign-upload', signUploadrouter);
+app.use('/api/upload/sign', signUploadrouter);
 
 export default app;
