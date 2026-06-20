@@ -3,7 +3,7 @@ import { UploadCloud, X, CheckCircle2, Loader2, Info, HardDrive } from 'lucide-r
 import type { eventType } from '../types/eventType';
 
 import { useMutation } from '@tanstack/react-query';
-import { fileUploads } from '../api/fileUpload';
+import { fileUploads } from '../api/fileUploadApi';
 
 interface UploadFile {
   id: string;
@@ -81,7 +81,7 @@ export default function UploadTab({ event }: UploadTabProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDriveLoading, setIsDriveLoading] = useState(false);
-  const eventId = '83e08a6a-7c12-451c-b341-266940e5ee39';
+  const eventId = '9d06319a-be8c-4f45-8f50-738f7aed14a5';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── File handling ──────────────────────────────────────
@@ -180,7 +180,16 @@ export default function UploadTab({ event }: UploadTabProps) {
       return fileUploads.uploadFile(formData, data.cloudName);
     });
     const uploadResponses = await Promise.all(uploads);
+
+    const saved = await fileUploads.saveUpload(
+      eventId,
+      uploadResponses.map((res) => ({
+        url: res.secure_url,
+        publicId: res.public_id,
+      })),
+    );
     console.log('Upload response:', uploadResponses);
+    console.log('saved response:', saved);
 
     setFiles([]);
     setIsUploading(false);
@@ -419,4 +428,3 @@ export default function UploadTab({ event }: UploadTabProps) {
     </div>
   );
 }
-
