@@ -22,10 +22,6 @@ interface UploadTabProps {
   event: eventType;
 }
 
-// ── Google Drive Picker helper ─────────────────────────────────────────────
-// Loads the Google Picker API and opens a picker restricted to images.
-// Returns an array of { id, name, mimeType, url } objects for the picked files.
-// Requires: VITE_GOOGLE_API_KEY and VITE_GOOGLE_CLIENT_ID env vars.
 async function openGoogleDrivePicker(): Promise<
   { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[]
 > {
@@ -261,7 +257,7 @@ export default function UploadTab({ event }: UploadTabProps) {
         <div className="flex-1 h-px bg-white/10" />
       </div>
 
-      {/* ── Google Drive button ── */}
+      {/* ── Google Drive btton ── */}
       <button
         onClick={handleGoogleDrive}
         disabled={isDriveLoading || isUploading}
