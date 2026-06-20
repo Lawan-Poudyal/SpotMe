@@ -39,8 +39,6 @@ export default function HomePage() {
 
 
   useEffect(() => {
-    if (userId) return;
-
     onGetEvent(
       setTitleError,
       setSubTitleError,
