@@ -58,6 +58,8 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       uploaded_by: session.user.id,
       photo_url: p.url,
       public_id: p.publicId,
+      width: p.width,
+      height: p.height,
     })),
   });
 

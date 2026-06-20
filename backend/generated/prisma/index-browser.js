@@ -185,7 +185,9 @@ exports.Prisma.PhotoScalarFieldEnum = {
   event_id: 'event_id',
   uploaded_at: 'uploaded_at',
   uploaded_by: 'uploaded_by',
-  public_id: 'public_id'
+  public_id: 'public_id',
+  width: 'width',
+  height: 'height'
 };
 
 exports.Prisma.SortOrder = {
