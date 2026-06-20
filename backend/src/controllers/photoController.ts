@@ -4,7 +4,7 @@ import { ValidationError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const eventId = req.query.eventId;
+  const eventId = req.query.eventid;
 
   if (typeof eventId !== 'string') {
     throw new ValidationError('Missing or invalid eventId query parameter');
@@ -21,3 +21,5 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
     data: photos,
   });
 });
+
+export { getPhotoHandler };

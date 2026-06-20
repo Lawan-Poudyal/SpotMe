@@ -44,6 +44,10 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   if (!eventId || typeof eventId !== 'string') {
     throw new ValidationError('Missing or invalid eventId in the request body');
   }
+
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  if (!event) throw new ValidationError(`Event with id "${eventId}" not found`);
+
   if (!photos || !Array.isArray(photos)) {
     throw new ValidationError('Missing or invalid photos array in the request body');
   }
