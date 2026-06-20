@@ -5,5 +5,5 @@ type AsyncFn = (req: Request, res: Response, next: NextFunction) => Promise<void
 export const asyncHandler =
   (fn: AsyncFn): RequestHandler =>
   (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next); // all errors → globalErrorHandler
+    Promise.resolve(fn(req, res, next)).catch(next);
   };
