@@ -2,13 +2,14 @@ import { ImageIcon } from 'lucide-react';
 import type { eventType } from '../types/eventType';
 import { useQuery } from '@tanstack/react-query';
 import { photo } from '../api/photoApi';
+import PhotoAlbum from 'react-photo-album';
+import 'react-photo-album/rows.css';
 
 interface AllPhotosTabProps {
   event: eventType;
 }
 
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
-  console.log({ event });
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['photos', event.id],
     queryFn: () => photo.getPhotos(event.id),
@@ -16,8 +17,6 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error: {error.message}</p>;
-
-  console.log(data);
   if (!data) return null;
 
   if (data.length === 0) {
@@ -31,19 +30,18 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {data.map((photo) => (
-          <button
-            key={photo.id}
-            className="group aspect-square bg-[#2C2C2E] rounded-2xl border border-white/10
-            hover:border-white/30 transition overflow-hidden flex items-center justify-center
-            focus:outline-none focus:ring-2 focus:ring-[#F97316]/60"
-          >
-            <img src={photo.photo_url} alt="Event photo" className="w-full h-full object-cover" />
-          </button>
-        ))}
-      </div>
+    <div style={{ columnCount: 3, columnGap: '4px' }} className="p-1">
+      <PhotoAlbum
+        layout="rows"
+        photos={data.map((p) => ({
+          src: p.photo_url,
+          width: p.width ?? 800,
+          height: p.height ?? 600,
+          key: p.id,
+        }))}
+        targetRowHeight={320}
+        rowConstraints={{ minPhotos: 1 }}
+      />
     </div>
   );
 }
