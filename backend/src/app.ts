@@ -6,9 +6,11 @@ import cookieParser from 'cookie-parser';
 import { auth } from './config/auth';
 import { toNodeHandler } from 'better-auth/node';
 import { router as uniqueEmailController } from './routers/uniqueEmailRoute';
+import { router as googleAPIController } from './routers/googleAPIRoute';
 import { router as eventController } from './routers/eventRoute';
 import { corsOptions } from './config/corsOptions';
-import { signUploadrouter } from './routers/signUploadRoute';
+import { uploadrouter } from './routers/uploadRoute';
+import { photoRouter } from './routers/photoRoute';
 
 const app = express();
 
@@ -28,6 +30,12 @@ app.all('/api/auth/*', toNodeHandler(auth));
 
 app.use('/uniqueEmail', uniqueEmailController);
 app.use('/event', eventController);
-app.use('/api/upload/sign', signUploadrouter);
+
+app.use('/api/upload', uploadrouter);
+app.use('/api/photos', photoRouter);
+
+app.use('/api/driveAPI', googleAPIController);
+app.use('/api/uniqueEmail', uniqueEmailController);
+app.use('/api/event', eventController);
 
 export default app;
