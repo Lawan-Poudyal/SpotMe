@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -9,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id               String  @id @default(uuid())
+  id               String    @id @default(uuid())
   user_name        String?
-  email            String  @unique
+  email            String    @unique
   profile_pic_link String?
-  name          String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts     Account[]
-  events 	Event[]
+  name             String
+  emailVerified    Boolean   @default(false)
+  image            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  sessions         Session[]
+  accounts         Account[]
+  events           Event[]
+  photos           Photo[]
 
   @@map("user")
 }
@@ -35,7 +35,7 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testField String? 
+  testField String?
 
   @@unique([token])
   @@index([userId])
@@ -50,6 +50,7 @@ model Account {
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
+  driveApproved         Boolean   @default(true)
   idToken               String?
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
@@ -75,15 +76,32 @@ model Verification {
 }
 
 model Event {
-id String @id @default(uuid())
-eventName String 
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-userId    String
-user      User @relation(fields: [userId], references :[id] , onDelete : Cascade)
+  id            String   @id @default(uuid())
+  eventName     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  driveApproved Boolean  @default(true)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos        Photo[]
 
-@@index([userId])
-@@unique ([eventName , userId])
-@@map("event")
+  @@unique([eventName, userId])
+  @@index([userId])
+  @@map("event")
 }
 
+model Photo {
+  id          String   @id @default(uuid())
+  photo_url   String
+  event_id    String
+  uploaded_at DateTime @default(now())
+  uploaded_by String
+  public_id   String   @unique
+  width       Int?
+  height      Int?
+  event       Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [uploaded_by], references: [id])
+
+  @@index([event_id])
+  @@map("photo")
+}

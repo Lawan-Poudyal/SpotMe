@@ -151,6 +151,7 @@ exports.Prisma.AccountScalarFieldEnum = {
   userId: 'userId',
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
+  driveApproved: 'driveApproved',
   idToken: 'idToken',
   accessTokenExpiresAt: 'accessTokenExpiresAt',
   refreshTokenExpiresAt: 'refreshTokenExpiresAt',
@@ -174,7 +175,19 @@ exports.Prisma.EventScalarFieldEnum = {
   eventName: 'eventName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  driveApproved: 'driveApproved',
   userId: 'userId'
+};
+
+exports.Prisma.PhotoScalarFieldEnum = {
+  id: 'id',
+  photo_url: 'photo_url',
+  event_id: 'event_id',
+  uploaded_at: 'uploaded_at',
+  uploaded_by: 'uploaded_by',
+  public_id: 'public_id',
+  width: 'width',
+  height: 'height'
 };
 
 exports.Prisma.SortOrder = {
@@ -198,7 +211,8 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  Event: 'Event'
+  Event: 'Event',
+  Photo: 'Photo'
 };
 
 /**
