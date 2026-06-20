@@ -28,6 +28,6 @@ app.all('/api/auth/*', toNodeHandler(auth));
 
 app.use('/uniqueEmail', uniqueEmailController);
 app.use('/event', eventController);
-app.use('/api/upload/sign', signUploadrouter);
+app.use('/api/upload', signUploadrouter);
 
 export default app;

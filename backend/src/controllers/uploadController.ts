@@ -3,6 +3,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { auth } from '../config/auth';
 import { cloudinary } from '../lib/cloudinary';
 import { ValidationError } from '../errors/Error';
+import { prisma } from '../config/prismaClientConfig';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -33,4 +34,30 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-export { signedUploadRequest };
+const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
+  const session = await auth.api.getSession({
+    headers: req.headers as HeadersInit,
+  });
+  if (!session) throw new ValidationError('User must be authenticated to upload files');
+
+  const { eventId, photos } = req.body;
+  if (!eventId || typeof eventId !== 'string') {
+    throw new ValidationError('Missing or invalid eventId in the request body');
+  }
+  if (!photos || !Array.isArray(photos)) {
+    throw new ValidationError('Missing or invalid photos array in the request body');
+  }
+
+  const saved = await prisma.photo.createMany({
+    data: photos.map((p) => ({
+      event_id: eventId,
+      uploaded_by: session.user.id,
+      photo_url: p.url,
+      public_id: p.publicId,
+    })),
+  });
+
+  res.status(201).json({ success: true, data: saved });
+});
+
+export { signedUploadRequest, saveUploadRequest };
