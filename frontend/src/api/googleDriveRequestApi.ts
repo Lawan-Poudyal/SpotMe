@@ -25,10 +25,10 @@ const getAccessToken = async (userId: string ) : Promise<responseType|undefined>
         ownerId: userId,
       },
     });
-    return { success: true, ...response.data.data as successResponseType};
+    return { success: true, ...response.data.data.data as successResponseType};
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-	return {success : true , ...err.response?.data.err as successResponseType}
+	return {success : false , ...err.response?.data.data.err as successResponseType}
     }
   }
 };
