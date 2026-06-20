@@ -23,9 +23,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/', (req, res) => {
-  res.redirect(process.env.FRONTEND_ORIGIN as string);
+app.get('/drive/:event', (req, res) => {
+  res.redirect(`${process.env.FRONTEND_ORIGIN as string}/dashboard/event/${req.params.event}`);
 });
+app.get("/")
 app.use('/api/driveAPI' , googleAPIController)
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);

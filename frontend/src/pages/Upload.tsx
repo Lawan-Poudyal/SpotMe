@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, type Dispatch, type SetStateAction } from "react";
 import {
   UploadCloud,
   X,
@@ -11,6 +11,7 @@ import type { eventType } from "../types/eventType";
 import { getAccessToken } from "../api/googleDriveRequestApi";
 import type { zuContextType } from "../context/zuContext";
 import { useProfile } from "../context/zuContext";
+import { requestDriveScope } from "../api/linkSocialMedia";
 import PopUpBox from "../components/PopupBox";
 import type { responseType } from "../api/googleDriveRequestApi";
 
@@ -27,7 +28,7 @@ interface UploadTabProps {
   event: eventType;
 }
 
-async function openGoogleDrivePicker(ownerId : string): Promise<
+async function openGoogleDrivePicker(ownerId : string,event : string , setErrorTitle : Dispatch<SetStateAction<string>> , setSubErrorTitle : Dispatch<SetStateAction<string>>, setIsErrorOpen : Dispatch<SetStateAction<boolean>> ): Promise<
   { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[]
 > {
   // Load gapi if not already loaded
@@ -44,39 +45,38 @@ async function openGoogleDrivePicker(ownerId : string): Promise<
 
   // Obtain an OAuth access token via GIS
   const responseObj= await getAccessToken(ownerId)
-
+    
   if (responseObj?.success === false){
-    //d
+      await requestDriveScope(event , setErrorTitle , setSubErrorTitle , setIsErrorOpen)
+      return;
   }
 
-  const accessToken = responseObj?.accessToken
   console.log(responseObj)
+  const accessToken = responseObj?.accessToken
 
   return new Promise((resolve) => {
-    const picker = new window.google.picker.PickerBuilder()
-      .addView(
-        new window.google.picker.View(window.google.picker.ViewId.PHOTOS)
-      )
-      .addView(
-        new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES)
-      )
-      .setOAuthToken(accessToken)
-      .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
-      .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
-      .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-      .setCallback(
-        (data: {
-          action: string;
-          docs?: { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[];
-        }) => {
-          if (data.action === window.google.picker.Action.PICKED) {
-            resolve(data.docs ?? []);
-          } else if (data.action === window.google.picker.Action.CANCEL) {
-            resolve([]);
-          }
-        }
-      )
-      .build();
+const picker = new window.google.picker.PickerBuilder()
+  .addView(
+    new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES)
+  )
+  .setOAuthToken(accessToken)
+  .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
+  .setAppId("1090789030635")
+  .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
+  .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
+  .setCallback(
+    (data: {
+      action: string;
+      docs?: { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[];
+    }) => {
+      if (data.action === window.google.picker.Action.PICKED) {
+        resolve(data.docs ?? []);
+      } else if (data.action === window.google.picker.Action.CANCEL) {
+        resolve([]);
+      }
+    }
+  )
+  .build();
 
     picker.setVisible(true);
   });
@@ -159,8 +159,10 @@ export default function UploadTab({ event }: UploadTabProps) {
     if (isDriveLoading || isUploading) return;
     setIsDriveLoading(true);
     try {
-      const picked = await openGoogleDrivePicker(userId);
+      const picked = await openGoogleDrivePicker(userId ,String(event), setErrorTitle , setSubErrorTitle , setIsErrorOpen);
+      console.log("from picked")
       if (picked.length > 0) addDriveFiles(picked);
+      console.log(picked)
     } catch (err) {
       console.error("Google Drive picker error:", err);
     } finally {
