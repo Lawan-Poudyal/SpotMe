@@ -201,7 +201,7 @@ export default function HomePage() {
               <FolderCard
                 key={item.id}
                 name={item.eventName}
-                createdAt={item.createdAt}
+                createdAt={String(item.createdAt)}
                 numberOfImages={item.numberOfImages}
 
                 // 🔥 FIXED NAVIGATION
