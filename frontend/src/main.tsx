@@ -14,7 +14,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthContext>
-          <FileUpload />
+          <App />
         </AuthContext>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
