@@ -8,6 +8,11 @@ import {
   HardDrive,
 } from "lucide-react";
 import type { eventType } from "../types/eventType";
+import { getAccessToken } from "../api/googleDriveRequestApi";
+import type { zuContextType } from "../context/zuContext";
+import { useProfile } from "../context/zuContext";
+import PopUpBox from "../components/PopupBox";
+import type { responseType } from "../api/googleDriveRequestApi";
 
 interface UploadFile {
   id: string;
@@ -22,7 +27,7 @@ interface UploadTabProps {
   event: eventType;
 }
 
-async function openGoogleDrivePicker(): Promise<
+async function openGoogleDrivePicker(ownerId : string): Promise<
   { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[]
 > {
   // Load gapi if not already loaded
@@ -38,17 +43,14 @@ async function openGoogleDrivePicker(): Promise<
   await new Promise<void>((resolve) => window.gapi.load("picker", resolve));
 
   // Obtain an OAuth access token via GIS
-  const accessToken = await new Promise<string>((resolve, reject) => {
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID as string,
-      scope: "https://www.googleapis.com/auth/drive.readonly",
-      callback: (resp: { access_token?: string; error?: string }) => {
-        if (resp.error) return reject(new Error(resp.error));
-        resolve(resp.access_token!);
-      },
-    });
-    client.requestAccessToken();
-  });
+  const responseObj= await getAccessToken(ownerId)
+
+  if (responseObj?.success === false){
+    //d
+  }
+
+  const accessToken = responseObj?.accessToken
+  console.log(responseObj)
 
   return new Promise((resolve) => {
     const picker = new window.google.picker.PickerBuilder()
@@ -85,7 +87,10 @@ export default function UploadTab({ event }: UploadTabProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDriveLoading, setIsDriveLoading] = useState(false);
-
+  const userId = useProfile((s:zuContextType) => s.id)
+  const [errorTitle , setErrorTitle] = useState<string>("")
+  const [subErrorTitle, setSubErrorTitle] = useState<string>("")
+  const [isErrorOpen , setIsErrorOpen] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── File handling ──────────────────────────────────────
@@ -154,7 +159,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     if (isDriveLoading || isUploading) return;
     setIsDriveLoading(true);
     try {
-      const picked = await openGoogleDrivePicker();
+      const picked = await openGoogleDrivePicker(userId);
       if (picked.length > 0) addDriveFiles(picked);
     } catch (err) {
       console.error("Google Drive picker error:", err);
@@ -201,7 +206,9 @@ export default function UploadTab({ event }: UploadTabProps) {
   // ── Render ────────────────────────────────────────────
 
   return (
-    <div className="max-w-2xl mx-auto">
+      <>    
+      <PopUpBox  title={errorTitle} subTitle={subErrorTitle} open={isErrorOpen} setOpen={setIsErrorOpen} />
+      <div className="max-w-2xl mx-auto">
       {/* Hidden local input */}
       <input
         ref={fileInputRef}
@@ -448,5 +455,7 @@ export default function UploadTab({ event }: UploadTabProps) {
         </p>
       )}
     </div>
+
+      </>
   );
 }

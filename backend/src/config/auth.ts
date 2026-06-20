@@ -1,10 +1,10 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "./prismaClientConfig";
+import { prisma } from "./prismaClientConfig.js";
 import { createAuthMiddleware  , APIError} from "better-auth/api";
-import {checkEmailValidity, checkPasswordValidity, checkUsernameValidity} from "../utils/formValidation"
-import type { passwordError } from "../utils/formValidation";
-import { sendEmail } from "../utils/sendEmail";
+import {checkEmailValidity, checkPasswordValidity, checkUsernameValidity} from "../utils/formValidation.js"
+import type { passwordError } from "../utils/formValidation.js";
+import { sendEmail } from "../utils/sendEmail.js";
 export const auth = betterAuth({
     emailVerification:{
 	sendVerificationEmail : async({user, url})=>{
@@ -75,7 +75,6 @@ export const auth = betterAuth({
 	    clientId : process.env.CLIENT_ID as string,
 	    clientSecret : process.env.CLIENT_SECRET as string,
 	    accessType : "offline",
-	    scope: ["https://www.googleapis.com/auth/drive.file"],
 	}
     }
 
