@@ -5,19 +5,21 @@ type FolderCardProps = {
   name: string;
   color?: string;
   createdAt: Date | string;
+  numberOfImages?: number;
+
   onEdit: () => void;
   onRemove: () => void;
   onClick?: () => void;
 };
 
 const FOLDER_COLORS = [
-  "#F97316", // orange
-  "#8B5CF6", // purple
-  "#06B6D4", // cyan
-  "#10B981", // emerald
-  "#F43F5E", // rose
-  "#3B82F6", // blue
-  "#EAB308", // yellow
+  "#F97316",
+  "#8B5CF6",
+  "#06B6D4",
+  "#10B981",
+  "#F43F5E",
+  "#3B82F6",
+  "#EAB308",
 ];
 
 function getColorForName(name: string): string {
@@ -31,12 +33,11 @@ function getColorForName(name: string): string {
 }
 
 function formatDate(raw: Date | string): string {
-  const d = new Date(raw as string);
+  const d = new Date(raw);
 
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
   });
 }
 
@@ -44,6 +45,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
   name,
   color,
   createdAt,
+  numberOfImages = 0,
   onEdit,
   onRemove,
   onClick,
@@ -65,78 +67,52 @@ const FolderCard: React.FC<FolderCardProps> = ({
         hover:border-white/20 hover:scale-[1.02]
         ${isPressed ? "scale-95" : "scale-100"}
       `}
-      style={{ minHeight: 180 }}
+      style={{ minHeight: 220 }}
     >
-      {/* Smaller top folder section */}
+      {/* Color banner */}
       <div
-        className="flex items-center justify-center"
         style={{
           background: resolvedColor,
-          flex: "0 0 50%",
-          minHeight: 90,
+          height: 110,
         }}
-      >
-        {/* Folder icon */}
-        <div
-          className="flex flex-col items-start gap-0"
-          style={{ opacity: 0.22 }}
-        >
-          <div
-            style={{
-              width: 40,
-              height: 8,
-              background: "#fff",
-              borderRadius: "6px 6px 0 0",
-              marginLeft: 4,
-            }}
-          />
+      />
 
-          <div
-            style={{
-              width: 72,
-              height: 48,
-              background: "#fff",
-              borderRadius: "0 8px 8px 8px",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Bottom info section */}
+      {/* Content */}
       <div
-        className="flex flex-col justify-between px-3 py-2.5"
+        className="flex flex-col justify-between flex-1 px-4 py-3"
         style={{
-          flex: "0 0 50%",
           background: "#13131F",
-          borderTop: `2px solid ${resolvedColor}22`,
         }}
       >
         <div>
-          <p className="text-[#EAEAF5] text-sm font-semibold truncate leading-tight">
+          <h3 className="text-white font-semibold text-xl truncate">
             {name}
-          </p>
+          </h3>
 
-          <p className="text-[10px] text-white/30 mt-1">
-            {formatDate(createdAt)}
+          <p className="text-white/50 text-sm mt-1">
+            {formatDate(createdAt)} •{" "}
+            {numberOfImages.toLocaleString()} photos
           </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1 mt-3">
+        {/* Actions */}
+        <div className="flex gap-2 mt-4">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
             }}
             className="
-              flex items-center gap-1 px-2 py-1 rounded-md text-[11px]
-              text-white/35 hover:text-[#F97316]
-              hover:bg-[#F97316]/10 transition
+              flex items-center gap-1
+              px-2 py-1 rounded-md
+              text-white/40
+              hover:text-[#F97316]
+              hover:bg-[#F97316]/10
+              transition
             "
-            aria-label="Edit"
           >
-            <Pencil size={11} />
-            <span>Edit</span>
+            <Pencil size={14} />
+            Edit
           </button>
 
           <button
@@ -145,14 +121,16 @@ const FolderCard: React.FC<FolderCardProps> = ({
               onRemove();
             }}
             className="
-              flex items-center gap-1 px-2 py-1 rounded-md text-[11px]
-              text-white/35 hover:text-red-400
-              hover:bg-red-500/10 transition
+              flex items-center gap-1
+              px-2 py-1 rounded-md
+              text-white/40
+              hover:text-red-400
+              hover:bg-red-500/10
+              transition
             "
-            aria-label="Delete"
           >
-            <Trash2 size={11} />
-            <span>Delete</span>
+            <Trash2 size={14} />
+            Delete
           </button>
         </div>
       </div>
