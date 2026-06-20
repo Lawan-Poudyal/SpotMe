@@ -3752,6 +3752,7 @@ export namespace Prisma {
     userId: string | null
     accessToken: string | null
     refreshToken: string | null
+    driveApproved: boolean | null
     idToken: string | null
     accessTokenExpiresAt: Date | null
     refreshTokenExpiresAt: Date | null
@@ -3768,6 +3769,7 @@ export namespace Prisma {
     userId: string | null
     accessToken: string | null
     refreshToken: string | null
+    driveApproved: boolean | null
     idToken: string | null
     accessTokenExpiresAt: Date | null
     refreshTokenExpiresAt: Date | null
@@ -3784,6 +3786,7 @@ export namespace Prisma {
     userId: number
     accessToken: number
     refreshToken: number
+    driveApproved: number
     idToken: number
     accessTokenExpiresAt: number
     refreshTokenExpiresAt: number
@@ -3802,6 +3805,7 @@ export namespace Prisma {
     userId?: true
     accessToken?: true
     refreshToken?: true
+    driveApproved?: true
     idToken?: true
     accessTokenExpiresAt?: true
     refreshTokenExpiresAt?: true
@@ -3818,6 +3822,7 @@ export namespace Prisma {
     userId?: true
     accessToken?: true
     refreshToken?: true
+    driveApproved?: true
     idToken?: true
     accessTokenExpiresAt?: true
     refreshTokenExpiresAt?: true
@@ -3834,6 +3839,7 @@ export namespace Prisma {
     userId?: true
     accessToken?: true
     refreshToken?: true
+    driveApproved?: true
     idToken?: true
     accessTokenExpiresAt?: true
     refreshTokenExpiresAt?: true
@@ -3923,6 +3929,7 @@ export namespace Prisma {
     userId: string
     accessToken: string | null
     refreshToken: string | null
+    driveApproved: boolean
     idToken: string | null
     accessTokenExpiresAt: Date | null
     refreshTokenExpiresAt: Date | null
@@ -3956,6 +3963,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -3973,6 +3981,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -3990,6 +3999,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -4007,6 +4017,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -4016,7 +4027,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "accountId" | "providerId" | "userId" | "accessToken" | "refreshToken" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "scope" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "accountId" | "providerId" | "userId" | "accessToken" | "refreshToken" | "driveApproved" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "scope" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -4039,6 +4050,7 @@ export namespace Prisma {
       userId: string
       accessToken: string | null
       refreshToken: string | null
+      driveApproved: boolean
       idToken: string | null
       accessTokenExpiresAt: Date | null
       refreshTokenExpiresAt: Date | null
@@ -4476,6 +4488,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"Account", 'String'>
     readonly accessToken: FieldRef<"Account", 'String'>
     readonly refreshToken: FieldRef<"Account", 'String'>
+    readonly driveApproved: FieldRef<"Account", 'Boolean'>
     readonly idToken: FieldRef<"Account", 'String'>
     readonly accessTokenExpiresAt: FieldRef<"Account", 'DateTime'>
     readonly refreshTokenExpiresAt: FieldRef<"Account", 'DateTime'>
@@ -8156,6 +8169,7 @@ export namespace Prisma {
     userId: 'userId',
     accessToken: 'accessToken',
     refreshToken: 'refreshToken',
+    driveApproved: 'driveApproved',
     idToken: 'idToken',
     accessTokenExpiresAt: 'accessTokenExpiresAt',
     refreshTokenExpiresAt: 'refreshTokenExpiresAt',
@@ -8454,6 +8468,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
+    driveApproved?: BoolFilter<"Account"> | boolean
     idToken?: StringNullableFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -8471,6 +8486,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrderInput | SortOrder
     refreshToken?: SortOrderInput | SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrderInput | SortOrder
     accessTokenExpiresAt?: SortOrderInput | SortOrder
     refreshTokenExpiresAt?: SortOrderInput | SortOrder
@@ -8491,6 +8507,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
+    driveApproved?: BoolFilter<"Account"> | boolean
     idToken?: StringNullableFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -8508,6 +8525,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrderInput | SortOrder
     refreshToken?: SortOrderInput | SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrderInput | SortOrder
     accessTokenExpiresAt?: SortOrderInput | SortOrder
     refreshTokenExpiresAt?: SortOrderInput | SortOrder
@@ -8530,6 +8548,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Account"> | string
     accessToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
     refreshToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
+    driveApproved?: BoolWithAggregatesFilter<"Account"> | boolean
     idToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
@@ -8912,6 +8931,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -8929,6 +8949,7 @@ export namespace Prisma {
     userId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -8944,6 +8965,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8961,6 +8983,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8977,6 +9000,7 @@ export namespace Prisma {
     userId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -8992,6 +9016,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9008,6 +9033,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -9451,6 +9477,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrder
     accessTokenExpiresAt?: SortOrder
     refreshTokenExpiresAt?: SortOrder
@@ -9467,6 +9494,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrder
     accessTokenExpiresAt?: SortOrder
     refreshTokenExpiresAt?: SortOrder
@@ -9483,6 +9511,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrder
     accessTokenExpiresAt?: SortOrder
     refreshTokenExpiresAt?: SortOrder
@@ -10082,6 +10111,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -10097,6 +10127,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -10227,6 +10258,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
+    driveApproved?: BoolFilter<"Account"> | boolean
     idToken?: StringNullableFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -10707,6 +10739,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -10771,6 +10804,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10786,6 +10820,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -10801,6 +10836,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

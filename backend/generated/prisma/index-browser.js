@@ -151,6 +151,7 @@ exports.Prisma.AccountScalarFieldEnum = {
   userId: 'userId',
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
+  driveApproved: 'driveApproved',
   idToken: 'idToken',
   accessTokenExpiresAt: 'accessTokenExpiresAt',
   refreshTokenExpiresAt: 'refreshTokenExpiresAt',
