@@ -14,6 +14,7 @@ import { useProfile } from "../context/zuContext";
 import { requestDriveScope } from "../api/linkSocialMedia";
 import PopUpBox from "../components/PopupBox";
 import type { responseType } from "../api/googleDriveRequestApi";
+import { uploadEventPhotos } from "../api/eventPhotoUploadApi";
 
 interface UploadFile {
   id: string;
@@ -22,6 +23,7 @@ interface UploadFile {
   status: "pending" | "uploading" | "done" | "error";
   progress: number;
   source: "local" | "drive";
+  driveFileId?: string; // original Google Drive file id, only set when source === "drive"
 }
 
 interface UploadTabProps {
@@ -124,6 +126,7 @@ export default function UploadTab({ event }: UploadTabProps) {
       status: "pending",
       progress: 0,
       source: "drive",
+      driveFileId: df.id,
     }));
 
     setFiles((prev) => [...prev, ...mapped]);
@@ -159,7 +162,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     if (isDriveLoading || isUploading) return;
     setIsDriveLoading(true);
     try {
-      const picked = await openGoogleDrivePicker(userId ,String(event), setErrorTitle , setSubErrorTitle , setIsErrorOpen);
+      const picked = await openGoogleDrivePicker(userId ,event.eventName, setErrorTitle , setSubErrorTitle , setIsErrorOpen);
       console.log("from picked")
       if (picked.length > 0) addDriveFiles(picked);
       console.log(picked)
@@ -174,32 +177,35 @@ export default function UploadTab({ event }: UploadTabProps) {
 
   const handleUpload = async () => {
     if (files.length === 0 || isUploading) return;
-    setIsUploading(true);
 
     setFiles((prev) =>
-      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 0 }))
+      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 50 }))
     );
 
-    // TODO: replace with real upload logic — e.g. presigned S3 URLs per file
-    for (const uploadFile of files) {
-      for (let p = 20; p <= 100; p += 20) {
-        await new Promise((r) => setTimeout(r, 180));
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id ? { ...f, progress: p } : f
-          )
-        );
-      }
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === uploadFile.id
-            ? { ...f, status: "done", progress: 100 }
-            : f
-        )
-      );
-    }
+    const driveUploadFiles = files.filter((f) => f.source === "drive");
 
-    setIsUploading(false);
+    // Only Drive file ids go to the backend — no bytes, no blobs.
+    // setIsUploading and the error popup states are now managed inside
+    // uploadEventPhotos itself, around its own request lifecycle.
+    const success = await uploadEventPhotos({
+      eventId: String(event.eventName),
+      ownerId: String(userId),
+      driveFileIds: driveUploadFiles
+        .map((f) => f.driveFileId)
+        .filter((id): id is string => Boolean(id)),
+      setIsUploading,
+      setErrorTitle,
+      setSubErrorTitle,
+      setIsErrorOpen,
+    });
+
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.source === "drive"
+          ? { ...f, status: success ? ("done" as const) : ("error" as const), progress: success ? 100 : f.progress }
+          : f
+      )
+    );
   };
 
   const doneCount = files.filter((f) => f.status === "done").length;
@@ -379,6 +385,8 @@ export default function UploadTab({ event }: UploadTabProps) {
                   <CheckCircle2 size={18} className="text-emerald-400" />
                 ) : f.status === "uploading" ? (
                   <Loader2 size={18} className="animate-spin text-[#F97316]" />
+                ) : f.status === "error" ? (
+                  <span className="text-red-400 text-xs font-medium">Failed</span>
                 ) : (
                   <button
                     onClick={(e) => {
