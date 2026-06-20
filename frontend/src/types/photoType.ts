@@ -5,4 +5,6 @@ export type Photo = {
   public_id: string;
   uploaded_at: string;
   uploaded_by: string;
+  height: number;
+  width: number;
 };

@@ -186,6 +186,8 @@ export default function UploadTab({ event }: UploadTabProps) {
       uploadResponses.map((res) => ({
         url: res.secure_url,
         publicId: res.public_id,
+        width: res.width,
+        height: res.height,
       })),
     );
     console.log('Upload response:', uploadResponses);

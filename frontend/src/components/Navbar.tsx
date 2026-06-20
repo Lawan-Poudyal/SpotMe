@@ -202,7 +202,6 @@ function ResponsiveAppBar() {
             </Tooltip>
 
             <Menu
-              sx={{ mt: '48px' }}
               id="menu-appbar-user"
               anchorEl={anchorElUser}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
