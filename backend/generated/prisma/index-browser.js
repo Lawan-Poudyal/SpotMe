@@ -174,6 +174,7 @@ exports.Prisma.EventScalarFieldEnum = {
   eventName: 'eventName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  driveApproved: 'driveApproved',
   userId: 'userId'
 };
 
