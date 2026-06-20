@@ -28,8 +28,8 @@ app.get('/', (req, res) => {
 });
 
 
-app.use('/uniqueEmail', uniqueEmailController);
-app.use('/event', eventController);
+app.use('/api/uniqueEmail', uniqueEmailController);
+app.use('/api/event', eventController);
 app.use('/api/upload/sign', signUploadrouter);
 
 export default app;

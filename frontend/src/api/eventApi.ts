@@ -9,7 +9,7 @@ const addEvent = async (
 ) => {
   try {
     setIsLoading(true);
-    const response = await api.post('/event', {
+    const response = await api.post('/api/event', {
       eventName: eventName,
       ownerId: userId,
     });
@@ -30,7 +30,7 @@ const updateEvent = async (
 ) => {
   try {
     setIsLoading(true);
-    const response = await api.put('/event', {
+    const response = await api.put('/api/event', {
       eventName: eventName,
       ownerId: userId,
       currentName: currentName,
@@ -51,7 +51,7 @@ const deleteEvent = async (
 ) => {
   try {
     setIsLoading(true);
-    await api.delete('/event', {
+    await api.delete('/api/event', {
       data: {
         eventName: eventName,
         ownerId: userId,
@@ -68,7 +68,7 @@ const deleteEvent = async (
 };
 const getEvent = async (userId: string) => {
   try {
-    const response = await api.get('/event', {
+    const response = await api.get('/api/event', {
       params: {
         ownerId: userId,
       },
