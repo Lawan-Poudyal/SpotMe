@@ -95,6 +95,7 @@ model Photo {
   event_id    String
   uploaded_at DateTime @default(now())
   uploaded_by String
+  public_id     String   @unique
   event       Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [uploaded_by], references: [id])
 
