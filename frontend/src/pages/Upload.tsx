@@ -1,21 +1,17 @@
-import { useState, useRef, useCallback } from "react";
-import {
-  UploadCloud,
-  X,
-  CheckCircle2,
-  Loader2,
-  Info,
-  HardDrive,
-} from "lucide-react";
-import type { eventType } from "../types/eventType";
+import { useState, useRef, useCallback } from 'react';
+import { UploadCloud, X, CheckCircle2, Loader2, Info, HardDrive } from 'lucide-react';
+import type { eventType } from '../types/eventType';
+
+import { useMutation } from '@tanstack/react-query';
+import { fileUploads } from '../api/fileUpload';
 
 interface UploadFile {
   id: string;
   file: File;
   previewUrl: string;
-  status: "pending" | "uploading" | "done" | "error";
+  status: 'pending' | 'uploading' | 'done' | 'error';
   progress: number;
-  source: "local" | "drive";
+  source: 'local' | 'drive';
 }
 
 interface UploadTabProps {
@@ -32,20 +28,20 @@ async function openGoogleDrivePicker(): Promise<
   // Load gapi if not already loaded
   await new Promise<void>((resolve, reject) => {
     if (window.gapi) return resolve();
-    const script = document.createElement("script");
-    script.src = "https://apis.google.com/js/api.js";
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
     script.onload = () => resolve();
     script.onerror = reject;
     document.body.appendChild(script);
   });
 
-  await new Promise<void>((resolve) => window.gapi.load("picker", resolve));
+  await new Promise<void>((resolve) => window.gapi.load('picker', resolve));
 
   // Obtain an OAuth access token via GIS
   const accessToken = await new Promise<string>((resolve, reject) => {
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID as string,
-      scope: "https://www.googleapis.com/auth/drive.readonly",
+      scope: 'https://www.googleapis.com/auth/drive.readonly',
       callback: (resp: { access_token?: string; error?: string }) => {
         if (resp.error) return reject(new Error(resp.error));
         resolve(resp.access_token!);
@@ -56,15 +52,11 @@ async function openGoogleDrivePicker(): Promise<
 
   return new Promise((resolve) => {
     const picker = new window.google.picker.PickerBuilder()
-      .addView(
-        new window.google.picker.View(window.google.picker.ViewId.PHOTOS)
-      )
-      .addView(
-        new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES)
-      )
+      .addView(new window.google.picker.View(window.google.picker.ViewId.PHOTOS))
+      .addView(new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES))
       .setOAuthToken(accessToken)
       .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
-      .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
+      .setSelectableMimeTypes('image/jpeg,image/png,image/webp,image/heic,image/gif')
       .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
       .setCallback(
         (data: {
@@ -76,7 +68,7 @@ async function openGoogleDrivePicker(): Promise<
           } else if (data.action === window.google.picker.Action.CANCEL) {
             resolve([]);
           }
-        }
+        },
       )
       .build();
 
@@ -89,30 +81,28 @@ export default function UploadTab({ event }: UploadTabProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDriveLoading, setIsDriveLoading] = useState(false);
-
+  const eventId = '83e08a6a-7c12-451c-b341-266940e5ee39';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── File handling ──────────────────────────────────────
 
   const addFiles = (incoming: FileList | File[]) => {
-    const imageFiles = Array.from(incoming).filter((f) =>
-      f.type.startsWith("image/")
-    );
+    const imageFiles = Array.from(incoming).filter((f) => f.type.startsWith('image/'));
 
     const mapped: UploadFile[] = imageFiles.map((f) => ({
       id: `${f.name}-${f.lastModified}-${Math.random()}`,
       file: f,
       previewUrl: URL.createObjectURL(f),
-      status: "pending",
+      status: 'pending',
       progress: 0,
-      source: "local",
+      source: 'local',
     }));
 
     setFiles((prev) => [...prev, ...mapped]);
   };
 
   const addDriveFiles = (
-    driveFiles: { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[]
+    driveFiles: { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[],
   ) => {
     const mapped: UploadFile[] = driveFiles.map((df) => ({
       // Drive files don't have a local File object; we store a stub
@@ -120,9 +110,9 @@ export default function UploadTab({ event }: UploadTabProps) {
       file: new File([], df.name, { type: df.mimeType }),
       // Use Drive's thumbnail URL as preview (available when picker returns `url`)
       previewUrl: `https://drive.google.com/thumbnail?id=${df.id}&sz=w128`,
-      status: "pending",
+      status: 'pending',
       progress: 0,
-      source: "drive",
+      source: 'drive',
     }));
 
     setFiles((prev) => [...prev, ...mapped]);
@@ -131,8 +121,7 @@ export default function UploadTab({ event }: UploadTabProps) {
   const removeFile = (id: string) => {
     setFiles((prev) => {
       const target = prev.find((f) => f.id === id);
-      if (target && target.source === "local")
-        URL.revokeObjectURL(target.previewUrl);
+      if (target && target.source === 'local') URL.revokeObjectURL(target.previewUrl);
       return prev.filter((f) => f.id !== id);
     });
   };
@@ -161,7 +150,7 @@ export default function UploadTab({ event }: UploadTabProps) {
       const picked = await openGoogleDrivePicker();
       if (picked.length > 0) addDriveFiles(picked);
     } catch (err) {
-      console.error("Google Drive picker error:", err);
+      console.error('Google Drive picker error:', err);
     } finally {
       setIsDriveLoading(false);
     }
@@ -169,37 +158,35 @@ export default function UploadTab({ event }: UploadTabProps) {
 
   // ── Upload ────────────────────────────────────────────
 
+  const uploadSignatureMutation = useMutation({
+    mutationFn: () => fileUploads.signRequest(eventId),
+  });
+
   const handleUpload = async () => {
-    if (files.length === 0 || isUploading) return;
-    setIsUploading(true);
-
-    setFiles((prev) =>
-      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 0 }))
-    );
-
-    // TODO: replace with real upload logic — e.g. presigned S3 URLs per file
-    for (const uploadFile of files) {
-      for (let p = 20; p <= 100; p += 20) {
-        await new Promise((r) => setTimeout(r, 180));
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id ? { ...f, progress: p } : f
-          )
-        );
-      }
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === uploadFile.id
-            ? { ...f, status: "done", progress: 100 }
-            : f
-        )
-      );
+    if (!files) {
+      alert('Please select a file');
+      return;
     }
+    const data = await uploadSignatureMutation.mutateAsync();
+    console.log('Upload signature response:', data);
 
+    const uploads = files.map((f) => {
+      const formData = new FormData();
+      formData.append('file', f.file);
+      formData.append('api_key', data.apiKey);
+      formData.append('timestamp', data.timestamp.toString());
+      formData.append('signature', data.signature);
+      formData.append('folder', data.folder);
+      return fileUploads.uploadFile(formData, data.cloudName);
+    });
+    const uploadResponses = await Promise.all(uploads);
+    console.log('Upload response:', uploadResponses);
+
+    setFiles([]);
     setIsUploading(false);
   };
 
-  const doneCount = files.filter((f) => f.status === "done").length;
+  const doneCount = files.filter((f) => f.status === 'done').length;
   const allDone = files.length > 0 && doneCount === files.length;
 
   // ── Render ────────────────────────────────────────────
@@ -215,7 +202,7 @@ export default function UploadTab({ event }: UploadTabProps) {
         className="hidden"
         onChange={(e) => {
           if (e.target.files) addFiles(e.target.files);
-          e.target.value = "";
+          e.target.value = '';
         }}
       />
 
@@ -229,25 +216,19 @@ export default function UploadTab({ event }: UploadTabProps) {
           text-center gap-4 cursor-pointer transition select-none
           ${
             isDragging
-              ? "border-[#F97316]/60 bg-[#F97316]/5"
-              : "border-white/15 hover:border-white/25"
+              ? 'border-[#F97316]/60 bg-[#F97316]/5'
+              : 'border-white/15 hover:border-white/25'
           }`}
       >
-        <UploadCloud
-          size={48}
-          className={isDragging ? "text-[#F97316]" : "text-white/25"}
-        />
+        <UploadCloud size={48} className={isDragging ? 'text-[#F97316]' : 'text-white/25'} />
 
         <div>
           <p className="text-white font-semibold text-base mb-1">
-            {isDragging ? "Drop photos here" : "Drag & drop photos here"}
+            {isDragging ? 'Drop photos here' : 'Drag & drop photos here'}
           </p>
           <p className="text-white/40 text-sm">
-            or{" "}
-            <span className="text-[#F97316] underline underline-offset-2">
-              browse files
-            </span>{" "}
-            — JPG, PNG, HEIC, WEBP
+            or <span className="text-[#F97316] underline underline-offset-2">browse files</span> —
+            JPG, PNG, HEIC, WEBP
           </p>
         </div>
       </div>
@@ -255,9 +236,7 @@ export default function UploadTab({ event }: UploadTabProps) {
       {/* ── Divider ── */}
       <div className="flex items-center gap-3 my-4">
         <div className="flex-1 h-px bg-white/10" />
-        <span className="text-white/25 text-xs font-medium tracking-wide uppercase">
-          or
-        </span>
+        <span className="text-white/25 text-xs font-medium tracking-wide uppercase">or</span>
         <div className="flex-1 h-px bg-white/10" />
       </div>
 
@@ -293,22 +272,13 @@ export default function UploadTab({ event }: UploadTabProps) {
               d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 53.5c.8-1.4 1.2-2.95 1.2-4.5H58.8L73.55 76.8z"
               fill="#ea4335"
             />
-            <path
-              d="M43.65 25L58.5 0H29.4z"
-              fill="#00832d"
-            />
-            <path
-              d="M58.8 49H87.3L73.55 76.8 58.8 49z"
-              fill="#2684fc"
-            />
-            <path
-              d="M58.8 49L43.65 25 28.5 49z"
-              fill="#ffba00"
-            />
+            <path d="M43.65 25L58.5 0H29.4z" fill="#00832d" />
+            <path d="M58.8 49H87.3L73.55 76.8 58.8 49z" fill="#2684fc" />
+            <path d="M58.8 49L43.65 25 28.5 49z" fill="#ffba00" />
           </svg>
         )}
         <span className="text-white/80 text-sm font-medium">
-          {isDriveLoading ? "Opening Google Drive…" : "Import from Google Drive"}
+          {isDriveLoading ? 'Opening Google Drive…' : 'Import from Google Drive'}
         </span>
       </button>
 
@@ -316,7 +286,7 @@ export default function UploadTab({ event }: UploadTabProps) {
       {files.length > 0 && (
         <div className="mt-6 space-y-3">
           <p className="text-white/50 text-sm">
-            {files.length} photo{files.length !== 1 ? "s" : ""} selected
+            {files.length} photo{files.length !== 1 ? 's' : ''} selected
           </p>
 
           {files.map((f) => (
@@ -326,39 +296,35 @@ export default function UploadTab({ event }: UploadTabProps) {
             >
               {/* Thumbnail */}
               <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-[#1C1C1E]">
-                <img
-                  src={f.previewUrl}
-                  alt={f.file.name}
-                  className="w-full h-full object-cover"
-                />
+                <img src={f.previewUrl} alt={f.file.name} className="w-full h-full object-cover" />
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
-                    {f.file.name}
-                  </p>
+                  <p className="text-white text-sm font-medium truncate">{f.file.name}</p>
                   {/* Drive badge */}
-                  {f.source === "drive" && (
-                    <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium
-                      text-blue-400 bg-blue-400/10 border border-blue-400/20 rounded-full px-1.5 py-0.5">
+                  {f.source === 'drive' && (
+                    <span
+                      className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium
+                      text-blue-400 bg-blue-400/10 border border-blue-400/20 rounded-full px-1.5 py-0.5"
+                    >
                       <HardDrive size={9} />
                       Drive
                     </span>
                   )}
                 </div>
-                {f.source === "local" && (
+                {f.source === 'local' && (
                   <p className="text-white/35 text-xs mt-0.5">
                     {(f.file.size / 1024 / 1024).toFixed(1)} MB
                   </p>
                 )}
-                {f.source === "drive" && f.status === "pending" && (
+                {f.source === 'drive' && f.status === 'pending' && (
                   <p className="text-white/35 text-xs mt-0.5">From Google Drive</p>
                 )}
 
                 {/* Progress bar */}
-                {f.status === "uploading" && (
+                {f.status === 'uploading' && (
                   <div className="mt-2 h-1 rounded-full bg-white/10 overflow-hidden">
                     <div
                       className="h-full bg-[#F97316] rounded-full transition-all duration-200"
@@ -370,9 +336,9 @@ export default function UploadTab({ event }: UploadTabProps) {
 
               {/* Status / remove */}
               <div className="shrink-0">
-                {f.status === "done" ? (
+                {f.status === 'done' ? (
                   <CheckCircle2 size={18} className="text-emerald-400" />
-                ) : f.status === "uploading" ? (
+                ) : f.status === 'uploading' ? (
                   <Loader2 size={18} className="animate-spin text-[#F97316]" />
                 ) : (
                   <button
@@ -410,8 +376,7 @@ export default function UploadTab({ event }: UploadTabProps) {
           ) : (
             <>
               <UploadCloud size={16} />
-              Upload {files.length} photo{files.length !== 1 ? "s" : ""} to{" "}
-              {event.eventName}
+              Upload {files.length} photo{files.length !== 1 ? 's' : ''} to {event.eventName}
             </>
           )}
         </button>
@@ -427,7 +392,7 @@ export default function UploadTab({ event }: UploadTabProps) {
             <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
             <div>
               <p className="text-white font-semibold text-sm">
-                {doneCount} photo{doneCount !== 1 ? "s" : ""} uploaded
+                {doneCount} photo{doneCount !== 1 ? 's' : ''} uploaded
               </p>
               <p className="text-white/40 text-xs mt-0.5">
                 They are now visible in {event.eventName}
@@ -454,3 +419,4 @@ export default function UploadTab({ event }: UploadTabProps) {
     </div>
   );
 }
+
