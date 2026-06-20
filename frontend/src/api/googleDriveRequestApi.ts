@@ -1,51 +1,37 @@
-import type { Dispatch, SetStateAction } from "react";
+import { api } from '../config/axios';
+import axios from 'axios';
 
-export interface UploadEventPhotosPayload {
-  eventId: string;
-  ownerId: string;
-  // Google Drive file ids only — backend resolves these via Drive's API.
-  driveFileIds: string[];
-  setIsUploading: Dispatch<SetStateAction<boolean>>;
-  setErrorTitle: Dispatch<SetStateAction<string>>;
-  setSubErrorTitle: Dispatch<SetStateAction<string>>;
-  setIsErrorOpen: Dispatch<SetStateAction<boolean>>;
+type successResponseType = {
+    accessToken : string | null;
+    accessTokenExpiresAt : Date | null;
+    scopes : string[] | null;
+    idToken : string | null; 
+    name : string | null;
+    msg : string | null;
 }
 
-export async function uploadEventPhotos(
-  payload: UploadEventPhotosPayload
-): Promise<boolean> {
-  const {
-    eventId,
-    ownerId,
-    driveFileIds,
-    setIsUploading,
-    setErrorTitle,
-    setSubErrorTitle,
-    setIsErrorOpen,
-  } = payload;
 
-  setIsUploading(true);
+type failureType = {
+    success : boolean;
+}
 
+
+export type responseType =(successResponseType) & failureType 
+
+const getAccessToken = async (userId: string ) : Promise<responseType|undefined>  => {
   try {
-
-    console.log("uploadEventPhotos called with:", {
-      eventId,
-      ownerId,
-      driveFileIds,
+    const response = await api.get('/api/driveAPI', {
+      params: {
+        ownerId: userId,
+      },
     });
-
-    await new Promise((r) => setTimeout(r, 1500));
-
-    return true;
-  } catch (err) {
-    console.error("Upload failed:", err);
-    setErrorTitle("Upload failed");
-    setSubErrorTitle(
-      "We couldn't upload your photos. Please try again."
-    );
-    setIsErrorOpen(true);
-    return false;
-  } finally {
-    setIsUploading(false);
+    return { success: true, ...response.data.data.data as successResponseType};
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+	return {success : false , ...err.response?.data.data.err as successResponseType}
+    }
   }
-}
+};
+
+export {getAccessToken}
+
