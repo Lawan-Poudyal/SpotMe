@@ -1,7 +1,8 @@
 import express from 'express';
-import { signedUploadRequest } from '../controllers/signUploadRequest';
+import { saveUploadRequest, signedUploadRequest } from '../controllers/uploadController';
 const signUploadrouter = express.Router();
 
-signUploadrouter.route('/').post(signedUploadRequest);
+signUploadrouter.route('/sign').post(signedUploadRequest);
+signUploadrouter.route('/save').post(saveUploadRequest);
 
 export { signUploadrouter };
