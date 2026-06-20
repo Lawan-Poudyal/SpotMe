@@ -1,27 +1,21 @@
-import Button from "@mui/material/Button";
-import AddIcon from "@mui/icons-material/Add";
-import type { Dispatch , SetStateAction } from "react";
+import { Plus } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
 
-type addButtonPropType ={
-    setOpen : Dispatch<SetStateAction<boolean>>
-}
+type addButtonPropType = {
+  setOpen: Dispatch<SetStateAction<boolean>>;
+};
 
-const AddButton = ({setOpen} : addButtonPropType) => {
+const AddButton = ({ setOpen }: addButtonPropType) => {
   return (
-    <Button
-      variant="contained"
-      startIcon={<AddIcon />}
-      onClick={()=>{setOpen(true)}}
-      sx={{
-	width:"200px",
-	backgroundColor : "#585289",
-        borderRadius: "999px",
-        textTransform: "none",
-	fontSize : "20px",
-      }}
+    <button
+      onClick={() => setOpen(true)}
+      className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20
+        text-sm font-semibold text-white bg-transparent
+        hover:bg-white/[0.06] active:scale-95 transition-all duration-150"
     >
-      Add
-    </Button>
+      <Plus size={15} />
+      New event
+    </button>
   );
 };
 

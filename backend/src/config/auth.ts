@@ -75,6 +75,7 @@ export const auth = betterAuth({
 	    clientId : process.env.CLIENT_ID as string,
 	    clientSecret : process.env.CLIENT_SECRET as string,
 	    accessType : "offline",
+	    scope: ["https://www.googleapis.com/auth/drive.file"],
 	}
     }
 
