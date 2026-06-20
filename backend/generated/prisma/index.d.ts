@@ -5771,6 +5771,7 @@ export namespace Prisma {
     eventName: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    driveApproved: boolean | null
     userId: string | null
   }
 
@@ -5779,6 +5780,7 @@ export namespace Prisma {
     eventName: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    driveApproved: boolean | null
     userId: string | null
   }
 
@@ -5787,6 +5789,7 @@ export namespace Prisma {
     eventName: number
     createdAt: number
     updatedAt: number
+    driveApproved: number
     userId: number
     _all: number
   }
@@ -5797,6 +5800,7 @@ export namespace Prisma {
     eventName?: true
     createdAt?: true
     updatedAt?: true
+    driveApproved?: true
     userId?: true
   }
 
@@ -5805,6 +5809,7 @@ export namespace Prisma {
     eventName?: true
     createdAt?: true
     updatedAt?: true
+    driveApproved?: true
     userId?: true
   }
 
@@ -5813,6 +5818,7 @@ export namespace Prisma {
     eventName?: true
     createdAt?: true
     updatedAt?: true
+    driveApproved?: true
     userId?: true
     _all?: true
   }
@@ -5894,6 +5900,7 @@ export namespace Prisma {
     eventName: string
     createdAt: Date
     updatedAt: Date
+    driveApproved: boolean
     userId: string
     _count: EventCountAggregateOutputType | null
     _min: EventMinAggregateOutputType | null
@@ -5919,6 +5926,7 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    driveApproved?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
@@ -5928,6 +5936,7 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    driveApproved?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
@@ -5937,6 +5946,7 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    driveApproved?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
@@ -5946,10 +5956,11 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    driveApproved?: boolean
     userId?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventName" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventName" | "createdAt" | "updatedAt" | "driveApproved" | "userId", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -5970,6 +5981,7 @@ export namespace Prisma {
       eventName: string
       createdAt: Date
       updatedAt: Date
+      driveApproved: boolean
       userId: string
     }, ExtArgs["result"]["event"]>
     composites: {}
@@ -6399,6 +6411,7 @@ export namespace Prisma {
     readonly eventName: FieldRef<"Event", 'String'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
+    readonly driveApproved: FieldRef<"Event", 'Boolean'>
     readonly userId: FieldRef<"Event", 'String'>
   }
     
@@ -6899,6 +6912,7 @@ export namespace Prisma {
     eventName: 'eventName',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
+    driveApproved: 'driveApproved',
     userId: 'userId'
   };
 
@@ -7302,6 +7316,7 @@ export namespace Prisma {
     eventName?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
+    driveApproved?: BoolFilter<"Event"> | boolean
     userId?: StringFilter<"Event"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -7311,6 +7326,7 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    driveApproved?: SortOrder
     userId?: SortOrder
     user?: UserOrderByWithRelationInput
   }
@@ -7324,6 +7340,7 @@ export namespace Prisma {
     eventName?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
+    driveApproved?: BoolFilter<"Event"> | boolean
     userId?: StringFilter<"Event"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "eventName_userId">
@@ -7333,6 +7350,7 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    driveApproved?: SortOrder
     userId?: SortOrder
     _count?: EventCountOrderByAggregateInput
     _max?: EventMaxOrderByAggregateInput
@@ -7347,6 +7365,7 @@ export namespace Prisma {
     eventName?: StringWithAggregatesFilter<"Event"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
+    driveApproved?: BoolWithAggregatesFilter<"Event"> | boolean
     userId?: StringWithAggregatesFilter<"Event"> | string
   }
 
@@ -7708,6 +7727,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    driveApproved?: boolean
     user: UserCreateNestedOneWithoutEventsInput
   }
 
@@ -7716,6 +7736,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    driveApproved?: boolean
     userId: string
   }
 
@@ -7724,6 +7745,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     user?: UserUpdateOneRequiredWithoutEventsNestedInput
   }
 
@@ -7732,6 +7754,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -7740,6 +7763,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    driveApproved?: boolean
     userId: string
   }
 
@@ -7748,6 +7772,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type EventUncheckedUpdateManyInput = {
@@ -7755,6 +7780,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
   }
 
@@ -8084,6 +8110,7 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    driveApproved?: SortOrder
     userId?: SortOrder
   }
 
@@ -8092,6 +8119,7 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    driveApproved?: SortOrder
     userId?: SortOrder
   }
 
@@ -8100,6 +8128,7 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    driveApproved?: SortOrder
     userId?: SortOrder
   }
 
@@ -8515,6 +8544,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    driveApproved?: boolean
   }
 
   export type EventUncheckedCreateWithoutUserInput = {
@@ -8522,6 +8552,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    driveApproved?: boolean
   }
 
   export type EventCreateOrConnectWithoutUserInput = {
@@ -8624,6 +8655,7 @@ export namespace Prisma {
     eventName?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
+    driveApproved?: BoolFilter<"Event"> | boolean
     userId?: StringFilter<"Event"> | string
   }
 
@@ -8874,6 +8906,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    driveApproved?: boolean
   }
 
   export type SessionUpdateWithoutUserInput = {
@@ -8959,6 +8992,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type EventUncheckedUpdateWithoutUserInput = {
@@ -8966,6 +9000,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type EventUncheckedUpdateManyWithoutUserInput = {
@@ -8973,6 +9008,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
   }
 
 
