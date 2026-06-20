@@ -20,6 +20,7 @@ model User {
   sessions         Session[]
   accounts         Account[]
   events           Event[]
+  photos           Photo[]
 
   @@map("user")
 }
@@ -49,6 +50,7 @@ model Account {
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
+  driveApproved         Boolean   @default(true)
   idToken               String?
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
@@ -74,15 +76,28 @@ model Verification {
 }
 
 model Event {
-  id            String   @id @default(uuid())
-  eventName     String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  driveApproved Boolean  @default(true)
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  eventName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos    Photo[]
 
   @@unique([eventName, userId])
   @@index([userId])
   @@map("event")
+}
+
+model Photo {
+  id          String   @id @default(uuid())
+  photo_url   String
+  event_id    String
+  uploaded_at DateTime @default(now())
+  uploaded_by String
+  event       Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [uploaded_by], references: [id])
+
+  @@index([event_id])
+  @@map("photo")
 }

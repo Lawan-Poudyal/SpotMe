@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { auth } from './config/auth';
 import { toNodeHandler } from 'better-auth/node';
 import { router as uniqueEmailController } from './routers/uniqueEmailRoute';
+import {router as googleAPIController} from "./routers/googleAPIRoute"
 import { router as eventController } from './routers/eventRoute';
 import { corsOptions } from './config/corsOptions';
 import { signUploadrouter } from './routers/signUploadRoute';
@@ -25,7 +26,7 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_ORIGIN as string);
 });
-
+app.use('/api/driveAPI' , googleAPIController)
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);
 app.use('/api/upload/sign', signUploadrouter);

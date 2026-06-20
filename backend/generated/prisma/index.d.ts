@@ -38,6 +38,11 @@ export type Verification = $Result.DefaultSelection<Prisma.$VerificationPayload>
  * 
  */
 export type Event = $Result.DefaultSelection<Prisma.$EventPayload>
+/**
+ * Model Photo
+ * 
+ */
+export type Photo = $Result.DefaultSelection<Prisma.$PhotoPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -209,6 +214,16 @@ export class PrismaClient<
     * ```
     */
   get event(): Prisma.EventDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.photo`: Exposes CRUD operations for the **Photo** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Photos
+    * const photos = await prisma.photo.findMany()
+    * ```
+    */
+  get photo(): Prisma.PhotoDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -647,7 +662,8 @@ export namespace Prisma {
     Session: 'Session',
     Account: 'Account',
     Verification: 'Verification',
-    Event: 'Event'
+    Event: 'Event',
+    Photo: 'Photo'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -663,7 +679,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "session" | "account" | "verification" | "event"
+      modelProps: "user" | "session" | "account" | "verification" | "event" | "photo"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1037,6 +1053,80 @@ export namespace Prisma {
           }
         }
       }
+      Photo: {
+        payload: Prisma.$PhotoPayload<ExtArgs>
+        fields: Prisma.PhotoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PhotoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PhotoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>
+          }
+          findFirst: {
+            args: Prisma.PhotoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PhotoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>
+          }
+          findMany: {
+            args: Prisma.PhotoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>[]
+          }
+          create: {
+            args: Prisma.PhotoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>
+          }
+          createMany: {
+            args: Prisma.PhotoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PhotoCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>[]
+          }
+          delete: {
+            args: Prisma.PhotoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>
+          }
+          update: {
+            args: Prisma.PhotoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>
+          }
+          deleteMany: {
+            args: Prisma.PhotoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PhotoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PhotoUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>[]
+          }
+          upsert: {
+            args: Prisma.PhotoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PhotoPayload>
+          }
+          aggregate: {
+            args: Prisma.PhotoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePhoto>
+          }
+          groupBy: {
+            args: Prisma.PhotoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PhotoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PhotoCountArgs<ExtArgs>
+            result: $Utils.Optional<PhotoCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1150,6 +1240,7 @@ export namespace Prisma {
     account?: AccountOmit
     verification?: VerificationOmit
     event?: EventOmit
+    photo?: PhotoOmit
   }
 
   /* Types for Logging */
@@ -1233,12 +1324,14 @@ export namespace Prisma {
     sessions: number
     accounts: number
     events: number
+    photos: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     events?: boolean | UserCountOutputTypeCountEventsArgs
+    photos?: boolean | UserCountOutputTypeCountPhotosArgs
   }
 
   // Custom InputTypes
@@ -1271,6 +1364,44 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PhotoWhereInput
+  }
+
+
+  /**
+   * Count Type EventCountOutputType
+   */
+
+  export type EventCountOutputType = {
+    photos: number
+  }
+
+  export type EventCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    photos?: boolean | EventCountOutputTypeCountPhotosArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * EventCountOutputType without action
+   */
+  export type EventCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventCountOutputType
+     */
+    select?: EventCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * EventCountOutputType without action
+   */
+  export type EventCountOutputTypeCountPhotosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PhotoWhereInput
   }
 
 
@@ -1477,6 +1608,7 @@ export namespace Prisma {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
     events?: boolean | User$eventsArgs<ExtArgs>
+    photos?: boolean | User$photosArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1521,6 +1653,7 @@ export namespace Prisma {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
     events?: boolean | User$eventsArgs<ExtArgs>
+    photos?: boolean | User$photosArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1532,6 +1665,7 @@ export namespace Prisma {
       sessions: Prisma.$SessionPayload<ExtArgs>[]
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       events: Prisma.$EventPayload<ExtArgs>[]
+      photos: Prisma.$PhotoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1940,6 +2074,7 @@ export namespace Prisma {
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     events<T extends User$eventsArgs<ExtArgs> = {}>(args?: Subset<T, User$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    photos<T extends User$photosArgs<ExtArgs> = {}>(args?: Subset<T, User$photosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2440,6 +2575,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventScalarFieldEnum | EventScalarFieldEnum[]
+  }
+
+  /**
+   * User.photos
+   */
+  export type User$photosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    where?: PhotoWhereInput
+    orderBy?: PhotoOrderByWithRelationInput | PhotoOrderByWithRelationInput[]
+    cursor?: PhotoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PhotoScalarFieldEnum | PhotoScalarFieldEnum[]
   }
 
   /**
@@ -3593,6 +3752,7 @@ export namespace Prisma {
     userId: string | null
     accessToken: string | null
     refreshToken: string | null
+    driveApproved: boolean | null
     idToken: string | null
     accessTokenExpiresAt: Date | null
     refreshTokenExpiresAt: Date | null
@@ -3609,6 +3769,7 @@ export namespace Prisma {
     userId: string | null
     accessToken: string | null
     refreshToken: string | null
+    driveApproved: boolean | null
     idToken: string | null
     accessTokenExpiresAt: Date | null
     refreshTokenExpiresAt: Date | null
@@ -3625,6 +3786,7 @@ export namespace Prisma {
     userId: number
     accessToken: number
     refreshToken: number
+    driveApproved: number
     idToken: number
     accessTokenExpiresAt: number
     refreshTokenExpiresAt: number
@@ -3643,6 +3805,7 @@ export namespace Prisma {
     userId?: true
     accessToken?: true
     refreshToken?: true
+    driveApproved?: true
     idToken?: true
     accessTokenExpiresAt?: true
     refreshTokenExpiresAt?: true
@@ -3659,6 +3822,7 @@ export namespace Prisma {
     userId?: true
     accessToken?: true
     refreshToken?: true
+    driveApproved?: true
     idToken?: true
     accessTokenExpiresAt?: true
     refreshTokenExpiresAt?: true
@@ -3675,6 +3839,7 @@ export namespace Prisma {
     userId?: true
     accessToken?: true
     refreshToken?: true
+    driveApproved?: true
     idToken?: true
     accessTokenExpiresAt?: true
     refreshTokenExpiresAt?: true
@@ -3764,6 +3929,7 @@ export namespace Prisma {
     userId: string
     accessToken: string | null
     refreshToken: string | null
+    driveApproved: boolean
     idToken: string | null
     accessTokenExpiresAt: Date | null
     refreshTokenExpiresAt: Date | null
@@ -3797,6 +3963,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -3814,6 +3981,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -3831,6 +3999,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -3848,6 +4017,7 @@ export namespace Prisma {
     userId?: boolean
     accessToken?: boolean
     refreshToken?: boolean
+    driveApproved?: boolean
     idToken?: boolean
     accessTokenExpiresAt?: boolean
     refreshTokenExpiresAt?: boolean
@@ -3857,7 +4027,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "accountId" | "providerId" | "userId" | "accessToken" | "refreshToken" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "scope" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "accountId" | "providerId" | "userId" | "accessToken" | "refreshToken" | "driveApproved" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "scope" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -3880,6 +4050,7 @@ export namespace Prisma {
       userId: string
       accessToken: string | null
       refreshToken: string | null
+      driveApproved: boolean
       idToken: string | null
       accessTokenExpiresAt: Date | null
       refreshTokenExpiresAt: Date | null
@@ -4317,6 +4488,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"Account", 'String'>
     readonly accessToken: FieldRef<"Account", 'String'>
     readonly refreshToken: FieldRef<"Account", 'String'>
+    readonly driveApproved: FieldRef<"Account", 'Boolean'>
     readonly idToken: FieldRef<"Account", 'String'>
     readonly accessTokenExpiresAt: FieldRef<"Account", 'DateTime'>
     readonly refreshTokenExpiresAt: FieldRef<"Account", 'DateTime'>
@@ -5771,7 +5943,6 @@ export namespace Prisma {
     eventName: string | null
     createdAt: Date | null
     updatedAt: Date | null
-    driveApproved: boolean | null
     userId: string | null
   }
 
@@ -5780,7 +5951,6 @@ export namespace Prisma {
     eventName: string | null
     createdAt: Date | null
     updatedAt: Date | null
-    driveApproved: boolean | null
     userId: string | null
   }
 
@@ -5789,7 +5959,6 @@ export namespace Prisma {
     eventName: number
     createdAt: number
     updatedAt: number
-    driveApproved: number
     userId: number
     _all: number
   }
@@ -5800,7 +5969,6 @@ export namespace Prisma {
     eventName?: true
     createdAt?: true
     updatedAt?: true
-    driveApproved?: true
     userId?: true
   }
 
@@ -5809,7 +5977,6 @@ export namespace Prisma {
     eventName?: true
     createdAt?: true
     updatedAt?: true
-    driveApproved?: true
     userId?: true
   }
 
@@ -5818,7 +5985,6 @@ export namespace Prisma {
     eventName?: true
     createdAt?: true
     updatedAt?: true
-    driveApproved?: true
     userId?: true
     _all?: true
   }
@@ -5900,7 +6066,6 @@ export namespace Prisma {
     eventName: string
     createdAt: Date
     updatedAt: Date
-    driveApproved: boolean
     userId: string
     _count: EventCountAggregateOutputType | null
     _min: EventMinAggregateOutputType | null
@@ -5926,9 +6091,10 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    driveApproved?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    photos?: boolean | Event$photosArgs<ExtArgs>
+    _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
 
   export type EventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -5936,7 +6102,6 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    driveApproved?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
@@ -5946,7 +6111,6 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    driveApproved?: boolean
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
@@ -5956,13 +6120,14 @@ export namespace Prisma {
     eventName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    driveApproved?: boolean
     userId?: boolean
   }
 
-  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventName" | "createdAt" | "updatedAt" | "driveApproved" | "userId", ExtArgs["result"]["event"]>
+  export type EventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventName" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["event"]>
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    photos?: boolean | Event$photosArgs<ExtArgs>
+    _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5975,13 +6140,13 @@ export namespace Prisma {
     name: "Event"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      photos: Prisma.$PhotoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       eventName: string
       createdAt: Date
       updatedAt: Date
-      driveApproved: boolean
       userId: string
     }, ExtArgs["result"]["event"]>
     composites: {}
@@ -6378,6 +6543,7 @@ export namespace Prisma {
   export interface Prisma__EventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    photos<T extends Event$photosArgs<ExtArgs> = {}>(args?: Subset<T, Event$photosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6411,7 +6577,6 @@ export namespace Prisma {
     readonly eventName: FieldRef<"Event", 'String'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
-    readonly driveApproved: FieldRef<"Event", 'Boolean'>
     readonly userId: FieldRef<"Event", 'String'>
   }
     
@@ -6814,6 +6979,30 @@ export namespace Prisma {
   }
 
   /**
+   * Event.photos
+   */
+  export type Event$photosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    where?: PhotoWhereInput
+    orderBy?: PhotoOrderByWithRelationInput | PhotoOrderByWithRelationInput[]
+    cursor?: PhotoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PhotoScalarFieldEnum | PhotoScalarFieldEnum[]
+  }
+
+  /**
    * Event without action
    */
   export type EventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6829,6 +7018,1077 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: EventInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Photo
+   */
+
+  export type AggregatePhoto = {
+    _count: PhotoCountAggregateOutputType | null
+    _min: PhotoMinAggregateOutputType | null
+    _max: PhotoMaxAggregateOutputType | null
+  }
+
+  export type PhotoMinAggregateOutputType = {
+    id: string | null
+    photo_url: string | null
+    event_id: string | null
+    uploaded_at: Date | null
+    uploaded_by: string | null
+  }
+
+  export type PhotoMaxAggregateOutputType = {
+    id: string | null
+    photo_url: string | null
+    event_id: string | null
+    uploaded_at: Date | null
+    uploaded_by: string | null
+  }
+
+  export type PhotoCountAggregateOutputType = {
+    id: number
+    photo_url: number
+    event_id: number
+    uploaded_at: number
+    uploaded_by: number
+    _all: number
+  }
+
+
+  export type PhotoMinAggregateInputType = {
+    id?: true
+    photo_url?: true
+    event_id?: true
+    uploaded_at?: true
+    uploaded_by?: true
+  }
+
+  export type PhotoMaxAggregateInputType = {
+    id?: true
+    photo_url?: true
+    event_id?: true
+    uploaded_at?: true
+    uploaded_by?: true
+  }
+
+  export type PhotoCountAggregateInputType = {
+    id?: true
+    photo_url?: true
+    event_id?: true
+    uploaded_at?: true
+    uploaded_by?: true
+    _all?: true
+  }
+
+  export type PhotoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Photo to aggregate.
+     */
+    where?: PhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Photos to fetch.
+     */
+    orderBy?: PhotoOrderByWithRelationInput | PhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Photos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Photos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Photos
+    **/
+    _count?: true | PhotoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PhotoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PhotoMaxAggregateInputType
+  }
+
+  export type GetPhotoAggregateType<T extends PhotoAggregateArgs> = {
+        [P in keyof T & keyof AggregatePhoto]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePhoto[P]>
+      : GetScalarType<T[P], AggregatePhoto[P]>
+  }
+
+
+
+
+  export type PhotoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PhotoWhereInput
+    orderBy?: PhotoOrderByWithAggregationInput | PhotoOrderByWithAggregationInput[]
+    by: PhotoScalarFieldEnum[] | PhotoScalarFieldEnum
+    having?: PhotoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PhotoCountAggregateInputType | true
+    _min?: PhotoMinAggregateInputType
+    _max?: PhotoMaxAggregateInputType
+  }
+
+  export type PhotoGroupByOutputType = {
+    id: string
+    photo_url: string
+    event_id: string
+    uploaded_at: Date
+    uploaded_by: string
+    _count: PhotoCountAggregateOutputType | null
+    _min: PhotoMinAggregateOutputType | null
+    _max: PhotoMaxAggregateOutputType | null
+  }
+
+  type GetPhotoGroupByPayload<T extends PhotoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PhotoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PhotoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PhotoGroupByOutputType[P]>
+            : GetScalarType<T[P], PhotoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PhotoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    photo_url?: boolean
+    event_id?: boolean
+    uploaded_at?: boolean
+    uploaded_by?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["photo"]>
+
+  export type PhotoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    photo_url?: boolean
+    event_id?: boolean
+    uploaded_at?: boolean
+    uploaded_by?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["photo"]>
+
+  export type PhotoSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    photo_url?: boolean
+    event_id?: boolean
+    uploaded_at?: boolean
+    uploaded_by?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["photo"]>
+
+  export type PhotoSelectScalar = {
+    id?: boolean
+    photo_url?: boolean
+    event_id?: boolean
+    uploaded_at?: boolean
+    uploaded_by?: boolean
+  }
+
+  export type PhotoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "photo_url" | "event_id" | "uploaded_at" | "uploaded_by", ExtArgs["result"]["photo"]>
+  export type PhotoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PhotoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type PhotoIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PhotoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Photo"
+    objects: {
+      event: Prisma.$EventPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      photo_url: string
+      event_id: string
+      uploaded_at: Date
+      uploaded_by: string
+    }, ExtArgs["result"]["photo"]>
+    composites: {}
+  }
+
+  type PhotoGetPayload<S extends boolean | null | undefined | PhotoDefaultArgs> = $Result.GetResult<Prisma.$PhotoPayload, S>
+
+  type PhotoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PhotoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PhotoCountAggregateInputType | true
+    }
+
+  export interface PhotoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Photo'], meta: { name: 'Photo' } }
+    /**
+     * Find zero or one Photo that matches the filter.
+     * @param {PhotoFindUniqueArgs} args - Arguments to find a Photo
+     * @example
+     * // Get one Photo
+     * const photo = await prisma.photo.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PhotoFindUniqueArgs>(args: SelectSubset<T, PhotoFindUniqueArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Photo that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PhotoFindUniqueOrThrowArgs} args - Arguments to find a Photo
+     * @example
+     * // Get one Photo
+     * const photo = await prisma.photo.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PhotoFindUniqueOrThrowArgs>(args: SelectSubset<T, PhotoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Photo that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoFindFirstArgs} args - Arguments to find a Photo
+     * @example
+     * // Get one Photo
+     * const photo = await prisma.photo.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PhotoFindFirstArgs>(args?: SelectSubset<T, PhotoFindFirstArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Photo that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoFindFirstOrThrowArgs} args - Arguments to find a Photo
+     * @example
+     * // Get one Photo
+     * const photo = await prisma.photo.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PhotoFindFirstOrThrowArgs>(args?: SelectSubset<T, PhotoFindFirstOrThrowArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Photos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Photos
+     * const photos = await prisma.photo.findMany()
+     * 
+     * // Get first 10 Photos
+     * const photos = await prisma.photo.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const photoWithIdOnly = await prisma.photo.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PhotoFindManyArgs>(args?: SelectSubset<T, PhotoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Photo.
+     * @param {PhotoCreateArgs} args - Arguments to create a Photo.
+     * @example
+     * // Create one Photo
+     * const Photo = await prisma.photo.create({
+     *   data: {
+     *     // ... data to create a Photo
+     *   }
+     * })
+     * 
+     */
+    create<T extends PhotoCreateArgs>(args: SelectSubset<T, PhotoCreateArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Photos.
+     * @param {PhotoCreateManyArgs} args - Arguments to create many Photos.
+     * @example
+     * // Create many Photos
+     * const photo = await prisma.photo.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PhotoCreateManyArgs>(args?: SelectSubset<T, PhotoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Photos and returns the data saved in the database.
+     * @param {PhotoCreateManyAndReturnArgs} args - Arguments to create many Photos.
+     * @example
+     * // Create many Photos
+     * const photo = await prisma.photo.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Photos and only return the `id`
+     * const photoWithIdOnly = await prisma.photo.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PhotoCreateManyAndReturnArgs>(args?: SelectSubset<T, PhotoCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Photo.
+     * @param {PhotoDeleteArgs} args - Arguments to delete one Photo.
+     * @example
+     * // Delete one Photo
+     * const Photo = await prisma.photo.delete({
+     *   where: {
+     *     // ... filter to delete one Photo
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PhotoDeleteArgs>(args: SelectSubset<T, PhotoDeleteArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Photo.
+     * @param {PhotoUpdateArgs} args - Arguments to update one Photo.
+     * @example
+     * // Update one Photo
+     * const photo = await prisma.photo.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PhotoUpdateArgs>(args: SelectSubset<T, PhotoUpdateArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Photos.
+     * @param {PhotoDeleteManyArgs} args - Arguments to filter Photos to delete.
+     * @example
+     * // Delete a few Photos
+     * const { count } = await prisma.photo.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PhotoDeleteManyArgs>(args?: SelectSubset<T, PhotoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Photos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Photos
+     * const photo = await prisma.photo.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PhotoUpdateManyArgs>(args: SelectSubset<T, PhotoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Photos and returns the data updated in the database.
+     * @param {PhotoUpdateManyAndReturnArgs} args - Arguments to update many Photos.
+     * @example
+     * // Update many Photos
+     * const photo = await prisma.photo.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Photos and only return the `id`
+     * const photoWithIdOnly = await prisma.photo.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PhotoUpdateManyAndReturnArgs>(args: SelectSubset<T, PhotoUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Photo.
+     * @param {PhotoUpsertArgs} args - Arguments to update or create a Photo.
+     * @example
+     * // Update or create a Photo
+     * const photo = await prisma.photo.upsert({
+     *   create: {
+     *     // ... data to create a Photo
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Photo we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PhotoUpsertArgs>(args: SelectSubset<T, PhotoUpsertArgs<ExtArgs>>): Prisma__PhotoClient<$Result.GetResult<Prisma.$PhotoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Photos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoCountArgs} args - Arguments to filter Photos to count.
+     * @example
+     * // Count the number of Photos
+     * const count = await prisma.photo.count({
+     *   where: {
+     *     // ... the filter for the Photos we want to count
+     *   }
+     * })
+    **/
+    count<T extends PhotoCountArgs>(
+      args?: Subset<T, PhotoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PhotoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Photo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PhotoAggregateArgs>(args: Subset<T, PhotoAggregateArgs>): Prisma.PrismaPromise<GetPhotoAggregateType<T>>
+
+    /**
+     * Group by Photo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PhotoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PhotoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PhotoGroupByArgs['orderBy'] }
+        : { orderBy?: PhotoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PhotoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPhotoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Photo model
+   */
+  readonly fields: PhotoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Photo.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PhotoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Photo model
+   */
+  interface PhotoFieldRefs {
+    readonly id: FieldRef<"Photo", 'String'>
+    readonly photo_url: FieldRef<"Photo", 'String'>
+    readonly event_id: FieldRef<"Photo", 'String'>
+    readonly uploaded_at: FieldRef<"Photo", 'DateTime'>
+    readonly uploaded_by: FieldRef<"Photo", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Photo findUnique
+   */
+  export type PhotoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which Photo to fetch.
+     */
+    where: PhotoWhereUniqueInput
+  }
+
+  /**
+   * Photo findUniqueOrThrow
+   */
+  export type PhotoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which Photo to fetch.
+     */
+    where: PhotoWhereUniqueInput
+  }
+
+  /**
+   * Photo findFirst
+   */
+  export type PhotoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which Photo to fetch.
+     */
+    where?: PhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Photos to fetch.
+     */
+    orderBy?: PhotoOrderByWithRelationInput | PhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Photos.
+     */
+    cursor?: PhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Photos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Photos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Photos.
+     */
+    distinct?: PhotoScalarFieldEnum | PhotoScalarFieldEnum[]
+  }
+
+  /**
+   * Photo findFirstOrThrow
+   */
+  export type PhotoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which Photo to fetch.
+     */
+    where?: PhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Photos to fetch.
+     */
+    orderBy?: PhotoOrderByWithRelationInput | PhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Photos.
+     */
+    cursor?: PhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Photos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Photos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Photos.
+     */
+    distinct?: PhotoScalarFieldEnum | PhotoScalarFieldEnum[]
+  }
+
+  /**
+   * Photo findMany
+   */
+  export type PhotoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * Filter, which Photos to fetch.
+     */
+    where?: PhotoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Photos to fetch.
+     */
+    orderBy?: PhotoOrderByWithRelationInput | PhotoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Photos.
+     */
+    cursor?: PhotoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Photos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Photos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Photos.
+     */
+    distinct?: PhotoScalarFieldEnum | PhotoScalarFieldEnum[]
+  }
+
+  /**
+   * Photo create
+   */
+  export type PhotoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Photo.
+     */
+    data: XOR<PhotoCreateInput, PhotoUncheckedCreateInput>
+  }
+
+  /**
+   * Photo createMany
+   */
+  export type PhotoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Photos.
+     */
+    data: PhotoCreateManyInput | PhotoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Photo createManyAndReturn
+   */
+  export type PhotoCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * The data used to create many Photos.
+     */
+    data: PhotoCreateManyInput | PhotoCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Photo update
+   */
+  export type PhotoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Photo.
+     */
+    data: XOR<PhotoUpdateInput, PhotoUncheckedUpdateInput>
+    /**
+     * Choose, which Photo to update.
+     */
+    where: PhotoWhereUniqueInput
+  }
+
+  /**
+   * Photo updateMany
+   */
+  export type PhotoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Photos.
+     */
+    data: XOR<PhotoUpdateManyMutationInput, PhotoUncheckedUpdateManyInput>
+    /**
+     * Filter which Photos to update
+     */
+    where?: PhotoWhereInput
+    /**
+     * Limit how many Photos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Photo updateManyAndReturn
+   */
+  export type PhotoUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * The data used to update Photos.
+     */
+    data: XOR<PhotoUpdateManyMutationInput, PhotoUncheckedUpdateManyInput>
+    /**
+     * Filter which Photos to update
+     */
+    where?: PhotoWhereInput
+    /**
+     * Limit how many Photos to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Photo upsert
+   */
+  export type PhotoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Photo to update in case it exists.
+     */
+    where: PhotoWhereUniqueInput
+    /**
+     * In case the Photo found by the `where` argument doesn't exist, create a new Photo with this data.
+     */
+    create: XOR<PhotoCreateInput, PhotoUncheckedCreateInput>
+    /**
+     * In case the Photo was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PhotoUpdateInput, PhotoUncheckedUpdateInput>
+  }
+
+  /**
+   * Photo delete
+   */
+  export type PhotoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
+    /**
+     * Filter which Photo to delete.
+     */
+    where: PhotoWhereUniqueInput
+  }
+
+  /**
+   * Photo deleteMany
+   */
+  export type PhotoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Photos to delete
+     */
+    where?: PhotoWhereInput
+    /**
+     * Limit how many Photos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Photo without action
+   */
+  export type PhotoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Photo
+     */
+    select?: PhotoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Photo
+     */
+    omit?: PhotoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PhotoInclude<ExtArgs> | null
   }
 
 
@@ -6883,6 +8143,7 @@ export namespace Prisma {
     userId: 'userId',
     accessToken: 'accessToken',
     refreshToken: 'refreshToken',
+    driveApproved: 'driveApproved',
     idToken: 'idToken',
     accessTokenExpiresAt: 'accessTokenExpiresAt',
     refreshTokenExpiresAt: 'refreshTokenExpiresAt',
@@ -6912,11 +8173,21 @@ export namespace Prisma {
     eventName: 'eventName',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    driveApproved: 'driveApproved',
     userId: 'userId'
   };
 
   export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+  export const PhotoScalarFieldEnum: {
+    id: 'id',
+    photo_url: 'photo_url',
+    event_id: 'event_id',
+    uploaded_at: 'uploaded_at',
+    uploaded_by: 'uploaded_by'
+  };
+
+  export type PhotoScalarFieldEnum = (typeof PhotoScalarFieldEnum)[keyof typeof PhotoScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7016,6 +8287,7 @@ export namespace Prisma {
     sessions?: SessionListRelationFilter
     accounts?: AccountListRelationFilter
     events?: EventListRelationFilter
+    photos?: PhotoListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -7031,6 +8303,7 @@ export namespace Prisma {
     sessions?: SessionOrderByRelationAggregateInput
     accounts?: AccountOrderByRelationAggregateInput
     events?: EventOrderByRelationAggregateInput
+    photos?: PhotoOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -7049,6 +8322,7 @@ export namespace Prisma {
     sessions?: SessionListRelationFilter
     accounts?: AccountListRelationFilter
     events?: EventListRelationFilter
+    photos?: PhotoListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -7166,6 +8440,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
+    driveApproved?: BoolFilter<"Account"> | boolean
     idToken?: StringNullableFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -7183,6 +8458,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrderInput | SortOrder
     refreshToken?: SortOrderInput | SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrderInput | SortOrder
     accessTokenExpiresAt?: SortOrderInput | SortOrder
     refreshTokenExpiresAt?: SortOrderInput | SortOrder
@@ -7203,6 +8479,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
+    driveApproved?: BoolFilter<"Account"> | boolean
     idToken?: StringNullableFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -7220,6 +8497,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrderInput | SortOrder
     refreshToken?: SortOrderInput | SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrderInput | SortOrder
     accessTokenExpiresAt?: SortOrderInput | SortOrder
     refreshTokenExpiresAt?: SortOrderInput | SortOrder
@@ -7242,6 +8520,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Account"> | string
     accessToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
     refreshToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
+    driveApproved?: BoolWithAggregatesFilter<"Account"> | boolean
     idToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
@@ -7316,9 +8595,9 @@ export namespace Prisma {
     eventName?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
-    driveApproved?: BoolFilter<"Event"> | boolean
     userId?: StringFilter<"Event"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    photos?: PhotoListRelationFilter
   }
 
   export type EventOrderByWithRelationInput = {
@@ -7326,9 +8605,9 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    driveApproved?: SortOrder
     userId?: SortOrder
     user?: UserOrderByWithRelationInput
+    photos?: PhotoOrderByRelationAggregateInput
   }
 
   export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -7340,9 +8619,9 @@ export namespace Prisma {
     eventName?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
-    driveApproved?: BoolFilter<"Event"> | boolean
     userId?: StringFilter<"Event"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    photos?: PhotoListRelationFilter
   }, "id" | "eventName_userId">
 
   export type EventOrderByWithAggregationInput = {
@@ -7350,7 +8629,6 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    driveApproved?: SortOrder
     userId?: SortOrder
     _count?: EventCountOrderByAggregateInput
     _max?: EventMaxOrderByAggregateInput
@@ -7365,8 +8643,65 @@ export namespace Prisma {
     eventName?: StringWithAggregatesFilter<"Event"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
-    driveApproved?: BoolWithAggregatesFilter<"Event"> | boolean
     userId?: StringWithAggregatesFilter<"Event"> | string
+  }
+
+  export type PhotoWhereInput = {
+    AND?: PhotoWhereInput | PhotoWhereInput[]
+    OR?: PhotoWhereInput[]
+    NOT?: PhotoWhereInput | PhotoWhereInput[]
+    id?: StringFilter<"Photo"> | string
+    photo_url?: StringFilter<"Photo"> | string
+    event_id?: StringFilter<"Photo"> | string
+    uploaded_at?: DateTimeFilter<"Photo"> | Date | string
+    uploaded_by?: StringFilter<"Photo"> | string
+    event?: XOR<EventScalarRelationFilter, EventWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PhotoOrderByWithRelationInput = {
+    id?: SortOrder
+    photo_url?: SortOrder
+    event_id?: SortOrder
+    uploaded_at?: SortOrder
+    uploaded_by?: SortOrder
+    event?: EventOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type PhotoWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PhotoWhereInput | PhotoWhereInput[]
+    OR?: PhotoWhereInput[]
+    NOT?: PhotoWhereInput | PhotoWhereInput[]
+    photo_url?: StringFilter<"Photo"> | string
+    event_id?: StringFilter<"Photo"> | string
+    uploaded_at?: DateTimeFilter<"Photo"> | Date | string
+    uploaded_by?: StringFilter<"Photo"> | string
+    event?: XOR<EventScalarRelationFilter, EventWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type PhotoOrderByWithAggregationInput = {
+    id?: SortOrder
+    photo_url?: SortOrder
+    event_id?: SortOrder
+    uploaded_at?: SortOrder
+    uploaded_by?: SortOrder
+    _count?: PhotoCountOrderByAggregateInput
+    _max?: PhotoMaxOrderByAggregateInput
+    _min?: PhotoMinOrderByAggregateInput
+  }
+
+  export type PhotoScalarWhereWithAggregatesInput = {
+    AND?: PhotoScalarWhereWithAggregatesInput | PhotoScalarWhereWithAggregatesInput[]
+    OR?: PhotoScalarWhereWithAggregatesInput[]
+    NOT?: PhotoScalarWhereWithAggregatesInput | PhotoScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Photo"> | string
+    photo_url?: StringWithAggregatesFilter<"Photo"> | string
+    event_id?: StringWithAggregatesFilter<"Photo"> | string
+    uploaded_at?: DateTimeWithAggregatesFilter<"Photo"> | Date | string
+    uploaded_by?: StringWithAggregatesFilter<"Photo"> | string
   }
 
   export type UserCreateInput = {
@@ -7382,6 +8717,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     events?: EventCreateNestedManyWithoutUserInput
+    photos?: PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -7397,6 +8733,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     events?: EventUncheckedCreateNestedManyWithoutUserInput
+    photos?: PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -7412,6 +8749,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     events?: EventUpdateManyWithoutUserNestedInput
+    photos?: PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -7427,6 +8765,7 @@ export namespace Prisma {
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     events?: EventUncheckedUpdateManyWithoutUserNestedInput
+    photos?: PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -7554,6 +8893,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -7571,6 +8911,7 @@ export namespace Prisma {
     userId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -7586,6 +8927,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7603,6 +8945,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7619,6 +8962,7 @@ export namespace Prisma {
     userId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -7634,6 +8978,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7650,6 +8995,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -7727,8 +9073,8 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    driveApproved?: boolean
     user: UserCreateNestedOneWithoutEventsInput
+    photos?: PhotoCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateInput = {
@@ -7736,8 +9082,8 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    driveApproved?: boolean
     userId: string
+    photos?: PhotoUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventUpdateInput = {
@@ -7745,8 +9091,8 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     user?: UserUpdateOneRequiredWithoutEventsNestedInput
+    photos?: PhotoUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateInput = {
@@ -7754,8 +9100,8 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
+    photos?: PhotoUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateManyInput = {
@@ -7763,7 +9109,6 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    driveApproved?: boolean
     userId: string
   }
 
@@ -7772,7 +9117,6 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type EventUncheckedUpdateManyInput = {
@@ -7780,8 +9124,61 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PhotoCreateInput = {
+    id?: string
+    photo_url: string
+    uploaded_at?: Date | string
+    event: EventCreateNestedOneWithoutPhotosInput
+    user: UserCreateNestedOneWithoutPhotosInput
+  }
+
+  export type PhotoUncheckedCreateInput = {
+    id?: string
+    photo_url: string
+    event_id: string
+    uploaded_at?: Date | string
+    uploaded_by: string
+  }
+
+  export type PhotoUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutPhotosNestedInput
+    user?: UserUpdateOneRequiredWithoutPhotosNestedInput
+  }
+
+  export type PhotoUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    event_id?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    uploaded_by?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PhotoCreateManyInput = {
+    id?: string
+    photo_url: string
+    event_id: string
+    uploaded_at?: Date | string
+    uploaded_by: string
+  }
+
+  export type PhotoUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhotoUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    event_id?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    uploaded_by?: StringFieldUpdateOperationsInput | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -7848,6 +9245,12 @@ export namespace Prisma {
     none?: EventWhereInput
   }
 
+  export type PhotoListRelationFilter = {
+    every?: PhotoWhereInput
+    some?: PhotoWhereInput
+    none?: PhotoWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -7862,6 +9265,10 @@ export namespace Prisma {
   }
 
   export type EventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PhotoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -8018,6 +9425,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrder
     accessTokenExpiresAt?: SortOrder
     refreshTokenExpiresAt?: SortOrder
@@ -8034,6 +9442,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrder
     accessTokenExpiresAt?: SortOrder
     refreshTokenExpiresAt?: SortOrder
@@ -8050,6 +9459,7 @@ export namespace Prisma {
     userId?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
+    driveApproved?: SortOrder
     idToken?: SortOrder
     accessTokenExpiresAt?: SortOrder
     refreshTokenExpiresAt?: SortOrder
@@ -8110,7 +9520,6 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    driveApproved?: SortOrder
     userId?: SortOrder
   }
 
@@ -8119,7 +9528,6 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    driveApproved?: SortOrder
     userId?: SortOrder
   }
 
@@ -8128,8 +9536,36 @@ export namespace Prisma {
     eventName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    driveApproved?: SortOrder
     userId?: SortOrder
+  }
+
+  export type EventScalarRelationFilter = {
+    is?: EventWhereInput
+    isNot?: EventWhereInput
+  }
+
+  export type PhotoCountOrderByAggregateInput = {
+    id?: SortOrder
+    photo_url?: SortOrder
+    event_id?: SortOrder
+    uploaded_at?: SortOrder
+    uploaded_by?: SortOrder
+  }
+
+  export type PhotoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    photo_url?: SortOrder
+    event_id?: SortOrder
+    uploaded_at?: SortOrder
+    uploaded_by?: SortOrder
+  }
+
+  export type PhotoMinOrderByAggregateInput = {
+    id?: SortOrder
+    photo_url?: SortOrder
+    event_id?: SortOrder
+    uploaded_at?: SortOrder
+    uploaded_by?: SortOrder
   }
 
   export type SessionCreateNestedManyWithoutUserInput = {
@@ -8153,6 +9589,13 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
   }
 
+  export type PhotoCreateNestedManyWithoutUserInput = {
+    create?: XOR<PhotoCreateWithoutUserInput, PhotoUncheckedCreateWithoutUserInput> | PhotoCreateWithoutUserInput[] | PhotoUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutUserInput | PhotoCreateOrConnectWithoutUserInput[]
+    createMany?: PhotoCreateManyUserInputEnvelope
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+  }
+
   export type SessionUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
@@ -8172,6 +9615,13 @@ export namespace Prisma {
     connectOrCreate?: EventCreateOrConnectWithoutUserInput | EventCreateOrConnectWithoutUserInput[]
     createMany?: EventCreateManyUserInputEnvelope
     connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+  }
+
+  export type PhotoUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PhotoCreateWithoutUserInput, PhotoUncheckedCreateWithoutUserInput> | PhotoCreateWithoutUserInput[] | PhotoUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutUserInput | PhotoCreateOrConnectWithoutUserInput[]
+    createMany?: PhotoCreateManyUserInputEnvelope
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -8232,6 +9682,20 @@ export namespace Prisma {
     deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
   }
 
+  export type PhotoUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PhotoCreateWithoutUserInput, PhotoUncheckedCreateWithoutUserInput> | PhotoCreateWithoutUserInput[] | PhotoUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutUserInput | PhotoCreateOrConnectWithoutUserInput[]
+    upsert?: PhotoUpsertWithWhereUniqueWithoutUserInput | PhotoUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PhotoCreateManyUserInputEnvelope
+    set?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    disconnect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    delete?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    update?: PhotoUpdateWithWhereUniqueWithoutUserInput | PhotoUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PhotoUpdateManyWithWhereWithoutUserInput | PhotoUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PhotoScalarWhereInput | PhotoScalarWhereInput[]
+  }
+
   export type SessionUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<SessionCreateWithoutUserInput, SessionUncheckedCreateWithoutUserInput> | SessionCreateWithoutUserInput[] | SessionUncheckedCreateWithoutUserInput[]
     connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
@@ -8274,6 +9738,20 @@ export namespace Prisma {
     deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
   }
 
+  export type PhotoUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PhotoCreateWithoutUserInput, PhotoUncheckedCreateWithoutUserInput> | PhotoCreateWithoutUserInput[] | PhotoUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutUserInput | PhotoCreateOrConnectWithoutUserInput[]
+    upsert?: PhotoUpsertWithWhereUniqueWithoutUserInput | PhotoUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PhotoCreateManyUserInputEnvelope
+    set?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    disconnect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    delete?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    update?: PhotoUpdateWithWhereUniqueWithoutUserInput | PhotoUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PhotoUpdateManyWithWhereWithoutUserInput | PhotoUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PhotoScalarWhereInput | PhotoScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutSessionsInput = {
     create?: XOR<UserCreateWithoutSessionsInput, UserUncheckedCreateWithoutSessionsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSessionsInput
@@ -8312,12 +9790,82 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type PhotoCreateNestedManyWithoutEventInput = {
+    create?: XOR<PhotoCreateWithoutEventInput, PhotoUncheckedCreateWithoutEventInput> | PhotoCreateWithoutEventInput[] | PhotoUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutEventInput | PhotoCreateOrConnectWithoutEventInput[]
+    createMany?: PhotoCreateManyEventInputEnvelope
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+  }
+
+  export type PhotoUncheckedCreateNestedManyWithoutEventInput = {
+    create?: XOR<PhotoCreateWithoutEventInput, PhotoUncheckedCreateWithoutEventInput> | PhotoCreateWithoutEventInput[] | PhotoUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutEventInput | PhotoCreateOrConnectWithoutEventInput[]
+    createMany?: PhotoCreateManyEventInputEnvelope
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+  }
+
   export type UserUpdateOneRequiredWithoutEventsNestedInput = {
     create?: XOR<UserCreateWithoutEventsInput, UserUncheckedCreateWithoutEventsInput>
     connectOrCreate?: UserCreateOrConnectWithoutEventsInput
     upsert?: UserUpsertWithoutEventsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEventsInput, UserUpdateWithoutEventsInput>, UserUncheckedUpdateWithoutEventsInput>
+  }
+
+  export type PhotoUpdateManyWithoutEventNestedInput = {
+    create?: XOR<PhotoCreateWithoutEventInput, PhotoUncheckedCreateWithoutEventInput> | PhotoCreateWithoutEventInput[] | PhotoUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutEventInput | PhotoCreateOrConnectWithoutEventInput[]
+    upsert?: PhotoUpsertWithWhereUniqueWithoutEventInput | PhotoUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: PhotoCreateManyEventInputEnvelope
+    set?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    disconnect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    delete?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    update?: PhotoUpdateWithWhereUniqueWithoutEventInput | PhotoUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: PhotoUpdateManyWithWhereWithoutEventInput | PhotoUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: PhotoScalarWhereInput | PhotoScalarWhereInput[]
+  }
+
+  export type PhotoUncheckedUpdateManyWithoutEventNestedInput = {
+    create?: XOR<PhotoCreateWithoutEventInput, PhotoUncheckedCreateWithoutEventInput> | PhotoCreateWithoutEventInput[] | PhotoUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: PhotoCreateOrConnectWithoutEventInput | PhotoCreateOrConnectWithoutEventInput[]
+    upsert?: PhotoUpsertWithWhereUniqueWithoutEventInput | PhotoUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: PhotoCreateManyEventInputEnvelope
+    set?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    disconnect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    delete?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    connect?: PhotoWhereUniqueInput | PhotoWhereUniqueInput[]
+    update?: PhotoUpdateWithWhereUniqueWithoutEventInput | PhotoUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: PhotoUpdateManyWithWhereWithoutEventInput | PhotoUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: PhotoScalarWhereInput | PhotoScalarWhereInput[]
+  }
+
+  export type EventCreateNestedOneWithoutPhotosInput = {
+    create?: XOR<EventCreateWithoutPhotosInput, EventUncheckedCreateWithoutPhotosInput>
+    connectOrCreate?: EventCreateOrConnectWithoutPhotosInput
+    connect?: EventWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutPhotosInput = {
+    create?: XOR<UserCreateWithoutPhotosInput, UserUncheckedCreateWithoutPhotosInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPhotosInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EventUpdateOneRequiredWithoutPhotosNestedInput = {
+    create?: XOR<EventCreateWithoutPhotosInput, EventUncheckedCreateWithoutPhotosInput>
+    connectOrCreate?: EventCreateOrConnectWithoutPhotosInput
+    upsert?: EventUpsertWithoutPhotosInput
+    connect?: EventWhereUniqueInput
+    update?: XOR<XOR<EventUpdateToOneWithWhereWithoutPhotosInput, EventUpdateWithoutPhotosInput>, EventUncheckedUpdateWithoutPhotosInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutPhotosNestedInput = {
+    create?: XOR<UserCreateWithoutPhotosInput, UserUncheckedCreateWithoutPhotosInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPhotosInput
+    upsert?: UserUpsertWithoutPhotosInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPhotosInput, UserUpdateWithoutPhotosInput>, UserUncheckedUpdateWithoutPhotosInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -8505,6 +10053,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -8520,6 +10069,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -8544,7 +10094,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    driveApproved?: boolean
+    photos?: PhotoCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutUserInput = {
@@ -8552,7 +10102,7 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    driveApproved?: boolean
+    photos?: PhotoUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutUserInput = {
@@ -8562,6 +10112,30 @@ export namespace Prisma {
 
   export type EventCreateManyUserInputEnvelope = {
     data: EventCreateManyUserInput | EventCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PhotoCreateWithoutUserInput = {
+    id?: string
+    photo_url: string
+    uploaded_at?: Date | string
+    event: EventCreateNestedOneWithoutPhotosInput
+  }
+
+  export type PhotoUncheckedCreateWithoutUserInput = {
+    id?: string
+    photo_url: string
+    event_id: string
+    uploaded_at?: Date | string
+  }
+
+  export type PhotoCreateOrConnectWithoutUserInput = {
+    where: PhotoWhereUniqueInput
+    create: XOR<PhotoCreateWithoutUserInput, PhotoUncheckedCreateWithoutUserInput>
+  }
+
+  export type PhotoCreateManyUserInputEnvelope = {
+    data: PhotoCreateManyUserInput | PhotoCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -8622,6 +10196,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
+    driveApproved?: BoolFilter<"Account"> | boolean
     idToken?: StringNullableFilter<"Account"> | string | null
     accessTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Account"> | Date | string | null
@@ -8655,8 +10230,34 @@ export namespace Prisma {
     eventName?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
-    driveApproved?: BoolFilter<"Event"> | boolean
     userId?: StringFilter<"Event"> | string
+  }
+
+  export type PhotoUpsertWithWhereUniqueWithoutUserInput = {
+    where: PhotoWhereUniqueInput
+    update: XOR<PhotoUpdateWithoutUserInput, PhotoUncheckedUpdateWithoutUserInput>
+    create: XOR<PhotoCreateWithoutUserInput, PhotoUncheckedCreateWithoutUserInput>
+  }
+
+  export type PhotoUpdateWithWhereUniqueWithoutUserInput = {
+    where: PhotoWhereUniqueInput
+    data: XOR<PhotoUpdateWithoutUserInput, PhotoUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PhotoUpdateManyWithWhereWithoutUserInput = {
+    where: PhotoScalarWhereInput
+    data: XOR<PhotoUpdateManyMutationInput, PhotoUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PhotoScalarWhereInput = {
+    AND?: PhotoScalarWhereInput | PhotoScalarWhereInput[]
+    OR?: PhotoScalarWhereInput[]
+    NOT?: PhotoScalarWhereInput | PhotoScalarWhereInput[]
+    id?: StringFilter<"Photo"> | string
+    photo_url?: StringFilter<"Photo"> | string
+    event_id?: StringFilter<"Photo"> | string
+    uploaded_at?: DateTimeFilter<"Photo"> | Date | string
+    uploaded_by?: StringFilter<"Photo"> | string
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -8671,6 +10272,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
     events?: EventCreateNestedManyWithoutUserInput
+    photos?: PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -8685,6 +10287,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     events?: EventUncheckedCreateNestedManyWithoutUserInput
+    photos?: PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -8715,6 +10318,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
     events?: EventUpdateManyWithoutUserNestedInput
+    photos?: PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -8729,6 +10333,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     events?: EventUncheckedUpdateManyWithoutUserNestedInput
+    photos?: PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -8743,6 +10348,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     sessions?: SessionCreateNestedManyWithoutUserInput
     events?: EventCreateNestedManyWithoutUserInput
+    photos?: PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -8757,6 +10363,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     events?: EventUncheckedCreateNestedManyWithoutUserInput
+    photos?: PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -8787,6 +10394,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUpdateManyWithoutUserNestedInput
     events?: EventUpdateManyWithoutUserNestedInput
+    photos?: PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -8801,6 +10409,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     events?: EventUncheckedUpdateManyWithoutUserNestedInput
+    photos?: PhotoUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutEventsInput = {
@@ -8815,6 +10424,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     sessions?: SessionCreateNestedManyWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
+    photos?: PhotoCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -8829,11 +10439,36 @@ export namespace Prisma {
     updatedAt?: Date | string
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    photos?: PhotoUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutEventsInput, UserUncheckedCreateWithoutEventsInput>
+  }
+
+  export type PhotoCreateWithoutEventInput = {
+    id?: string
+    photo_url: string
+    uploaded_at?: Date | string
+    user: UserCreateNestedOneWithoutPhotosInput
+  }
+
+  export type PhotoUncheckedCreateWithoutEventInput = {
+    id?: string
+    photo_url: string
+    uploaded_at?: Date | string
+    uploaded_by: string
+  }
+
+  export type PhotoCreateOrConnectWithoutEventInput = {
+    where: PhotoWhereUniqueInput
+    create: XOR<PhotoCreateWithoutEventInput, PhotoUncheckedCreateWithoutEventInput>
+  }
+
+  export type PhotoCreateManyEventInputEnvelope = {
+    data: PhotoCreateManyEventInput | PhotoCreateManyEventInput[]
+    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutEventsInput = {
@@ -8859,6 +10494,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUpdateManyWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
+    photos?: PhotoUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -8873,6 +10509,147 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    photos?: PhotoUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type PhotoUpsertWithWhereUniqueWithoutEventInput = {
+    where: PhotoWhereUniqueInput
+    update: XOR<PhotoUpdateWithoutEventInput, PhotoUncheckedUpdateWithoutEventInput>
+    create: XOR<PhotoCreateWithoutEventInput, PhotoUncheckedCreateWithoutEventInput>
+  }
+
+  export type PhotoUpdateWithWhereUniqueWithoutEventInput = {
+    where: PhotoWhereUniqueInput
+    data: XOR<PhotoUpdateWithoutEventInput, PhotoUncheckedUpdateWithoutEventInput>
+  }
+
+  export type PhotoUpdateManyWithWhereWithoutEventInput = {
+    where: PhotoScalarWhereInput
+    data: XOR<PhotoUpdateManyMutationInput, PhotoUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type EventCreateWithoutPhotosInput = {
+    id?: string
+    eventName: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutEventsInput
+  }
+
+  export type EventUncheckedCreateWithoutPhotosInput = {
+    id?: string
+    eventName: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+  }
+
+  export type EventCreateOrConnectWithoutPhotosInput = {
+    where: EventWhereUniqueInput
+    create: XOR<EventCreateWithoutPhotosInput, EventUncheckedCreateWithoutPhotosInput>
+  }
+
+  export type UserCreateWithoutPhotosInput = {
+    id?: string
+    user_name?: string | null
+    email: string
+    profile_pic_link?: string | null
+    name: string
+    emailVerified?: boolean
+    image?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    events?: EventCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPhotosInput = {
+    id?: string
+    user_name?: string | null
+    email: string
+    profile_pic_link?: string | null
+    name: string
+    emailVerified?: boolean
+    image?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    events?: EventUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPhotosInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPhotosInput, UserUncheckedCreateWithoutPhotosInput>
+  }
+
+  export type EventUpsertWithoutPhotosInput = {
+    update: XOR<EventUpdateWithoutPhotosInput, EventUncheckedUpdateWithoutPhotosInput>
+    create: XOR<EventCreateWithoutPhotosInput, EventUncheckedCreateWithoutPhotosInput>
+    where?: EventWhereInput
+  }
+
+  export type EventUpdateToOneWithWhereWithoutPhotosInput = {
+    where?: EventWhereInput
+    data: XOR<EventUpdateWithoutPhotosInput, EventUncheckedUpdateWithoutPhotosInput>
+  }
+
+  export type EventUpdateWithoutPhotosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventName?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutEventsNestedInput
+  }
+
+  export type EventUncheckedUpdateWithoutPhotosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventName?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type UserUpsertWithoutPhotosInput = {
+    update: XOR<UserUpdateWithoutPhotosInput, UserUncheckedUpdateWithoutPhotosInput>
+    create: XOR<UserCreateWithoutPhotosInput, UserUncheckedCreateWithoutPhotosInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPhotosInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPhotosInput, UserUncheckedUpdateWithoutPhotosInput>
+  }
+
+  export type UserUpdateWithoutPhotosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    profile_pic_link?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    events?: EventUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPhotosInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    user_name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    profile_pic_link?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    events?: EventUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SessionCreateManyUserInput = {
@@ -8892,6 +10669,7 @@ export namespace Prisma {
     providerId: string
     accessToken?: string | null
     refreshToken?: string | null
+    driveApproved?: boolean
     idToken?: string | null
     accessTokenExpiresAt?: Date | string | null
     refreshTokenExpiresAt?: Date | string | null
@@ -8906,7 +10684,13 @@ export namespace Prisma {
     eventName: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    driveApproved?: boolean
+  }
+
+  export type PhotoCreateManyUserInput = {
+    id?: string
+    photo_url: string
+    event_id: string
+    uploaded_at?: Date | string
   }
 
   export type SessionUpdateWithoutUserInput = {
@@ -8948,6 +10732,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8963,6 +10748,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8978,6 +10764,7 @@ export namespace Prisma {
     providerId?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
+    driveApproved?: BoolFieldUpdateOperationsInput | boolean
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
     accessTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -8992,7 +10779,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
+    photos?: PhotoUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutUserInput = {
@@ -9000,7 +10787,7 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
+    photos?: PhotoUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateManyWithoutUserInput = {
@@ -9008,7 +10795,55 @@ export namespace Prisma {
     eventName?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    driveApproved?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type PhotoUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutPhotosNestedInput
+  }
+
+  export type PhotoUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    event_id?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhotoUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    event_id?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PhotoCreateManyEventInput = {
+    id?: string
+    photo_url: string
+    uploaded_at?: Date | string
+    uploaded_by: string
+  }
+
+  export type PhotoUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPhotosNestedInput
+  }
+
+  export type PhotoUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    uploaded_by?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PhotoUncheckedUpdateManyWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    photo_url?: StringFieldUpdateOperationsInput | string
+    uploaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    uploaded_by?: StringFieldUpdateOperationsInput | string
   }
 
 
