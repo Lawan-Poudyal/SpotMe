@@ -27,7 +27,10 @@ function ResponsiveAppBar() {
 
   const fullName = userContext?.contextState?.userName as string;
   const profilePicLink = userContext?.contextState?.profilePicLink as string;
-  const twoInitials = fullName.split(' ').map(item => item[0].toUpperCase()).join("");
+  const twoInitials = fullName
+    .split(' ')
+    .map((item) => item[0].toUpperCase())
+    .join('');
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -43,20 +46,23 @@ function ResponsiveAppBar() {
       position="static"
       elevation={0}
       sx={{
-        background: "#0A0A12",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: '#0A0A12',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 60 } }}>
-
           {/* Desktop logo */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 4 }}>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 0 }}>
             <Box
               sx={{
-                width: 32, height: 32, borderRadius: '10px',
+                width: 32,
+                height: 32,
+                borderRadius: '10px',
                 background: '#F97316',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               <CalendarDays size={16} color="#fff" />
@@ -122,12 +128,18 @@ function ResponsiveAppBar() {
           </Box>
 
           {/* Mobile logo */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}>
+          <Box
+            sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}
+          >
             <Box
               sx={{
-                width: 28, height: 28, borderRadius: '8px',
+                width: 28,
+                height: 28,
+                borderRadius: '8px',
                 background: '#F97316',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               <CalendarDays size={14} color="#fff" />
@@ -159,10 +171,14 @@ function ResponsiveAppBar() {
                 {!profilePicLink ? (
                   <Box
                     sx={{
-                      width: 36, height: 36, borderRadius: '50%',
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
                       background: 'rgba(249,115,22,0.15)',
                       border: '1.5px solid rgba(249,115,22,0.35)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       color: '#F97316',
                       fontSize: '0.75rem',
                       fontWeight: 600,
@@ -176,7 +192,8 @@ function ResponsiveAppBar() {
                     alt={twoInitials}
                     src={profilePicLink}
                     sx={{
-                      width: 36, height: 36,
+                      width: 36,
+                      height: 36,
                       border: '1.5px solid rgba(249,115,22,0.35)',
                     }}
                   />
@@ -224,7 +241,7 @@ function ResponsiveAppBar() {
                 <MenuItem
                   key={setting}
                   onClick={() => {
-                    if (setting === "Logout") {
+                    if (setting === 'Logout') {
                       handleLogOut(navigation, userContext?.setContextState);
                     }
                     handleCloseUserMenu();
@@ -235,7 +252,6 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-
         </Toolbar>
       </Container>
     </AppBar>
