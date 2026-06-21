@@ -8,7 +8,13 @@ import { sendEmail } from "../utils/sendEmail.js";
 export const auth = betterAuth({
     emailVerification:{
 	sendVerificationEmail : async({user, url})=>{
-	    void sendEmail(user.email , url)
+	     try {
+        await sendEmail(user.email, url);
+    } catch (err) {
+        console.error("Failed to send verification email:", err);
+        // decide: rethrow as APIError so better-auth surfaces it properly,
+        // or swallow it if you don't want signup to fail on email issues
+    }
 	}
 	,
     sendOnSignIn : true,
