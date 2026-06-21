@@ -65,7 +65,7 @@ const getAPIKeyHandler = async(req : Request , res : Response)=>{
 
 	return res.status(200).json({
 	    success :true,
-	    data : {success : true , data : requestBody}
+	    data : requestBody
 	})
 	
 

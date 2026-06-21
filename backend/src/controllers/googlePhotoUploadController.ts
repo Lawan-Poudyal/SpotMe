@@ -35,7 +35,7 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 	}
 
 	const toInjectOnce = driveFileIds.map(item => {
-	    return { uploaded_by : ownerId , event_id : eventId , photo_url :  item ,public_id:`${item}-drive` , height: 200 , width: 400 }
+	    return { uploaded_by : ownerId , event_id : eventId , photo_url :  item ,public_id:`${item}-drive` }
 	})
 
 	try{
