@@ -9,6 +9,7 @@ const Dashboard: React.FC = () => {
   const userInfo = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const getSectionFromPath = (): SidebarSection => {
     if (location.pathname.includes('myevents')) return 'myevents';
@@ -32,19 +33,18 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#1C1C1E]">
-      <ResponsiveAppBar />
-
+      <ResponsiveAppBar onMenuClick={() => setMobileOpen((o) => !o)} />
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <Sidebar
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
           activeSection={activeSection}
           setActiveSection={(section) => {
             setActiveSection(section);
+            setMobileOpen(false);
             navigate(`/dashboard/${section}`);
           }}
         />
-
-        {/* Main content */}
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>
@@ -52,6 +52,4 @@ const Dashboard: React.FC = () => {
     </div>
   );
 };
-
 export default Dashboard;
-

@@ -4,6 +4,7 @@ import type { eventType } from '../types/eventType';
 
 import { useMutation } from '@tanstack/react-query';
 import { fileUploads } from '../api/fileUploadApi';
+import { queryClient } from '../config/tanstack';
 
 interface UploadFile {
   id: string;
@@ -162,6 +163,13 @@ export default function UploadTab({ event }: UploadTabProps) {
     mutationFn: () => fileUploads.signRequest(eventId),
   });
 
+  const saveUploadMutation = useMutation({
+    mutationFn: (photos: { url: string; publicId: string; width: number; height: number }[]) =>
+      fileUploads.saveUpload(eventId, photos),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['photos', eventId] });
+    },
+  });
   const handleUpload = async () => {
     if (!files) {
       alert('Please select a file');
@@ -181,8 +189,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     });
     const uploadResponses = await Promise.all(uploads);
 
-    const saved = await fileUploads.saveUpload(
-      eventId,
+    await saveUploadMutation.mutateAsync(
       uploadResponses.map((res) => ({
         url: res.secure_url,
         publicId: res.public_id,
@@ -191,7 +198,6 @@ export default function UploadTab({ event }: UploadTabProps) {
       })),
     );
     console.log('Upload response:', uploadResponses);
-    console.log('saved response:', saved);
 
     setFiles([]);
     setIsUploading(false);
