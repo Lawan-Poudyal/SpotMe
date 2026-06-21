@@ -7,6 +7,7 @@ import { auth } from './config/auth';
 import { toNodeHandler } from 'better-auth/node';
 import { router as uniqueEmailController } from './routers/uniqueEmailRoute';
 import {router as googleAPIController} from "./routers/googleAPIRoute"
+import {router as drivePhotoController} from "./routers/googleDriveRoute"
 import { router as eventController } from './routers/eventRoute';
 import { corsOptions } from './config/corsOptions';
 import { signUploadrouter } from './routers/signUploadRoute';
@@ -28,6 +29,7 @@ app.get('/drive/:event', (req, res) => {
 });
 app.get("/")
 app.use('/api/driveAPI' , googleAPIController)
+app.use('/api/driveUploadAPI' , drivePhotoController)
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);
 app.use('/api/upload/sign', signUploadrouter);

@@ -12,6 +12,7 @@ import { getAccessToken } from "../api/googleDriveRequestApi";
 import type { zuContextType } from "../context/zuContext";
 import { useProfile } from "../context/zuContext";
 import { requestDriveScope } from "../api/linkSocialMedia";
+import { useParams, useRoutes } from "react-router-dom";
 import PopUpBox from "../components/PopupBox";
 import type { responseType } from "../api/googleDriveRequestApi";
 import { uploadEventPhotos } from "../api/eventPhotoUploadApi";
@@ -86,6 +87,7 @@ const picker = new window.google.picker.PickerBuilder()
 
 export default function UploadTab({ event }: UploadTabProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
+  const eventId = useParams().eventId
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDriveLoading, setIsDriveLoading] = useState(false);
@@ -162,7 +164,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     if (isDriveLoading || isUploading) return;
     setIsDriveLoading(true);
     try {
-      const picked = await openGoogleDrivePicker(userId ,event.eventName, setErrorTitle , setSubErrorTitle , setIsErrorOpen);
+      const picked = await openGoogleDrivePicker(userId ,String(eventId), setErrorTitle , setSubErrorTitle , setIsErrorOpen);
       console.log("from picked")
       if (picked.length > 0) addDriveFiles(picked);
       console.log(picked)
@@ -188,7 +190,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     // setIsUploading and the error popup states are now managed inside
     // uploadEventPhotos itself, around its own request lifecycle.
     const success = await uploadEventPhotos({
-      eventId: String(event.eventName),
+      eventId: String(eventId),
       ownerId: String(userId),
       driveFileIds: driveUploadFiles
         .map((f) => f.driveFileId)
