@@ -14,8 +14,6 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
 
 	let {eventId , ownerId , driveFileIds} = req.body as requestPayload
-	console.log(eventId ,ownerId)
-	console.log(driveFileIds)
 	
 	if(!eventId || eventId.trim()===""){
 	    return res.status(400).json({
@@ -45,7 +43,6 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 		data : toInjectOnce
 	    })
 
-	    console.log(data)
 
 	}
 	catch(dbError : unknown){
