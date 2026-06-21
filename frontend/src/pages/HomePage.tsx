@@ -131,8 +131,6 @@ export default function HomePage() {
           <h1 className="text-3xl font-bold">
             {getGreeting()},<span className="text-[#F97316]"> {userName}</span>
           </h1>
-
-          <p className="text-white/45 mt-2">Manage and browse your events.</p>
         </div>
 
         {/* STATS */}
@@ -194,4 +192,3 @@ export default function HomePage() {
     </div>
   );
 }
-

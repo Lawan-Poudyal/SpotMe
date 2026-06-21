@@ -14,13 +14,17 @@ import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { handleLogOut } from '../api/sign-out';
-import { CalendarDays } from 'lucide-react';
+import { SwitchCamera } from 'lucide-react';
 
 const pages: string[] = [];
 const settings = ['Profile', 'Account', 'Logout'];
 
-function ResponsiveAppBar() {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+
+export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
+  // remove anchorElNav state entirely
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const userContext = useContext(UserContext);
   const navigation = useNavigate();
@@ -32,13 +36,9 @@ function ResponsiveAppBar() {
     .map((item) => item[0].toUpperCase())
     .join('');
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
-  const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleCloseUserMenu = () => setAnchorElUser(null);
 
   return (
@@ -50,7 +50,7 @@ function ResponsiveAppBar() {
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 60 } }}>
           {/* Desktop logo */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 0 }}>
@@ -65,7 +65,7 @@ function ResponsiveAppBar() {
                 justifyContent: 'center',
               }}
             >
-              <CalendarDays size={16} color="#fff" />
+              <SwitchCamera size={16} color="#fff" />
             </Box>
             <Typography
               variant="h6"
@@ -84,47 +84,16 @@ function ResponsiveAppBar() {
             </Typography>
           </Box>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — now calls onMenuClick */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}>
             <IconButton
               size="large"
               aria-label="open navigation menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
+              onClick={onMenuClick}
               sx={{ color: 'rgba(255,255,255,0.4)' }}
             >
               <MenuIcon />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-              keepMounted
-              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-                '& .MuiPaper-root': {
-                  background: '#1A1A2E',
-                  border: '0.5px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px',
-                  mt: 1,
-                },
-                '& .MuiMenuItem-root': {
-                  color: 'rgba(255,255,255,0.6)',
-                  fontSize: '0.875rem',
-                  '&:hover': { background: 'rgba(255,255,255,0.04)', color: '#EAEAF5' },
-                },
-              }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
 
           {/* Mobile logo */}
@@ -142,7 +111,7 @@ function ResponsiveAppBar() {
                 justifyContent: 'center',
               }}
             >
-              <CalendarDays size={14} color="#fff" />
+              <SwitchCamera size={14} color="#fff" />
             </Box>
             <Typography
               variant="h6"
@@ -161,7 +130,6 @@ function ResponsiveAppBar() {
             </Typography>
           </Box>
 
-          {/* Desktop nav pages spacer */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }} />
 
           {/* Avatar / user menu */}
@@ -256,5 +224,3 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
-
-export default ResponsiveAppBar;
