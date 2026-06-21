@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { api } from '../config/axios';
 import axios from 'axios';
+import type { ApiFailurePayload } from '../types/apiFailurePayloadType';
+import { ApiError } from '../error/requestPayloadError'; 
 
 const addEvent = async (
   eventName: string,
@@ -16,7 +18,14 @@ const addEvent = async (
     return { success: true, ...response.data.data };
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      return { success: false, ...err.response?.data };
+	throw new ApiError("Failed" , {
+	    payload : {
+		success : false,
+		name : err.response?.data.name,
+		message : err.response?.data.message
+	    }
+	})
+
     }
   } finally {
     setIsLoading(false);
@@ -38,7 +47,14 @@ const updateEvent = async (
     return { success: true, ...response.data.data };
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      return { success: false, ...err.response?.data };
+	throw new ApiError("Failed" , {
+	    payload : {
+		success : false,
+		name : err.response?.data.name,
+		message : err.response?.data.message
+	    }
+	})
+
     }
   } finally {
     setIsLoading(false);
@@ -60,7 +76,13 @@ const deleteEvent = async (
     return { success: true };
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      return { success: false };
+    throw new ApiError("Failed" , {
+	payload : {
+	    success : false,
+	    name : null,
+	    message : null
+	}
+    })
     }
   } finally {
     setIsLoading(false);
@@ -76,7 +98,13 @@ const getEvent = async (userId: string) => {
     return { success: true, data: response.data.data };
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
-      return { success: false, ...err.response?.data };
+	throw new ApiError("Failed" , {
+	    payload : {
+		success : false,
+		name : err.response?.data.name,
+		message : err.response?.data.message
+	    }
+	})
     }
   }
 };

@@ -37,7 +37,6 @@ export default function HomePage() {
   const [subTitleError, setSubTitleError] = useState("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
 
-
   useEffect(() => {
     onGetEvent(
       setTitleError,
@@ -200,10 +199,9 @@ export default function HomePage() {
                 createdAt={String(item.createdAt)}
                 numberOfImages={item.numberOfImages}
 
-                // 🔥 FIXED NAVIGATION
                 onClick={() =>
                   navigate(`/dashboard/event/${item.id}`, {
-                    state: item, // 👈 IMPORTANT FIX
+                    state: item, 
                   })
                 }
 

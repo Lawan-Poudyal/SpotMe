@@ -145,7 +145,7 @@ export const onGetEvent = async (
     err: errType;
   };
 
-  if (!data.success) {
+  if (!data?.success) {
     setTitleError(data.err.name);
     setSubTitleError(data.err.message);
     setIsErrorOpen(true);
