@@ -47,6 +47,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
         photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
         targetRowHeight={320}
         rowConstraints={{ minPhotos: 1 }}
+        spacing={6}
         onClick={({ index }) => setLightboxIndex(index)}
       />
 

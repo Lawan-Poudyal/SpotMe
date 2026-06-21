@@ -74,6 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 title={collapsed ? label : undefined}
                 className={`
                     flex items-center gap-3 rounded-xl w-full text-left
+                    cursor-pointer
                     text-[14.5px]
                     ${collapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'}
                     ${
