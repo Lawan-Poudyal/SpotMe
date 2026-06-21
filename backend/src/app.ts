@@ -27,7 +27,9 @@ app.use(cookieParser());
 app.get('/drive/:event', (req, res) => {
   res.redirect(`${process.env.FRONTEND_ORIGIN as string}/dashboard/event/${req.params.event}`);
 });
-app.get("/")
+app.get("/" , (req, res)=>{
+    res.redirect(process.env.FRONTEND_ORIGIN as string)
+})
 app.use('/api/driveAPI' , googleAPIController)
 app.use('/api/driveUploadAPI' , drivePhotoController)
 app.use('/api/uniqueEmail', uniqueEmailController);
