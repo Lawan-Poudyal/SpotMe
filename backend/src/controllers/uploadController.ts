@@ -8,6 +8,7 @@ import { prisma } from '../config/prismaClientConfig';
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
 
+  console.time('sign');
   const session = await auth.api.getSession({
     headers: req.headers as HeadersInit,
   });
@@ -32,27 +33,27 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
       cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
     },
   });
+  console.timeEnd('sign');
 });
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
-  const session = await auth.api.getSession({
-    headers: req.headers as HeadersInit,
-  });
-  if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
-
   const { eventId, photos } = req.body;
 
-  if (!eventId) {
-    throw new ValidationError('Missing or invalid eventId in the request body');
-  }
+  if (!eventId) throw new ValidationError('Missing or invalid eventId in the request body');
+  if (!photos || !Array.isArray(photos))
+    throw new ValidationError('Missing or invalid photos array in the request body');
 
-  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  console.time('parallel');
+  const [session, event] = await Promise.all([
+    auth.api.getSession({ headers: req.headers as HeadersInit }),
+    prisma.event.findUnique({ where: { id: eventId } }),
+  ]);
+  console.timeEnd('parallel');
+
+  if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
-  if (!photos || !Array.isArray(photos)) {
-    throw new ValidationError('Missing or invalid photos array in the request body');
-  }
-
+  console.time('createMany');
   const saved = await prisma.photo.createMany({
     data: photos.map((p) => ({
       event_id: eventId,
@@ -63,7 +64,7 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       height: p.height,
     })),
   });
-
+  console.timeEnd('createMany');
   res.status(201).json({ success: true, data: saved });
 });
 
