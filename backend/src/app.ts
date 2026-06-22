@@ -10,8 +10,9 @@ import {router as googleAPIController} from "./routers/googleAPIRoute"
 import {router as drivePhotoController} from "./routers/googleDriveRoute"
 import { router as eventController } from './routers/eventRoute';
 import { corsOptions } from './config/corsOptions';
-import { signUploadrouter } from './routers/signUploadRoute';
 import { limiter } from './config/rateLimit';
+import { uploadrouter } from './routers/uploadRoute';
+import { photoRouter } from './routers/photoRoute';
 
 const app = express();
 
@@ -30,10 +31,11 @@ app.get('/drive/:event', (req, res) => {
 app.get("/" , (req, res)=>{
     res.redirect(process.env.FRONTEND_ORIGIN as string)
 })
-app.use('/api/driveAPI' , googleAPIController)
 app.use('/api/driveUploadAPI' , drivePhotoController)
+app.use('/api/upload', uploadrouter);
+app.use('/api/photos', photoRouter);
+app.use('/api/driveAPI', googleAPIController);
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);
-app.use('/api/upload/sign', signUploadrouter);
 
 export default app;
