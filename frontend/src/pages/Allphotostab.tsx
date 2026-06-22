@@ -20,10 +20,22 @@ interface AllPhotosTabProps {
   event: eventType;
 }
 
+// Extract Drive file ID from public_id (format: "something-drive" or the full Drive file ID)
+function getDriveThumbnailUrl(publicId: string): string {
+  // Strip the '-drive' suffix to get the actual Drive file ID
+  const fileId = publicId.endsWith('-drive')
+    ? publicId.slice(0, -'-drive'.length)
+    : publicId;
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+}
+
+function isDrivePhoto(p: { public_id: string; width?: number | null; height?: number | null }): boolean {
+  return p.public_id.endsWith('-drive') || (p.width == null && p.height == null);
+}
+
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [confirmOpen, setConfirmOpen] = useState(false);
-
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
@@ -54,11 +66,14 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
     );
   }
 
-  const slides = data.map((p) => ({
-    src: p.photo_url,
-    width: p.width ?? 800,
-    height: p.height ?? 600,
-  }));
+  const slides = data.map((p) => {
+    const drive = isDrivePhoto(p);
+    return {
+      src: drive ? getDriveThumbnailUrl(p.public_id) : p.photo_url,
+      width: p.width ?? 800,
+      height: p.height ?? 600,
+    };
+  });
 
   return (
     <div className="p-1">

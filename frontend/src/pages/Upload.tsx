@@ -61,13 +61,17 @@ async function openGoogleDrivePicker(
   const accessToken = responseObj?.accessToken;
 
   return new Promise((resolve) => {
-    const picker = new window.google.picker.PickerBuilder()
-      .addView(new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES))
-      .setOAuthToken(accessToken)
-      .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
-      .setAppId("1090789030635")
-      .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
-      .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
+      const picker = new window.google.picker.PickerBuilder()
+  .addView(
+    new window.google.picker.DocsView(window.google.picker.ViewId.DOCS_IMAGES)
+      .setMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
+      .setIncludeFolders(false)
+      .setOwnedByMe(false) // 
+  )
+  .setOAuthToken(accessToken)
+  .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
+  .setAppId("1090789030635")
+  .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
       .setCallback(
         (data: {
           action: string;
@@ -272,6 +276,9 @@ export default function UploadTab({ event }: UploadTabProps) {
         setSubErrorTitle,
         setIsErrorOpen,
       });
+      if (driveSuccess) {
+	queryClient.invalidateQueries({ queryKey: ['photos', eventId] });
+    }
 
       setFiles((prev) =>
         prev.map((f) =>
@@ -286,11 +293,13 @@ export default function UploadTab({ event }: UploadTabProps) {
       );
     }
 
+    // Remove successfully uploaded files, keep only failed ones for retry
+    setFiles((prev) => prev.filter((f) => f.status !== "done"));
     setIsUploading(false);
   };
 
-  const doneCount = files.filter((f) => f.status === "done").length;
-  const allDone = files.length > 0 && doneCount === files.length;
+  const pendingCount = files.filter((f) => f.status === "pending").length;
+  const failedCount = files.filter((f) => f.status === "error").length;
 
   // ── Render ────────────────────────────────────────────
 
@@ -448,10 +457,10 @@ export default function UploadTab({ event }: UploadTabProps) {
         )}
 
         {/* Upload button */}
-        {files.length > 0 && !allDone && (
+        {files.length > 0 && (
           <button
             onClick={handleUpload}
-            disabled={isUploading}
+            disabled={isUploading || pendingCount === 0}
             className="mt-6 w-full flex items-center justify-center gap-2
               py-3.5 rounded-2xl bg-[#F97316] hover:opacity-90
               disabled:opacity-60 disabled:cursor-not-allowed
@@ -465,34 +474,17 @@ export default function UploadTab({ event }: UploadTabProps) {
             ) : (
               <>
                 <UploadCloud size={16} />
-                Upload {files.length} photo{files.length !== 1 ? "s" : ""} to {event.eventName}
+                Upload {pendingCount} photo{pendingCount !== 1 ? "s" : ""} to {event.eventName}
               </>
             )}
           </button>
         )}
 
-        {/* All done state */}
-        {allDone && (
-          <div className="mt-6 flex items-center justify-between bg-emerald-950/30
-            border border-emerald-500/20 rounded-2xl px-5 py-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-              <div>
-                <p className="text-white font-semibold text-sm">
-                  {doneCount} photo{doneCount !== 1 ? "s" : ""} uploaded
-                </p>
-                <p className="text-white/40 text-xs mt-0.5">
-                  They are now visible in {event.eventName}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setFiles([])}
-              className="text-[#F97316] text-sm hover:opacity-80 transition"
-            >
-              Upload more
-            </button>
-          </div>
+        {/* Failed files hint */}
+        {!isUploading && failedCount > 0 && (
+          <p className="mt-3 text-center text-red-400/70 text-xs">
+            {failedCount} photo{failedCount !== 1 ? "s" : ""} failed — remove them or try uploading again.
+          </p>
         )}
 
         {/* Empty state hint */}
