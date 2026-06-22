@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { UploadCloud, X, CheckCircle2, Loader2, Info, HardDrive } from 'lucide-react';
 import type { eventType } from '../types/eventType';
-
+import imageCompression from 'browser-image-compression';
 import { useMutation } from '@tanstack/react-query';
 import { fileUploads } from '../api/fileUploadApi';
 import { queryClient } from '../config/tanstack';
@@ -178,9 +178,15 @@ export default function UploadTab({ event }: UploadTabProps) {
     const data = await uploadSignatureMutation.mutateAsync();
     console.log('Upload signature response:', data);
 
-    const uploads = files.map((f) => {
+    const uploads = files.map(async (f) => {
+      const compressed = await imageCompression(f.file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      });
+
       const formData = new FormData();
-      formData.append('file', f.file);
+      formData.append('file', compressed);
       formData.append('api_key', data.apiKey);
       formData.append('timestamp', data.timestamp.toString());
       formData.append('signature', data.signature);
@@ -382,6 +388,7 @@ export default function UploadTab({ event }: UploadTabProps) {
           disabled={isUploading}
           className="mt-6 w-full flex items-center justify-center gap-2
             py-3.5 rounded-2xl bg-[#F97316] hover:opacity-90
+            cursor-pointer hover:bg-[#F97316]/90
             disabled:opacity-60 disabled:cursor-not-allowed
             text-white font-semibold text-sm transition"
         >
