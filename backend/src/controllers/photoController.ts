@@ -41,8 +41,8 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
     throw new ValidationError('Missing eventId parameter');
 
   const [dbPhoto, eventOwner] = await Promise.all([
-    prisma.photo.findUnique({ where: { id: photoId } }),
-    prisma.event.findUnique({ where: { id: eventId }, select: { userId: true } }),
+   prisma.photo.findUnique({ where: { id: photoId } }),
+   prisma.event.findUnique({ where: { id: eventId }, select: { userId: true } }),
   ]);
 
   if (!dbPhoto) {
