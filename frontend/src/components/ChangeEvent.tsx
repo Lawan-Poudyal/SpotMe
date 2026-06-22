@@ -25,7 +25,6 @@ type Props = {
   setTitleError : Dispatch<SetStateAction<string>>;
   setSubTitleError : Dispatch<SetStateAction<string>>;
   setIsErrorOpen : Dispatch<SetStateAction<boolean>>;
-  setEvents : Dispatch<SetStateAction<eventType[]>>
   currentName : string;
   userId : string;
   eventId : string;
@@ -38,7 +37,6 @@ const EditNameModal: React.FC<Props> = ({
     setTitleError,
     setSubTitleError,
     setIsErrorOpen,
-    setEvents,
     currentName,
     userId,
     eventId
