@@ -7,7 +7,7 @@ type errType = {
   message: string;
 };
 
-const handleNonUniqueEventNames = (
+export const handleNonUniqueEventNames = (
   eventName: string,
   events: eventType[],
   setTitleError: Dispatch<SetStateAction<string>>,

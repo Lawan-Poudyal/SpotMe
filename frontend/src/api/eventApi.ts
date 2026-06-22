@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { api } from '../config/axios';
 import axios from 'axios';
-import type { ApiFailurePayload } from '../types/apiFailurePayloadType';
 import { ApiError } from '../error/requestPayloadError'; 
+import type { eventType } from '../types/eventType';
 
 const addEvent = async (
   eventName: string,
@@ -15,7 +15,7 @@ const addEvent = async (
       eventName: eventName,
       ownerId: userId,
     });
-    return { success: true, ...response.data.data };
+    return response.data.data as eventType;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
 	throw new ApiError("Failed" , {
@@ -44,7 +44,7 @@ const updateEvent = async (
       ownerId: userId,
       currentName: currentName,
     });
-    return { success: true, ...response.data.data };
+    return response.data.data as eventType;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
 	throw new ApiError("Failed" , {
@@ -95,7 +95,7 @@ const getEvent = async (userId: string) => {
         ownerId: userId,
       },
     });
-    return { success: true, data: response.data.data };
+    return  response.data.data as eventType[] ;
   } catch (err: unknown) {
     if (axios.isAxiosError(err)) {
 	throw new ApiError("Failed" , {
@@ -106,6 +106,7 @@ const getEvent = async (userId: string) => {
 	    }
 	})
     }
+    throw err
   }
 };
 

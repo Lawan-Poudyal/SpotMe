@@ -9,7 +9,7 @@ import FolderCard from "../components/Folder";
 import type { zuContextType } from "../context/zuContext";
 import { useProfile } from "../context/zuContext";
 import type { eventType } from "../types/eventType";
-import { onGetEvent } from "../utility/eventUtils";
+import { useEvents } from "../hooks/eventHooks";
 
 import {
   CalendarDays,
@@ -24,8 +24,7 @@ export default function HomePage() {
   const userName = useProfile((s : zuContextType)=> s.userName) 
   const userId = useProfile((s:zuContextType) => s.id)
   const [searchQuery, setSearchQuery] = useState("");
-  const [events, setEvents] = useState<eventType[]>([]);
-
+  const {data : events=[] }  = useEvents(userId) as {data : eventType[]}
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isDeleteEventModalOpen, setIsDeleteEventModalOpen] = useState(false);
   const [isChangeEventModalOpen, setIsChangeEventModalOpen] = useState(false);
@@ -36,16 +35,6 @@ export default function HomePage() {
   const [titleError, setTitleError] = useState("");
   const [subTitleError, setSubTitleError] = useState("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
-
-  useEffect(() => {
-    onGetEvent(
-      setTitleError,
-      setSubTitleError,
-      setIsErrorOpen,
-      setEvents,
-      userId
-    );
-  }, [userId]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -100,7 +89,6 @@ export default function HomePage() {
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
-        setEvents={setEvents}
         userId={userId}
       />
 
@@ -111,7 +99,6 @@ export default function HomePage() {
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
-        setEvents={setEvents}
         eventId={selectedEventId as string}
         eventName={selectedEventName as string}
         userId={userId}
@@ -126,7 +113,6 @@ export default function HomePage() {
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
-        setEvents={setEvents}
         userId={userId}
       />
 
