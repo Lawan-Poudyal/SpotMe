@@ -2,6 +2,8 @@ import React, { useState, type Dispatch, type SetStateAction } from "react";
 import { Modal, Box, Typography, TextField, Button, Fade, Backdrop } from "@mui/material";
 import type { eventType } from "../types/eventType";
 import { onAddEvent } from "../utility/eventUtils";
+import { useCreateEvent } from "../hooks/eventHooks";
+import { handleNonUniqueEventNames } from "../utility/eventUtils";
 
 const style = {
   position: "absolute" as const,
@@ -23,17 +25,25 @@ type Props = {
   setTitleError : Dispatch<SetStateAction<string>>;
   setSubTitleError : Dispatch<SetStateAction<string>>;
   setIsErrorOpen : Dispatch<SetStateAction<boolean>>;
-  setEvents : Dispatch<SetStateAction<eventType[]>>
   userId : string;
 };
 
-const AddEvent: React.FC<Props> = ({ open, onClose , events, setTitleError , setSubTitleError , setIsErrorOpen , setEvents , userId}) => {
+const AddEvent: React.FC<Props> = ({ open, onClose , events, setTitleError , setSubTitleError , setIsErrorOpen , userId}) => {
   const [eventName, setEventName] = useState<string>("");
   const [isLoading , setIsLoading] = useState<boolean>(false)
+  const createEvent = useCreateEvent(eventName, events , userId , setIsLoading , setTitleError , setSubTitleError, setIsErrorOpen)
 
   const handleAdd = async () => {
+     const conflictExists = handleNonUniqueEventNames(
+	 eventName,
+	 events,
+	 setTitleError,
+	 setSubTitleError,
+	 setIsErrorOpen
+     ) 
+     if (!conflictExists) return
     if (!eventName.trim()) return;
-    await onAddEvent(eventName , events, setTitleError , setSubTitleError , setIsErrorOpen , setEvents , setIsLoading, userId);
+	createEvent.mutate()
     setEventName("");
     onClose();
   };
