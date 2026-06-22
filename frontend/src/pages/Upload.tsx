@@ -62,29 +62,21 @@ async function openGoogleDrivePicker(
 
   return new Promise((resolve) => {
       const picker = new window.google.picker.PickerBuilder()
-  .addView(
-    new window.google.picker.DocsView(window.google.picker.ViewId.DOCS_IMAGES)
-      .setMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
-      .setIncludeFolders(false)
-      .setOwnedByMe(false) // 
-  )
+  .addView(new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES))
   .setOAuthToken(accessToken)
   .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
   .setAppId("1090789030635")
+  .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
   .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-      .setCallback(
-        (data: {
-          action: string;
-          docs?: { id: string; name: string; mimeType: string; url: string; sizeBytes?: number }[];
-        }) => {
-          if (data.action === window.google.picker.Action.PICKED) {
-            resolve(data.docs ?? []);
-          } else if (data.action === window.google.picker.Action.CANCEL) {
-            resolve([]);
-          }
-        },
-      )
-      .build();
+  .setCallback((data) => {
+    console.log('callback fired:', data.action, data.docs);
+    if (data.action === window.google.picker.Action.PICKED) {
+      resolve(data.docs ?? []);
+    } else if (data.action === window.google.picker.Action.CANCEL) {
+      resolve([]);
+    }
+  })
+  .build();
     picker.setVisible(true);
   });
 }
