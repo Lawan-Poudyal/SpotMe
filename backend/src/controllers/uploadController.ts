@@ -2,7 +2,7 @@ import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { auth } from '../config/auth';
 import { cloudinary } from '../lib/cloudinary';
-import { ValidationError } from '../errors/Error';
+import { NotFoundError, UnauthorizedError, ValidationError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
@@ -11,7 +11,7 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
   const session = await auth.api.getSession({
     headers: req.headers as HeadersInit,
   });
-  if (!session) throw new ValidationError('User must be authenticated to upload files');
+  if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
 
   const eventId = req.body.eventId;
   if (!eventId || typeof eventId !== 'string') {
@@ -38,15 +38,16 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const session = await auth.api.getSession({
     headers: req.headers as HeadersInit,
   });
-  if (!session) throw new ValidationError('User must be authenticated to upload files');
+  if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
 
   const { eventId, photos } = req.body;
-  if (!eventId || typeof eventId !== 'string') {
+
+  if (!eventId) {
     throw new ValidationError('Missing or invalid eventId in the request body');
   }
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
-  if (!event) throw new ValidationError(`Event with id "${eventId}" not found`);
+  if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
   if (!photos || !Array.isArray(photos)) {
     throw new ValidationError('Missing or invalid photos array in the request body');

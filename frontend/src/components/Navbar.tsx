@@ -16,7 +16,6 @@ import { useContext } from 'react';
 import { handleLogOut } from '../api/sign-out';
 import { SwitchCamera } from 'lucide-react';
 
-const pages: string[] = [];
 const settings = ['Profile', 'Account', 'Logout'];
 
 interface NavbarProps {

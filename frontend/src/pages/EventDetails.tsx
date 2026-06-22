@@ -139,7 +139,7 @@ export default function EventDetails() {
 }
 function MetaPill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/[0.04]">
+    <div className="flex items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/4">
       {icon}
       <span>{label}</span>
     </div>
@@ -160,7 +160,7 @@ function ActionButton({
       className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
         primary
           ? 'bg-white text-black font-medium hover:bg-white/90'
-          : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/[0.04]'
+          : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/4'
       }`}
     >
       {icon}

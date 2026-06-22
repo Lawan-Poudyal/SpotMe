@@ -1,12 +1,20 @@
 import { useState } from 'react';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, Trash2 } from 'lucide-react';
 import type { eventType } from '../types/eventType';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { photo } from '../api/photoApi';
 import PhotoAlbum from 'react-photo-album';
 import 'react-photo-album/rows.css';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from '@mui/material';
 
 interface AllPhotosTabProps {
   event: eventType;
@@ -14,10 +22,22 @@ interface AllPhotosTabProps {
 
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['photos', event.id],
     queryFn: () => photo.getPhotos(event.id),
+  });
+
+  const deletePhoto = useMutation({
+    mutationFn: (photoId: string) => photo.deletePhoto(photoId, event.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
+      setConfirmOpen(false);
+      setLightboxIndex(-1);
+    },
   });
 
   if (isLoading) return <p>Loading...</p>;
@@ -56,7 +76,44 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
         index={lightboxIndex}
         close={() => setLightboxIndex(-1)}
         slides={slides}
+        toolbar={{
+          buttons: [
+            <button
+              key="delete"
+              onClick={() => setConfirmOpen(true)}
+              className="flex items-center justify-center w-10 h-10 text-white/70 hover:text-red-400"
+              title="Delete photo"
+            >
+              <Trash2 size={32} color="#CE1126" className="cursor-pointer" />
+            </button>,
+            'close',
+          ],
+        }}
       />
+
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} sx={{ zIndex: 99999 }}>
+        <DialogTitle>Delete Photo</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this photo? This cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button className="cursor-pointer" onClick={() => setConfirmOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            onClick={() => {
+              const photoId = data[lightboxIndex]?.id;
+              if (photoId) deletePhoto.mutateAsync(photoId);
+            }}
+            className="cursor-pointer"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
