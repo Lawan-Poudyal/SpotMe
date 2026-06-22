@@ -66,14 +66,16 @@ export function useCreateEvent(eventName : string,events : eventType[], userId :
 }
 
 
-export function useDeleteEvent(eventName : string , userId : string , setIsLoading : Dispatch<SetStateAction<boolean>> , setTitleError : Dispatch<SetStateAction<string>> , setSubTitleError  :Dispatch<SetStateAction<string>> , setIsErrorOpen : Dispatch<SetStateAction<boolean>>){
+export function useDeleteEvent(eventName : string ,events: eventType[], userId : string , setIsLoading : Dispatch<SetStateAction<boolean>> , setTitleError : Dispatch<SetStateAction<string>> , setSubTitleError  :Dispatch<SetStateAction<string>> , setIsErrorOpen : Dispatch<SetStateAction<boolean>>){
 
     const queryClient = useQueryClient()
 
     return useMutation({
 	mutationFn : ()=>deleteEvent(eventName , userId , setIsLoading),
 	onSuccess: ()=>{
-	    queryClient.invalidateQueries({queryKey : ['events']})
+	    const newEvents = events.filter(event => event.eventName !== eventName)
+	    console.log(newEvents)
+	    queryClient.setQueryData(["events"] , newEvents)
 	},	
 	onError : (err : unknown)=>{
 	    if (err instanceof ApiError){
