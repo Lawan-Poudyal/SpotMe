@@ -13,4 +13,12 @@ export const fileUploads = {
     const res = await axios.post(url, formToUpload);
     return res.data;
   },
+
+  saveUpload: async (
+    eventId: string,
+    photos: { url: string; publicId: string; height: number; width: number }[],
+  ) => {
+    const res = await api.post('/api/upload/save', { eventId, photos });
+    return res.data;
+  },
 };
