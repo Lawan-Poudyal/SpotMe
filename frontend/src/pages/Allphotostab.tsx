@@ -20,13 +20,6 @@ interface AllPhotosTabProps {
   event: eventType;
 }
 
-function getPhotoSrc(photoUrl: string, publicId: string): string {
-  const isDrive = publicId.endsWith('-drive');
-  if(isDrive) {console.log(photoUrl)}
-  return isDrive
-    ? `https://drive.google.com/thumbnail?id=${photoUrl}&sz=w800`
-    : photoUrl;
-}
 
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
@@ -62,21 +55,22 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   }
 
   const slides = data.map((p) => ({
-    src: getPhotoSrc(p.photo_url, p.public_id),
+    src: p.photo_url,
     width: p.width ?? 800,
     height: p.height ?? 600,
   }));
 
   return (
     <div className="p-1">
-      <PhotoAlbum
-        layout="rows"
-        photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
-        targetRowHeight={320}
-        rowConstraints={{ minPhotos: 1 }}
-        spacing={6}
-        onClick={({ index }) => setLightboxIndex(index)}
-      />
+    <PhotoAlbum
+  layout="rows"
+  photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
+  targetRowHeight={320}
+  rowConstraints={{ minPhotos: 1 }}
+  spacing={6}
+  onClick={({ index }) => setLightboxIndex(index)}
+  // ADD THIS PROP:
+/>
 
       <Lightbox
         open={lightboxIndex >= 0}

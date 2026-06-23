@@ -5,7 +5,7 @@ import { api } from "../config/axios";
 export interface UploadEventPhotosPayload {
   eventId: string;
   ownerId: string;
-  // Google Drive file ids only — backend resolves these via Drive's API.
+  accessToken : string;
   driveFileIds: string[];
   setIsUploading: Dispatch<SetStateAction<boolean>>;
   setErrorTitle: Dispatch<SetStateAction<string>>;
@@ -19,6 +19,7 @@ export async function uploadEventPhotos(
   const {
     eventId,
     ownerId,
+    accessToken,
     driveFileIds,
     setIsUploading,
     setErrorTitle,
@@ -38,6 +39,7 @@ export async function uploadEventPhotos(
     await api.post("/api/driveUploadAPI", {
 	eventId ,
 	ownerId,
+	accessToken,
 	driveFileIds
     })
 
