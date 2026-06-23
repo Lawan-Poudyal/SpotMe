@@ -5,7 +5,6 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
 
 	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayloadMultiple
-	
 	if(!eventId || eventId.trim()===""){
 	    return res.status(400).json({
 		success : false,
@@ -40,7 +39,7 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 		    eventId : eventId,
 		    ownerId : ownerId,
 		    accessToken : accessToken,
-		    driveFileId : driveFileId
+		    driveFileId : driveFileId,
 		}
 	    )
 	    })
@@ -54,6 +53,8 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
     }
     catch(err : unknown){
 	if(err instanceof Error){
+	    console.log(err.stack)
+	    console.log(err.message)
 	    return res.status(500).json({
 		success : false,
 		err :{
