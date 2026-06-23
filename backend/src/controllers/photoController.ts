@@ -22,7 +22,7 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
       uploaded_at: true,
       uploaded_by: true,
       width: true,
-      public_id : true,
+      public_id: true,
       height: true,
     },
   });
@@ -42,31 +42,30 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   if (!eventId || typeof eventId !== 'string')
     throw new ValidationError('Missing eventId parameter');
 
-  const [session, dbPhoto] = await Promise.all([
-    getSession(req.headers as HeadersInit),
-    prisma.photo.findUnique({
-      where: { id: photoId },
-      include: { event: { select: { userId: true } } },
-    }),
-  ]);
-
+  const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
-  if (!dbPhoto) throw new NotFoundError('Photo');
+  const dbPhoto = await prisma.photo.findUnique({
+    where: { id: photoId },
+    include: {
+      event: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  });
 
+  if (!dbPhoto) throw new NotFoundError('Photo');
   const isUploader = dbPhoto.uploaded_by === session.user.id;
   const isEventOwner = dbPhoto.event?.userId === session.user.id;
-
   if (!isUploader && !isEventOwner) {
-    throw new ForbiddenError('You do not have permission to delete this photo');
+    throw new ForbiddenError('User does not have permission to delete this photo');
   }
 
   await prisma.photo.delete({ where: { id: photoId } });
-
   res.status(200).json({ success: true, message: 'Photo deleted successfully' });
-
   cloudinary.uploader.destroy(dbPhoto.public_id).catch((err) => {
     console.error('Error deleting photo from Cloudinary:', err);
   });
 });
-
 export { getPhotoHandler, deletePhotoHandler };
