@@ -47,23 +47,23 @@ export async function processPhotoJob( job : Job<requestPayloadSingular>){
 		const dbErrorName : dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType 
 		if(dbErrorName === "ForeignKeyConstraintViolation"){
 		    console.log("The account or the event has been either deleted by the user or as per community guideline")
-		    redis.publish("image_news" , JSON.stringify({success : false , driveFileId : driveFileId}))
+		    await redis.publish("image_news" , JSON.stringify({success : false , driveFileId : driveFileId}))
 		}
 		else if(dbErrorName === "UniqueConstraintViolation"){
 		    console.log( "Try using a different name which doesn't already exist in your events")
-		    redis.publish("image_news" , JSON.stringify({userId : ownerId,success : false , driveFileId : driveFileId}))
+		    await redis.publish("image_news" , JSON.stringify({userId : ownerId,success : false , driveFileId : driveFileId}))
 		}
 		else {
-		    redis.publish("image_news" , JSON.stringify({userId : ownerId , success : false , driveFileId : driveFileId}))
+		    await redis.publish("image_news" , JSON.stringify({userId : ownerId , success : false , driveFileId : driveFileId}))
 		    throw dbError
 		}
 	    }
 	else {
-		    redis.publish("image_news" , JSON.stringify({userId : ownerId ,success : false , driveFileId : driveFileId}))
+		    await redis.publish("image_news" , JSON.stringify({userId : ownerId ,success : false , driveFileId : driveFileId}))
 	    throw dbError
 	}
 	}
-		    redis.publish("image_news" , JSON.stringify({userId : ownerId , success : false , driveFileId : driveFileId}))
+		    await redis.publish("image_news" , JSON.stringify({userId : ownerId , success : true , driveFileId : driveFileId}))
 	console.log(`The processing is completed for ${driveFileId}`) // don't forget to send a success webSocket call , and after the sucess webSocket call is received by the frontend for each successfull websocket transaction invalidate the query.
     }
     catch(err : unknown){
