@@ -3,7 +3,8 @@ import { Modal, Box, Typography, Button, Fade, Backdrop, TextField } from "@mui/
 import type {Dispatch , SetStateAction} from 'react'
 import type { eventType } from "../types/eventType";
 import { onUpdateEvent } from "../utility/eventUtils";
-
+import { handleNonUniqueEventNames } from "../utility/eventUtils";
+import { useUpdateEvent } from "../hooks/eventHooks";
 const style = {
   position: "absolute" as const,
   top: "50%",
@@ -24,7 +25,6 @@ type Props = {
   setTitleError : Dispatch<SetStateAction<string>>;
   setSubTitleError : Dispatch<SetStateAction<string>>;
   setIsErrorOpen : Dispatch<SetStateAction<boolean>>;
-  setEvents : Dispatch<SetStateAction<eventType[]>>
   currentName : string;
   userId : string;
   eventId : string;
@@ -37,21 +37,29 @@ const EditNameModal: React.FC<Props> = ({
     setTitleError,
     setSubTitleError,
     setIsErrorOpen,
-    setEvents,
     currentName,
     userId,
     eventId
 }) => {
   const [newName, setNewName] = useState(currentName);
   const [isLoading , setIsLoading] = useState<boolean>(false)
+  const updateEvent = useUpdateEvent(currentName , eventId , events, userId , setIsLoading , setTitleError , setSubTitleError , setIsErrorOpen )
   useEffect(()=>{
       setNewName(currentName)
       // it does say this this could create some cascading error but it doesn't
   },[open])
   const handleSave = async () => {
     const trimmed = newName.trim();
+    const conflictExists = handleNonUniqueEventNames(
+	newName,
+	events,
+	setTitleError,
+	setSubTitleError,
+	setIsErrorOpen
+    )
+    if(!conflictExists) return
     if (trimmed === "") return
-    await onUpdateEvent(currentName ,newName , eventId , events , setTitleError, setSubTitleError , setIsErrorOpen , setEvents , setIsLoading , userId)
+	updateEvent.mutate(newName)
     onClose();
   };
 

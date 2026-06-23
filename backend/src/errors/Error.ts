@@ -1,6 +1,5 @@
 export class AppError extends Error {
   status: number;
-
   constructor(message: string, status: number = 500) {
     super(message);
     this.status = status;
@@ -21,7 +20,13 @@ export class ValidationError extends AppError {
 }
 
 export class UnauthorizedError extends AppError {
-  constructor() {
-    super('Unauthorized', 401);
+  constructor(message = 'Authentication required') {
+    super(message, 401);
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'You do not have permission to perform this action') {
+    super(message, 403);
   }
 }
