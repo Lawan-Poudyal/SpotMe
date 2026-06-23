@@ -20,10 +20,10 @@ interface AllPhotosTabProps {
   event: eventType;
 }
 
+
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [confirmOpen, setConfirmOpen] = useState(false);
-
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
@@ -62,14 +62,15 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
   return (
     <div className="p-1">
-      <PhotoAlbum
-        layout="rows"
-        photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
-        targetRowHeight={320}
-        rowConstraints={{ minPhotos: 1 }}
-        spacing={6}
-        onClick={({ index }) => setLightboxIndex(index)}
-      />
+    <PhotoAlbum
+  layout="rows"
+  photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
+  targetRowHeight={320}
+  rowConstraints={{ minPhotos: 1 }}
+  spacing={6}
+  onClick={({ index }) => setLightboxIndex(index)}
+  // ADD THIS PROP:
+/>
 
       <Lightbox
         open={lightboxIndex >= 0}

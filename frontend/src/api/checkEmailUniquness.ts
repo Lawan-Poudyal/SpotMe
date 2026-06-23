@@ -1,9 +1,10 @@
 import axios from "axios";
 import type {Dispatch , SetStateAction} from 'react'
+import { api } from "../config/axios";
 
 const handleEmailUniqueness = async(email : string, setErrMsg : Dispatch<SetStateAction<string>>, setOpenError : Dispatch<SetStateAction<boolean>>, setUniqunessError: Dispatch<SetStateAction<boolean>>)=>{
     try{
-	const data = await axios.get("http://localhost:5000/uniqueEmail", {
+	const data = await api.get("/api/uniqueEmail", {
 	    params :{
 		email : email
 	    }
