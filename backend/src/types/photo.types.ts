@@ -1,3 +1,4 @@
+import { Server } from "socket.io";
 export type requestPayloadMultiple = {
     eventId : string;
     ownerId : string;
