@@ -3,15 +3,9 @@ import { prisma } from "../config/prismaClientConfig";
 import dbErrorHash from "../utils/dbErrorHash";
 import { cloudinary } from "../lib/cloudinary";
 import axios from 'axios'
+import type { requestPayloadMultiple } from "../types/photo.types";
 import type { dbErrorType } from "../utils/dbErrorHash";
 import type {Request, Response} from 'express' 
-
-type requestPayload = {
-    eventId : string;
-    ownerId : string;
-    accessToken : string;
-    driveFileIds : string[];
-}
 
 type toInjectType = {
     secure_url : string;
@@ -23,7 +17,7 @@ type toInjectType = {
 const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
 
-	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayload
+	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayloadMultiple
 	
 	if(!eventId || eventId.trim()===""){
 	    return res.status(400).json({
