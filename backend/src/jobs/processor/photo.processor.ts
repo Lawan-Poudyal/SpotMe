@@ -7,12 +7,13 @@ import type { requestPayloadSingular } from "../../types/photo.types";
 import axios from 'axios'
 import { cloudinary } from "../..//lib/cloudinary";
 import type { toInjectType } from "../../types/inject.types";
+import { getIO } from "../../server";
 
 export async function processPhotoJob( job : Job<requestPayloadSingular>){
+    const {io , idMap} = getIO()
     try{
        console.log("processing")
        const {eventId , ownerId , accessToken  ,driveFileId} = job.data 
-
        const driveResponse = await axios.get(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
 					    {
 	   responseType : 'arraybuffer',
@@ -50,19 +51,27 @@ export async function processPhotoJob( job : Job<requestPayloadSingular>){
 		const dbErrorName : dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType 
 		if(dbErrorName === "ForeignKeyConstraintViolation"){
 		    console.log("The account or the event has been either deleted by the user or as per community guideline")
+		    io.to(idMap.get(ownerId) as string).emit("image_news" , {success : false , driveFileId : driveFileId})
 		}
 		else if(dbErrorName === "UniqueConstraintViolation"){
 		    console.log( "Try using a different name which doesn't already exist in your events")
+		    io.to(idMap.get(ownerId) as string).emit("image_news" , {success : false , driveFileId : driveFileId})
 		}
-		else throw dbError
+		else {
+		    io.to(idMap.get(ownerId) as string).emit("image_news" , {success : false , driveFileId : driveFileId})
+		    throw dbError
+		}
 	    }
-	else throw dbError
+	else {
+	    io.to(idMap.get(ownerId) as string).emit("image_news" , {success : false , driveFileId : driveFileId})
+	    throw dbError
 	}
+	}
+	io.to(idMap.get(ownerId) as string).emit("image_news" , {success : true , driveFileId : driveFileId})
 	console.log(`The processing is completed for ${driveFileId}`) // don't forget to send a success webSocket call , and after the sucess webSocket call is received by the frontend for each successfull websocket transaction invalidate the query.
     }
     catch(err : unknown){
 	if(err instanceof Error){
-	    // in error we can return
 	    console.log(err.name)
 	    console.log(err.stack)
 	}
