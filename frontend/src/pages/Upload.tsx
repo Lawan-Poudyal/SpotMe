@@ -71,18 +71,18 @@ async function openGoogleDrivePicker(
   .setCallback((data) => {
     console.log('callback fired:', data.action, data.docs);
     if (data.action === window.google.picker.Action.PICKED) {
-      resolve(data.docs ?? []);
+      resolve({data : data.docs ?? [], accessToken});
     } else if (data.action === window.google.picker.Action.CANCEL) {
-      resolve([]);
+      resolve({data : [] , accessToken});
     }
   })
   .build();
     picker.setVisible(true);
-  });
-}
+  })};
 
 export default function UploadTab({ event }: UploadTabProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
+  const [accessToken , setAccessToken] = useState<string>("")
   const eventId = useParams().eventId;
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -114,7 +114,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     const mapped: UploadFile[] = driveFiles.map((df) => ({
       id: `drive-${df.id}-${Math.random()}`,
       file: new File([], df.name, { type: df.mimeType }),
-      previewUrl: `https://drive.google.com/thumbnail?id=${df.id}&sz=w128`,
+      previewUrl: df.thumbnailUrl ?? "",
       status: "pending",
       progress: 0,
       source: "drive",
@@ -152,7 +152,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     if (isDriveLoading || isUploading) return;
     setIsDriveLoading(true);
     try {
-      const picked = await openGoogleDrivePicker(
+      const {data : picked , accessToken} = await openGoogleDrivePicker(
         userId,
         String(eventId),
         setErrorTitle,
@@ -160,6 +160,7 @@ export default function UploadTab({ event }: UploadTabProps) {
         setIsErrorOpen,
       );
       if (picked.length > 0) addDriveFiles(picked);
+      setAccessToken(accessToken)
     } catch (err) {
       console.error("Google Drive picker error:", err);
     } finally {
@@ -260,6 +261,7 @@ export default function UploadTab({ event }: UploadTabProps) {
       const driveSuccess = await uploadEventPhotos({
         eventId: String(eventId),
         ownerId: String(userId),
+	accessToken : accessToken,
         driveFileIds: driveFiles
           .map((f) => f.driveFileId)
           .filter((id): id is string => Boolean(id)),

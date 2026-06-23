@@ -1,19 +1,29 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { prisma } from "../config/prismaClientConfig";
-import type {Request , Response} from "express"
 import dbErrorHash from "../utils/dbErrorHash";
+import { cloudinary } from "../lib/cloudinary";
+import axios from 'axios'
 import type { dbErrorType } from "../utils/dbErrorHash";
+import type {Request, Response} from 'express' 
 
 type requestPayload = {
     eventId : string;
     ownerId : string;
+    accessToken : string;
     driveFileIds : string[];
+}
+
+type toInjectType = {
+    secure_url : string;
+    public_id : string;
+    height : string;
+    width : string;
 }
 
 const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
 
-	let {eventId , ownerId , driveFileIds} = req.body as requestPayload
+	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayload
 	
 	if(!eventId || eventId.trim()===""){
 	    return res.status(400).json({
@@ -33,17 +43,47 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 		}
 	    })
 	}
+	if(!accessToken || accessToken.trim()=== "") {
+	    return res.status(400).json({
+		success : false,
+		err : {
+		    name : 'Bad request payload',
+		    message : 'Missing access token in request payload'
+		}
+	    })
+	}
 
-	const toInjectOnce = driveFileIds.map(item => {
-	    return { uploaded_by : ownerId , event_id : eventId , photo_url :  item ,public_id:`${item}-drive` }
-	})
+
+	const googleDriveResponse = await Promise.all(
+	    driveFileIds.map(async (id) =>{
+		const response =  await axios.get(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
+			  {
+		    responseType : 'arraybuffer',
+		    headers : {
+			Authorization : `Bearer ${accessToken}`,
+		    }
+		})	
+		const uploadResult = await new Promise((resolve, reject) => {
+		    cloudinary.uploader.upload_chunked_stream({ resource_type: "image", chunk_size: 5000000}, (error, uploadResult) => {
+			if (error) {
+			    return reject(error);
+			}
+			return resolve(uploadResult);
+		}).end(response.data);
+		});
+		
+	    return uploadResult
+	    })
+	) as toInjectType[]
+
+	const toInjectOnce = googleDriveResponse.map(item => {
+	    return { uploaded_by : ownerId , event_id : eventId , photo_url : item.secure_url ,public_id:item.public_id , height : item.height , width: item.width }
+	}) 
 
 	try{
-	    const data = await prisma.photo.createMany({
+	    await prisma.photo.createMany({
 		data : toInjectOnce
 	    })
-
-
 	}
 	catch(dbError : unknown){
 	    if(dbError instanceof PrismaClientKnownRequestError){
