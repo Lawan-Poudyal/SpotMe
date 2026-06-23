@@ -1,9 +1,9 @@
 import type { Response, Request } from 'express';
-import { auth } from '../config/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ValidationError, UnauthorizedError, NotFoundError, ForbiddenError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { cloudinary } from '../lib/cloudinary';
+import { getSession } from '../utils/getSessions';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   const eventId = req.query.eventid;
@@ -41,20 +41,23 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   if (!eventId || typeof eventId !== 'string')
     throw new ValidationError('Missing eventId parameter');
 
-  console.time('session');
-  const [session, [dbPhoto, eventOwner]] = await Promise.all([
-    auth.api.getSession({ headers: req.headers as HeadersInit }),
-    Promise.all([
-      prisma.photo.findUnique({ where: { id: photoId } }),
-      prisma.event.findUnique({ where: { id: eventId }, select: { userId: true } }),
-    ]),
+  const [session, dbPhoto] = await Promise.all([
+    getSession(req.headers as HeadersInit),
+    prisma.photo.findUnique({
+      where: { id: photoId },
+      include: { event: { select: { userId: true } } },
+    }),
   ]);
-  console.timeEnd('session');
 
   if (!session) throw new UnauthorizedError();
   if (!dbPhoto) throw new NotFoundError('Photo');
-  if (dbPhoto.uploaded_by !== session.user.id || eventOwner?.userId !== session.user.id)
+
+  const isUploader = dbPhoto.uploaded_by === session.user.id;
+  const isEventOwner = dbPhoto.event?.userId === session.user.id;
+
+  if (!isUploader && !isEventOwner) {
     throw new ForbiddenError('You do not have permission to delete this photo');
+  }
 
   await prisma.photo.delete({ where: { id: photoId } });
 

@@ -4,14 +4,15 @@ import { auth } from '../config/auth';
 import { cloudinary } from '../lib/cloudinary';
 import { NotFoundError, UnauthorizedError, ValidationError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
+import { getSession } from '../utils/getSessions';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
 
   console.time('sign');
-  const session = await auth.api.getSession({
-    headers: req.headers as HeadersInit,
-  });
+  const session = await getSession(req.headers as HeadersInit);
+  console.timeEnd('sign');
+
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
 
   const eventId = req.body.eventId;
@@ -33,7 +34,6 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
       cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
     },
   });
-  console.timeEnd('sign');
 });
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
@@ -44,10 +44,9 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
     throw new ValidationError('Missing or invalid photos array in the request body');
 
   console.time('parallel');
-  const [session, event] = await Promise.all([
-    auth.api.getSession({ headers: req.headers as HeadersInit }),
-    prisma.event.findUnique({ where: { id: eventId } }),
-  ]);
+
+  const session = await getSession(req.headers as HeadersInit);
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
   console.timeEnd('parallel');
 
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
