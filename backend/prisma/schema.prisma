@@ -100,7 +100,7 @@ model Photo {
   width       Int?
   height      Int?
   event       Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [uploaded_by], references: [id])
+  user        User     @relation(fields: [uploaded_by], references: [id] , onDelete: Cascade)
 
   @@index([event_id])
   @@map("photo")

@@ -11,9 +11,6 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
     'image/png',
     'image/jpg',
     'image/webp',
-    'application/pdf',
-    'video/mp4',
-    'video/webm',
   ];
 
   if (allowedTypes.includes(file.mimetype)) {

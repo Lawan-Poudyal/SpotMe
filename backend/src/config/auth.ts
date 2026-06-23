@@ -1,14 +1,20 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { prisma } from "./prismaClientConfig";
+import { prisma } from "./prismaClientConfig.js";
 import { createAuthMiddleware  , APIError} from "better-auth/api";
-import {checkEmailValidity, checkPasswordValidity, checkUsernameValidity} from "../utils/formValidation"
-import type { passwordError } from "../utils/formValidation";
-import { sendEmail } from "../utils/sendEmail";
+import {checkEmailValidity, checkPasswordValidity, checkUsernameValidity} from "../utils/formValidation.js"
+import type { passwordError } from "../utils/formValidation.js";
+import { sendEmail } from "../utils/sendEmail.js";
 export const auth = betterAuth({
     emailVerification:{
 	sendVerificationEmail : async({user, url})=>{
-	    void sendEmail(user.email , url)
+	     try {
+        await sendEmail(user.email, url);
+    } catch (err) {
+        console.error("Failed to send verification email:", err);
+        // decide: rethrow as APIError so better-auth surfaces it properly,
+        // or swallow it if you don't want signup to fail on email issues
+    }
 	}
 	,
     sendOnSignIn : true,

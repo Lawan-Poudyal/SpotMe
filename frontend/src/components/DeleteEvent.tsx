@@ -3,6 +3,8 @@ import { Modal, Box, Typography, Button, Fade, Backdrop } from "@mui/material";
 import type { Dispatch , SetStateAction } from "react";
 import type { eventType } from "../types/eventType";
 import { useState } from "react";
+import { handleNonUniqueEventNames } from "../utility/eventUtils";
+import { useDeleteEvent } from "../hooks/eventHooks";
 import { onDeleteEvent, onUpdateEvent } from "../utility/eventUtils";
 
 
@@ -26,7 +28,6 @@ type Props = {
   setTitleError : Dispatch<SetStateAction<string>>;
   setSubTitleError : Dispatch<SetStateAction<string>>;
   setIsErrorOpen : Dispatch<SetStateAction<boolean>>;
-  setEvents : Dispatch<SetStateAction<eventType[]>>
   eventName : string;
   userId : string;
   eventId : string;
@@ -40,16 +41,16 @@ const DeleteEventModal: React.FC<Props> = ({
     setTitleError,
     setSubTitleError,
     setIsErrorOpen,
-    setEvents,
     eventName,
     userId,
-    eventId
 }) => {
   
     const [isLoading , setIsLoading] = useState<boolean>(false)
 
+    const deleteEvent = useDeleteEvent(eventName , events, userId , setIsLoading , setTitleError , setSubTitleError , setIsErrorOpen)
+
     const handleDelete = async()=>{
-	await onDeleteEvent(eventName , eventId , events , setTitleError , setSubTitleError , setIsErrorOpen , setEvents , setIsLoading , userId)
+	deleteEvent.mutate()
 	onClose()
     }
 

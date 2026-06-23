@@ -10,8 +10,8 @@ import { handleLogIn as logInApi } from '../api/log-in'
 import { handleSignUp as signUpApi } from '../api/sign-up'
 import { googleSignIn } from '../api/google-sign-in'
 import { handleEmailUniqueness } from '../api/checkEmailUniquness.js'
-import { UserContext } from '../context/UserContext.js'
-import { useContext } from 'react'
+import { useProfile } from '../context/zuContext.js'
+import type { zuContextType } from '../context/zuContext.js'
 // the loogedIn variable is written in a bad way it's acutally determines whether the user wants to log in or sign up
 
 export function LoginBox({ loggedIn, open, setOpen, setErrorMsg, setOpenErrorPopUp, openError }: LoginOrSignupBox): React.ReactNode {
@@ -27,11 +27,11 @@ export function LoginBox({ loggedIn, open, setOpen, setErrorMsg, setOpenErrorPop
 	const [isLogInLoading, setIsLogInLoading] = useState<boolean>(false)
 	const [isSignUpLoading, setIsSignUpLoading] = useState<boolean>(false)
 	const [isEmailUniqueError, setIsEmailUniqueError] = useState<boolean>(true)
-	const userInfo = useContext(UserContext)
+	const zuContextLoggedIn = useProfile((s:zuContextType)=>s.loggedIn)
 	const navigate = useNavigate()
 
 	useEffect(() => {
-		if (userInfo?.contextState?.loggedIn) {
+		if (zuContextLoggedIn) {
 			navigate("/dashboard")
 		}
 	}, [])

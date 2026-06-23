@@ -22,6 +22,7 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
       uploaded_at: true,
       uploaded_by: true,
       width: true,
+      public_id : true,
       height: true,
     },
   });

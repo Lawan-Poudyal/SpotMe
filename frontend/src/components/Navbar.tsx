@@ -10,34 +10,32 @@ import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
 import { handleLogOut } from '../api/sign-out';
-import { SwitchCamera } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
+import type { zuContextType } from '../context/zuContext';
+import { useProfile } from '../context/zuContext';
 
+const pages: string[] = [];
 const settings = ['Profile', 'Account', 'Logout'];
 
-interface NavbarProps {
-  onMenuClick: () => void;
-}
-
-export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
-  // remove anchorElNav state entirely
+function ResponsiveAppBar() {
+  const setProfile = useProfile((s:zuContextType) => s.setProfile)
+  const profilePicLink = useProfile((s:zuContextType)=>s.profilePicLink)
+  const fullName = useProfile((s:zuContextType) =>s.userName)
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-  const userContext = useContext(UserContext);
   const navigation = useNavigate();
 
-  const fullName = userContext?.contextState?.userName as string;
-  const profilePicLink = userContext?.contextState?.profilePicLink as string;
-  const twoInitials = fullName
-    .split(' ')
-    .map((item) => item[0].toUpperCase())
-    .join('');
+  const twoInitials = fullName.split(' ').map(item => item[0].toUpperCase()).join("");
 
+  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNav(event.currentTarget);
+  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
+  const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleCloseUserMenu = () => setAnchorElUser(null);
 
   return (
@@ -45,26 +43,23 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
       position="static"
       elevation={0}
       sx={{
-        background: '#0A0A12',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: "#0A0A12",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      <Container maxWidth={false}>
+      <Container maxWidth="xl">
         <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 60 } }}>
+
           {/* Desktop logo */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 0 }}>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 4 }}>
             <Box
               sx={{
-                width: 32,
-                height: 32,
-                borderRadius: '10px',
+                width: 32, height: 32, borderRadius: '10px',
                 background: '#F97316',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <SwitchCamera size={16} color="#fff" />
+              <CalendarDays size={16} color="#fff" />
             </Box>
             <Typography
               variant="h6"
@@ -83,34 +78,59 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
             </Typography>
           </Box>
 
-          {/* Mobile hamburger — now calls onMenuClick */}
+          {/* Mobile hamburger */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}>
             <IconButton
               size="large"
               aria-label="open navigation menu"
-              onClick={onMenuClick}
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
               sx={{ color: 'rgba(255,255,255,0.4)' }}
             >
               <MenuIcon />
             </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              keepMounted
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{
+                display: { xs: 'block', md: 'none' },
+                '& .MuiPaper-root': {
+                  background: '#1A1A2E',
+                  border: '0.5px solid rgba(255,255,255,0.08)',
+                  borderRadius: '12px',
+                  mt: 1,
+                },
+                '& .MuiMenuItem-root': {
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: '0.875rem',
+                  '&:hover': { background: 'rgba(255,255,255,0.04)', color: '#EAEAF5' },
+                },
+              }}
+            >
+              {pages.map((page) => (
+                <MenuItem key={page} onClick={handleCloseNavMenu}>
+                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
           </Box>
 
           {/* Mobile logo */}
-          <Box
-            sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}
-          >
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}>
             <Box
               sx={{
-                width: 28,
-                height: 28,
-                borderRadius: '8px',
+                width: 28, height: 28, borderRadius: '8px',
                 background: '#F97316',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              <SwitchCamera size={14} color="#fff" />
+              <CalendarDays size={14} color="#fff" />
             </Box>
             <Typography
               variant="h6"
@@ -129,6 +149,7 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
             </Typography>
           </Box>
 
+          {/* Desktop nav pages spacer */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }} />
 
           {/* Avatar / user menu */}
@@ -138,14 +159,10 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
                 {!profilePicLink ? (
                   <Box
                     sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
+                      width: 36, height: 36, borderRadius: '50%',
                       background: 'rgba(249,115,22,0.15)',
                       border: '1.5px solid rgba(249,115,22,0.35)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: '#F97316',
                       fontSize: '0.75rem',
                       fontWeight: 600,
@@ -159,8 +176,7 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
                     alt={twoInitials}
                     src={profilePicLink}
                     sx={{
-                      width: 36,
-                      height: 36,
+                      width: 36, height: 36,
                       border: '1.5px solid rgba(249,115,22,0.35)',
                     }}
                   />
@@ -169,6 +185,7 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
             </Tooltip>
 
             <Menu
+              sx={{ mt: '48px' }}
               id="menu-appbar-user"
               anchorEl={anchorElUser}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -207,8 +224,8 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
                 <MenuItem
                   key={setting}
                   onClick={() => {
-                    if (setting === 'Logout') {
-                      handleLogOut(navigation, userContext?.setContextState);
+                    if (setting === "Logout") {
+                      handleLogOut(navigation,setProfile);
                     }
                     handleCloseUserMenu();
                   }}
@@ -218,8 +235,11 @@ export default function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
               ))}
             </Menu>
           </Box>
+
         </Toolbar>
       </Container>
     </AppBar>
   );
 }
+
+export default ResponsiveAppBar;
