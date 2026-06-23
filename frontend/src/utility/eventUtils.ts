@@ -7,7 +7,7 @@ type errType = {
   message: string;
 };
 
-const handleNonUniqueEventNames = (
+export const handleNonUniqueEventNames = (
   eventName: string,
   events: eventType[],
   setTitleError: Dispatch<SetStateAction<string>>,
@@ -145,7 +145,7 @@ export const onGetEvent = async (
     err: errType;
   };
 
-  if (!data.success) {
+  if (!data?.success) {
     setTitleError(data.err.name);
     setSubTitleError(data.err.message);
     setIsErrorOpen(true);

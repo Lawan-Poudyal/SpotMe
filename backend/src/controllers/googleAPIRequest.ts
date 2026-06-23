@@ -1,20 +1,15 @@
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
-import { prisma } from "../config/prismaClientConfig";
 import type {Request , Response} from "express"
-import dbErrorHash from "../utils/dbErrorHash";
-import type { dbErrorType } from "../utils/dbErrorHash";
+import { auth } from "../config/auth";
+import { APIError } from "better-auth";
 
 type getRequestPaylaodType = {
     ownerId : string;
 }
-
 type requestBodyType = {
-    id : string;
-    providerId : string;
     accessToken : string | null;
-    refreshToken : string | null;
-    idToken : string | null;
-    accessTokenExpiresAt : Date | null;
+    accessTokenExpiresAt : Date | undefined;
+    scopes : string[];
+    idToken : string | undefined; 
 }
 
 const getAPIKeyHandler = async(req : Request , res : Response)=>{
@@ -27,7 +22,7 @@ const getAPIKeyHandler = async(req : Request , res : Response)=>{
 		success : false,
 		err : {
 		    name : 'Bad request payload',
-		    message : 'Missing owner id in the request payload'
+		    msg : 'Missing owner id in the request payload'
 		}
 	    })
 	}
@@ -35,73 +30,55 @@ const getAPIKeyHandler = async(req : Request , res : Response)=>{
 	let requestBody : requestBodyType | null = null
 
 	try{
-	    requestBody = await prisma.account.findFirst({
-		where : {
-		    userId : ownerId,
-		    providerId : 'google'
-		},
-		select:{
-		    id : true,
-		    providerId : true,
-		    accessToken : true,
-		    refreshToken  :true,
-		    idToken : true,
-		    accessTokenExpiresAt: true
+	    requestBody = await auth.api.getAccessToken({
+		body:{
+		    providerId : 'google',
+		    userId : ownerId
 		}
 	    }) 
 
-	    if (!requestBody || !requestBody.idToken){
+	    if(!requestBody.scopes.includes('https://www.googleapis.com/auth/drive.file')){
 		return res.status(403).json({
 		    success : false,
-		    data : {
-			cause : 'access_denied' // because the user might have missing providerId google 	
-		    }}
-		)
-	    }
-
-	    // checking for access Token expiration
-	    
-	    const expirationTimeSeconds = Math.floor(new Date(String(requestBody.accessTokenExpiresAt)).getTime() / 1000) 
-
-	    if (Date.now() > expirationTimeSeconds){
-
+		    err: {
+			name : 'Unauthorized',
+			msg :"unauthorized_for_google_drive_api" 
+		    }
+		})
 	    }
 
 	}
 
-	catch(dbError : unknown){
-	    if(dbError instanceof PrismaClientKnownRequestError){
-		const dbErrorCode = dbError.code
-		const dbErrorName : dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType 
-		if(dbErrorName === "ForeignKeyConstraintViolation"){
-		    return res.status(401).json({
+	catch(dbError){
+	    if(dbError instanceof APIError){
+		return res.status(404).json(
+		    {
 			success : false,
 			err : {
-			    name : "Owner doesn't exist",
-			    message : "The account has been either deleted by the user or as per community guideline"
+			    name : 'Not Found',
+			    msg : "The account isn't found "
 			}
-		    })
-
-		}
-		else throw dbError
+		    }
+		)
 	    }
-	else throw dbError
 	}
 
 	return res.status(200).json({
 	    success :true,
-	    data : {mogged : 'you just go mogged' , body : requestBody}
+	    data : requestBody
 	})
 	
 
     }
     catch(err : unknown){
 	if(err instanceof Error){
+	    console.log()
+	    console.log(err.stack)
 	    return res.status(500).json({
 		success : false,
 		err :{
 		    name : err.name,
-		    message : err.message
+		    msg : err.message
 		}
 	    })
 	}
