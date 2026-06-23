@@ -1,3 +1,4 @@
+import http from 'http'
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -13,8 +14,11 @@ import { corsOptions } from './config/corsOptions';
 import { limiter } from './config/rateLimit';
 import { uploadrouter } from './routers/uploadRoute';
 import { photoRouter } from './routers/photoRoute';
+import {initSocket} from './server';
 
 const app = express();
+export const server = http.createServer(app)
+initSocket(server)
 
 app.use(limiter)
 app.use(helmet());

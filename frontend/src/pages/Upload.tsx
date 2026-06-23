@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, type Dispatch, type SetStateAction } from "react";
+import { useState, useRef, useEffect, useCallback, type Dispatch, type SetStateAction } from "react";
 import {
   UploadCloud,
   X,
@@ -18,6 +18,7 @@ import { uploadEventPhotos } from "../api/eventPhotoUploadApi";
 import { useMutation } from "@tanstack/react-query";
 import { fileUploads } from "../api/fileUploadApi";
 import { queryClient } from "../config/tanstack";
+import { io } from 'socket.io-client';
 
 interface UploadFile {
   id: string;
@@ -27,6 +28,11 @@ interface UploadFile {
   progress: number;
   source: "local" | "drive";
   driveFileId?: string;
+}
+
+type dataType = {
+  success: boolean;
+  driveFileId: string;
 }
 
 interface UploadTabProps {
@@ -61,28 +67,28 @@ async function openGoogleDrivePicker(
   const accessToken = responseObj?.accessToken;
 
   return new Promise((resolve) => {
-      const picker = new window.google.picker.PickerBuilder()
-  .addView(new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES))
-  .setOAuthToken(accessToken)
-  .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
-  .setAppId("1090789030635")
-  .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
-  .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-  .setCallback((data) => {
-    console.log('callback fired:', data.action, data.docs);
-    if (data.action === window.google.picker.Action.PICKED) {
-      resolve({data : data.docs ?? [], accessToken});
-    } else if (data.action === window.google.picker.Action.CANCEL) {
-      resolve({data : [] , accessToken});
-    }
-  })
-  .build();
+    const picker = new window.google.picker.PickerBuilder()
+      .addView(new window.google.picker.View(window.google.picker.ViewId.DOCS_IMAGES))
+      .setOAuthToken(accessToken)
+      .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY as string)
+      .setAppId("1090789030635")
+      .setSelectableMimeTypes("image/jpeg,image/png,image/webp,image/heic,image/gif")
+      .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
+      .setCallback((data) => {
+        if (data.action === window.google.picker.Action.PICKED) {
+          resolve({ data: data.docs ?? [], accessToken });
+        } else if (data.action === window.google.picker.Action.CANCEL) {
+          resolve({ data: [], accessToken });
+        }
+      })
+      .build();
     picker.setVisible(true);
-  })};
+  });
+}
 
 export default function UploadTab({ event }: UploadTabProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
-  const [accessToken , setAccessToken] = useState<string>("")
+  const [accessToken, setAccessToken] = useState<string>("");
   const eventId = useParams().eventId;
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -92,6 +98,50 @@ export default function UploadTab({ event }: UploadTabProps) {
   const [subErrorTitle, setSubErrorTitle] = useState<string>("");
   const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Track how many drive files are still awaiting socket confirmation
+  const pendingDriveSocketRef = useRef<Set<string>>(new Set());
+  // Track if any socket result was successful (for query invalidation)
+  const anyDriveSuccessRef = useRef<boolean>(false);
+
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+
+useEffect(() => {
+  const socket = io(import.meta.env.VITE_SERVER_BASE_URL, {
+    auth: { userId }
+  });
+  socketRef.current = socket;
+
+  socket.on("image_news", (data: dataType) => {
+    const { success, driveFileId } = data;
+
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.driveFileId === driveFileId
+          ? { ...f, status: success ? "done" : "error", progress: success ? 100 : f.progress }
+          : f
+      )
+    );
+
+    if (success) anyDriveSuccessRef.current = true;
+
+    pendingDriveSocketRef.current.delete(driveFileId);
+
+    if (pendingDriveSocketRef.current.size === 0) {
+      if (anyDriveSuccessRef.current) {
+        queryClient.invalidateQueries({ queryKey: ["photos", eventId] });
+      }
+      anyDriveSuccessRef.current = false;
+      setFiles((prev) => prev.filter((f) => f.status !== "done"));
+      setIsUploading(false);
+    }
+  });
+
+  return () => {
+    socket.off("image_news");
+    socket.disconnect(); // ← critical
+  };
+}, [userId]); // re-connect only if userId changes
 
   // ── File handling ─────────────────────────────────────
 
@@ -152,7 +202,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     if (isDriveLoading || isUploading) return;
     setIsDriveLoading(true);
     try {
-      const {data : picked , accessToken} = await openGoogleDrivePicker(
+      const { data: picked, accessToken } = await openGoogleDrivePicker(
         userId,
         String(eventId),
         setErrorTitle,
@@ -160,7 +210,7 @@ export default function UploadTab({ event }: UploadTabProps) {
         setIsErrorOpen,
       );
       if (picked.length > 0) addDriveFiles(picked);
-      setAccessToken(accessToken)
+      setAccessToken(accessToken);
     } catch (err) {
       console.error("Google Drive picker error:", err);
     } finally {
@@ -168,7 +218,7 @@ export default function UploadTab({ event }: UploadTabProps) {
     }
   };
 
-  // ── Upload (local → Cloudinary, drive → uploadEventPhotos) ───────────────
+  // ── Upload ─────────────────────────────────────────────
 
   const uploadSignatureMutation = useMutation({
     mutationFn: () => fileUploads.signRequest(eventId),
@@ -203,15 +253,18 @@ export default function UploadTab({ event }: UploadTabProps) {
     const localFiles = files.filter((f) => f.source === "local");
     const driveFiles = files.filter((f) => f.source === "drive");
 
-    // Mark all as uploading
+    // Mark all as uploading at 0%
     setFiles((prev) =>
-      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 10 })),
+      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 0 })),
     );
 
     // ── Local files → Cloudinary ──────────────────────────
     if (localFiles.length > 0) {
       try {
         const sig = await uploadSignatureMutation.mutateAsync();
+
+        // Move local files to 30% after signature fetch
+        setFileStatus(localFiles.map((f) => f.id), "uploading", 30);
 
         const uploads = localFiles.map((f) => {
           const formData = new FormData();
@@ -223,7 +276,7 @@ export default function UploadTab({ event }: UploadTabProps) {
           return fileUploads.uploadFile(formData, sig.cloudName).then((res) => ({ f, res }));
         });
 
-        // Tick progress to 60 once uploads are in flight
+        // Tick to 60% once uploads are in flight
         setFileStatus(localFiles.map((f) => f.id), "uploading", 60);
 
         const results = await Promise.allSettled(uploads);
@@ -237,6 +290,9 @@ export default function UploadTab({ event }: UploadTabProps) {
           .filter((id): id is string => id !== null);
 
         if (succeeded.length > 0) {
+          // Move succeeded to 90% before save
+          setFileStatus(succeeded.map(({ f }) => f.id), "uploading", 90);
+
           await saveUploadMutation.mutateAsync(
             succeeded.map(({ res }) => ({
               url: res.secure_url,
@@ -256,44 +312,53 @@ export default function UploadTab({ event }: UploadTabProps) {
       }
     }
 
-    // ── Drive files → uploadEventPhotos ───────────────────
+    // ── Drive files → uploadEventPhotos then wait for socket ─────────────
     if (driveFiles.length > 0) {
+      const driveFileIds = driveFiles
+        .map((f) => f.driveFileId)
+        .filter((id): id is string => Boolean(id));
+
+      // Register all drive file IDs as pending socket confirmation
+      pendingDriveSocketRef.current = new Set(driveFileIds);
+      anyDriveSuccessRef.current = false;
+
+      // Step 1 → 20%
+      setFileStatus(driveFiles.map((f) => f.id), "uploading", 20);
+
       const driveSuccess = await uploadEventPhotos({
         eventId: String(eventId),
         ownerId: String(userId),
-	accessToken : accessToken,
-        driveFileIds: driveFiles
-          .map((f) => f.driveFileId)
-          .filter((id): id is string => Boolean(id)),
-        setIsUploading: () => {}, // outer flag already set
+        accessToken,
+        driveFileIds,
+        setIsUploading: () => {},
         setErrorTitle,
         setSubErrorTitle,
         setIsErrorOpen,
       });
-      if (driveSuccess) {
-	queryClient.invalidateQueries({ queryKey: ['photos', eventId] });
+
+      if (!driveSuccess) {
+        // API call itself failed — mark all as error immediately
+        setFileStatus(driveFiles.map((f) => f.id), "error");
+        pendingDriveSocketRef.current.clear();
+        setIsUploading(false);
+        return;
+      }
+
+      // API accepted — move to 60% and wait for socket events per file
+      setFileStatus(driveFiles.map((f) => f.id), "uploading", 60);
+      // isUploading stays true; socket handler will clear it once all resolved
     }
 
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.source === "drive"
-            ? {
-                ...f,
-                status: driveSuccess ? ("done" as const) : ("error" as const),
-                progress: driveSuccess ? 100 : f.progress,
-              }
-            : f,
-        ),
-      );
+    // If there were no drive files, we're done
+    if (driveFiles.length === 0) {
+      setFiles((prev) => prev.filter((f) => f.status !== "done"));
+      setIsUploading(false);
     }
-
-    // Remove successfully uploaded files, keep only failed ones for retry
-    setFiles((prev) => prev.filter((f) => f.status !== "done"));
-    setIsUploading(false);
   };
 
   const pendingCount = files.filter((f) => f.status === "pending").length;
   const failedCount = files.filter((f) => f.status === "error").length;
+  const hasDriveFiles = files.some((f) => f.source === "drive");
 
   // ── Render ────────────────────────────────────────────
 
@@ -322,10 +387,9 @@ export default function UploadTab({ event }: UploadTabProps) {
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-2xl p-12 flex flex-col items-center
             text-center gap-4 cursor-pointer transition select-none
-            ${
-              isDragging
-                ? "border-[#F97316]/60 bg-[#F97316]/5"
-                : "border-white/15 hover:border-white/25"
+            ${isDragging
+              ? "border-[#F97316]/60 bg-[#F97316]/5"
+              : "border-white/15 hover:border-white/25"
             }`}
         >
           <UploadCloud size={48} className={isDragging ? "text-[#F97316]" : "text-white/25"} />
@@ -412,12 +476,17 @@ export default function UploadTab({ event }: UploadTabProps) {
                   {f.source === "drive" && f.status === "pending" && (
                     <p className="text-white/35 text-xs mt-0.5">From Google Drive</p>
                   )}
+                  {f.source === "drive" && f.status === "uploading" && (
+                    <p className="text-white/35 text-xs mt-0.5">
+                      {f.progress < 40 ? "Sending to server…" : "Processing on server…"}
+                    </p>
+                  )}
 
-                  {/* Progress bar */}
-                  {f.status === "uploading" && (
+                  {/* Progress bar — shown for uploading AND at 100 just before done flips */}
+                  {(f.status === "uploading") && (
                     <div className="mt-2 h-1 rounded-full bg-white/10 overflow-hidden">
                       <div
-                        className="h-full bg-[#F97316] rounded-full transition-all duration-200"
+                        className="h-full bg-[#F97316] rounded-full transition-all duration-500"
                         style={{ width: `${f.progress}%` }}
                       />
                     </div>
@@ -455,15 +524,20 @@ export default function UploadTab({ event }: UploadTabProps) {
           <button
             onClick={handleUpload}
             disabled={isUploading || pendingCount === 0}
-            className="mt-6 w-full flex items-center justify-center gap-2
-              py-3.5 rounded-2xl bg-[#F97316] hover:opacity-90
-              disabled:opacity-60 disabled:cursor-not-allowed
-              text-white font-semibold text-sm transition"
+            className={`mt-6 w-full flex items-center justify-center gap-2
+              py-3.5 rounded-2xl font-semibold text-sm transition-all duration-300
+              disabled:cursor-not-allowed text-white
+              ${isUploading
+                ? "bg-[#F97316] opacity-80 shadow-[0_0_20px_4px_rgba(249,115,22,0.45)] animate-pulse cursor-not-allowed"
+                : pendingCount > 0
+                  ? "bg-[#F97316] hover:opacity-90 shadow-[0_0_16px_2px_rgba(249,115,22,0.30)] hover:shadow-[0_0_24px_6px_rgba(249,115,22,0.50)]"
+                  : "bg-[#F97316] opacity-60"
+              }`}
           >
             {isUploading ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Uploading…
+                {hasDriveFiles ? "Processing Drive photos…" : "Uploading…"}
               </>
             ) : (
               <>
