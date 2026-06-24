@@ -8,3 +8,8 @@ export type Photo = {
   height: number;
   width: number;
 };
+
+export type DownloadImage = {
+  url: string;
+  filename: string;
+};

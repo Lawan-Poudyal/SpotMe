@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ImageIcon, Trash2 } from 'lucide-react';
+import { Download, ImageIcon, Trash2 } from 'lucide-react';
 import type { eventType } from '../types/eventType';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { photo } from '../api/photoApi';
@@ -15,11 +15,11 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
+import { downloadPhoto } from '../utility/downloadImages';
 
 interface AllPhotosTabProps {
   event: eventType;
 }
-
 
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
@@ -62,15 +62,14 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
   return (
     <div className="p-1">
-    <PhotoAlbum
-  layout="rows"
-  photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
-  targetRowHeight={320}
-  rowConstraints={{ minPhotos: 1 }}
-  spacing={6}
-  onClick={({ index }) => setLightboxIndex(index)}
-  // ADD THIS PROP:
-/>
+      <PhotoAlbum
+        layout="rows"
+        photos={slides.map((s, i) => ({ ...s, key: data[i].id }))}
+        targetRowHeight={320}
+        rowConstraints={{ minPhotos: 1 }}
+        spacing={6}
+        onClick={({ index }) => setLightboxIndex(index)}
+      />
 
       <Lightbox
         open={lightboxIndex >= 0}
@@ -82,10 +81,24 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
             <button
               key="delete"
               onClick={() => setConfirmOpen(true)}
-              className="flex items-center justify-center w-10 h-10 text-white/70 hover:text-red-400"
+              className="flex  mr-1 items-center justify-center w-10 h-10 text-white/70 hover:text-red-400"
               title="Delete photo"
             >
               <Trash2 size={32} color="#CE1126" className="cursor-pointer" />
+            </button>,
+
+            <button
+              key="Download"
+              onClick={() =>
+                downloadPhoto(
+                  data[lightboxIndex]?.photo_url,
+                  `photo_${data[lightboxIndex]?.id}.jpg`,
+                )
+              }
+              className="flex items-center justify-center w-10 h-10"
+              title="Download photo"
+            >
+              <Download size={32} className="cursor-pointer" />
             </button>,
             'close',
           ],
