@@ -28,7 +28,7 @@ export function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
   const navigation = useNavigate();
 
   const twoInitials = fullName
-    .split(' ')
+    ?.split(' ')
     .map((item) => item[0].toUpperCase())
     .join('');
 
