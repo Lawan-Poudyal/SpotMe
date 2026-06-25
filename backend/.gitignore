@@ -5,3 +5,9 @@ node_modules
 /src/generated/prisma
 
 env
+.venv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
