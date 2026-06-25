@@ -1,12 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { useCreateEvent } from "../hooks/eventHooks";
-import {
-  X,
-  ArrowLeft,
-  UploadCloud,
-  Loader2,
-} from "lucide-react";
-import type { eventType } from "../types/eventType";
+import { useEffect, useRef, useState } from 'react';
+import { useCreateEvent } from '../hooks/eventHooks';
+import { X, ArrowLeft, UploadCloud, Loader2 } from 'lucide-react';
+import type { eventType } from '../types/eventType';
 
 type AddEventProps = {
   open: boolean;
@@ -28,7 +23,7 @@ export default function AddEvent({
   setSubTitleError,
   setIsErrorOpen,
 }: AddEventProps) {
-  const [eventName, setEventName] = useState("");
+  const [eventName, setEventName] = useState('');
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,41 +31,38 @@ export default function AddEvent({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ All hooks must be above any early return
   useEffect(() => {
     if (!open) return;
 
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
 
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
   }, [open, onClose]);
 
-  // Reset form whenever the modal opens
   useEffect(() => {
     if (open) {
-      setEventName("");
+      setEventName('');
       setCoverPreview(null);
       setCoverFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [open]);
 
-  // ✅ Early return AFTER all hooks
   if (!open) return null;
 
   const validateImage = (file: File): boolean => {
-    if (!file.type.startsWith("image/")) {
-      setTitleError("Invalid file");
-      setSubTitleError("Please upload an image file.");
+    if (!file.type.startsWith('image/')) {
+      setTitleError('Invalid file');
+      setSubTitleError('Please upload an image file.');
       setIsErrorOpen(true);
       return false;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setTitleError("File too large");
-      setSubTitleError("Image must be under 5MB.");
+      setTitleError('File too large');
+      setSubTitleError('Image must be under 5MB.');
       setIsErrorOpen(true);
       return false;
     }
@@ -102,26 +94,24 @@ export default function AddEvent({
     e.stopPropagation();
     setCoverPreview(null);
     setCoverFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCreate = async () => {
     const trimmed = eventName.trim();
 
     if (!trimmed) {
-      setTitleError("Event name required");
-      setSubTitleError("Please enter a name for your event.");
+      setTitleError('Event name required');
+      setSubTitleError('Please enter a name for your event.');
       setIsErrorOpen(true);
       return;
     }
 
-    const duplicate = events.some(
-      (e) => e.eventName.toLowerCase() === trimmed.toLowerCase()
-    );
+    const duplicate = events.some((e) => e.eventName.toLowerCase() === trimmed.toLowerCase());
 
     if (duplicate) {
-      setTitleError("Duplicate event");
-      setSubTitleError("An event with this name already exists.");
+      setTitleError('Duplicate event');
+      setSubTitleError('An event with this name already exists.');
       setIsErrorOpen(true);
       return;
     }
@@ -139,8 +129,8 @@ export default function AddEvent({
       setEvents([...events, newEvent]);
       onClose();
     } catch {
-      setTitleError("Something went wrong");
-      setSubTitleError("Failed to create event. Please try again.");
+      setTitleError('Something went wrong');
+      setSubTitleError('Failed to create event. Please try again.');
       setIsErrorOpen(true);
     } finally {
       setIsLoading(false);
@@ -150,15 +140,11 @@ export default function AddEvent({
   return (
     <div className="fixed inset-0 z-50 flex">
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal area */}
       <div className="relative flex-1 flex items-start justify-center overflow-y-auto">
         <div className="mt-10 w-full max-w-3xl px-6 lg:px-10 pb-10">
-
           {/* Back */}
           <button
             onClick={onClose}
@@ -171,24 +157,19 @@ export default function AddEvent({
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white">Create Event</h1>
-            <p className="text-white/50 text-sm mt-2">
-              Add event details and upload a cover image
-            </p>
+            <p className="text-white/50 text-sm mt-2">Add event details and upload a cover image</p>
           </div>
 
           {/* Card */}
           <div className="bg-[#2C2C2E] rounded-2xl border border-white/10 p-6 shadow-xl flex flex-col gap-6">
-
             {/* Event name */}
             <div>
-              <label className="text-white/70 text-sm font-medium">
-                Event Name
-              </label>
+              <label className="text-white/70 text-sm font-medium">Event Name</label>
               <input
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && !isLoading) handleCreate();
+                  if (e.key === 'Enter' && !isLoading) handleCreate();
                 }}
                 placeholder="e.g. KU Annual Fest 2026"
                 className="w-full mt-2 px-4 py-3 rounded-xl bg-[#1C1C1E] text-white
@@ -199,9 +180,7 @@ export default function AddEvent({
 
             {/* Cover image */}
             <div>
-              <label className="text-white/70 text-sm font-medium">
-                Cover Photo
-              </label>
+              <label className="text-white/70 text-sm font-medium">Cover Photo</label>
 
               {coverPreview ? (
                 <div className="relative mt-3 rounded-xl overflow-hidden border border-white/10">
@@ -231,14 +210,12 @@ export default function AddEvent({
                     items-center justify-center cursor-pointer transition-all select-none
                     ${
                       isDragging
-                        ? "border-orange-500 bg-orange-500/10"
-                        : "border-white/15 hover:border-white/30 hover:bg-white/[0.02]"
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-white/15 hover:border-white/30 hover:bg-white/[0.02]'
                     }`}
                 >
                   <UploadCloud className="text-white/40 mb-2" size={26} />
-                  <p className="text-white/50 text-sm">
-                    Drag & drop or click to upload
-                  </p>
+                  <p className="text-white/50 text-sm">Drag & drop or click to upload</p>
                   <p className="text-white/30 text-xs mt-1">PNG, JPG up to 5MB</p>
                 </div>
               )}
@@ -277,11 +254,10 @@ export default function AddEvent({
                   Creating…
                 </>
               ) : (
-                "Create Event"
+                'Create Event'
               )}
             </button>
           </div>
-
         </div>
       </div>
     </div>
