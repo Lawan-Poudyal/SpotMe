@@ -1,16 +1,22 @@
 import "./App.css";
 import { Route, Routes, Navigate } from "react-router-dom";
+import { useContext } from "react";
 
 import { LoginPage } from "./pages/LoginPage";
 import { PageNotFound } from "./pages/PageNotFound";
 
 import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import MyEvents from "./pages/MyEvent";
 import JoinEvent from "./pages/JoinEvent";
-import EventDetails from "./pages/EventDetails"; // ✅ ADD THIS
+import EventDetails from "./pages/EventDetails";
+import { UserContext } from "./context/UserContext";
 
 function App() {
+  const { contextState } = useContext(UserContext) ?? {};
+  const isLoggedIn = contextState?.loggedIn ?? false;
+
   return (
     <Routes>
       <Route path="/dashboard" element={<Dashboard />}>
@@ -47,7 +53,7 @@ function App() {
       {/* Root */}
       <Route
         path="/"
-        element={<Navigate to="/dashboard" replace />}
+        element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <LandingPage />}
       />
 
       {/* 404 */}
