@@ -2,7 +2,7 @@ import { LoginBox } from '../components/LoginBox';
 import { useState } from 'react';
 import type { LoginOrSignUp } from '../types/LoginOrSignUpType';
 import PopUpBox from '../components/PopupBox';
-import { ScanFace, Zap, Quote, ShieldCheck } from 'lucide-react';
+import { ScanFace, Zap, ShieldCheck } from 'lucide-react';
 
 export function LoginPage({ loggedIn }: LoginOrSignUp): React.ReactNode {
   const [openRegistrationPopUp, setOpenRegistrationPopUp] = useState<boolean>(false);
@@ -10,18 +10,17 @@ export function LoginPage({ loggedIn }: LoginOrSignUp): React.ReactNode {
   const [errorMsg, setErrorMsg] = useState<string>('');
   const features = [
     { icon: ScanFace, label: 'No tagging needed' },
-
     { icon: Zap, label: 'Results in seconds' },
-
     { icon: ShieldCheck, label: 'Private by default' },
   ];
 
   return (
     <div className="h-screen w-full bg-[#1a1a1a] flex flex-col md:flex-row md:flex-nowrap overflow-y-auto">
       <PopUpBox
-        title="Successfully Registered"
-        subTitle="Close this dialog and log in to the system"
+        title="You're almost in!"
+        subTitle="We just emailed you a sign-in link. Check your inbox to verify."
         open={openRegistrationPopUp}
+        buttonText="Close"
         setOpen={setOpenRegistrationPopUp}
       />
 

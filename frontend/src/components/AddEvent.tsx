@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useCreateEvent } from '../hooks/eventHooks';
 import { X, ArrowLeft, UploadCloud, Loader2 } from 'lucide-react';
 import type { eventType } from '../types/eventType';
 
