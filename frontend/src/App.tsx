@@ -1,17 +1,15 @@
-import "./App.css";
-import { Route, Routes, Navigate } from "react-router-dom";
-import { useContext } from "react";
-
-import { LoginPage } from "./pages/LoginPage";
-import { PageNotFound } from "./pages/PageNotFound";
-
-import Dashboard from "./pages/Dashboard";
-import LandingPage from "./pages/LandingPage";
-import HomePage from "./pages/HomePage";
-import MyEvents from "./pages/MyEvent";
-import JoinEvent from "./pages/JoinEvent";
-import EventDetails from "./pages/EventDetails";
-import { UserContext } from "./context/UserContext";
+import './App.css';
+import { Route, Routes, Navigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { LoginPage } from './pages/LoginPage';
+import { PageNotFound } from './pages/PageNotFound';
+import Dashboard from './pages/Dashboard';
+import LandingPage from './pages/LandingPage';
+import HomePage from './pages/HomePage';
+import MyEvents from './pages/MyEvent';
+import JoinEvent from './pages/JoinEvent';
+import EventDetails from './pages/EventDetails';
+import { UserContext } from './context/UserContext';
 
 function App() {
   const { contextState } = useContext(UserContext) ?? {};
@@ -20,35 +18,19 @@ function App() {
   return (
     <Routes>
       <Route path="/dashboard" element={<Dashboard />}>
-
-        {/* Default → home */}
         <Route index element={<Navigate to="home" replace />} />
 
         {/* Pages */}
         <Route path="home" element={<HomePage />} />
-        <Route
-          path="myevents"
-          element={<MyEvents userId="current-user-id" />}
-        />
+        <Route path="myevents" element={<MyEvents userId="current-user-id" />} />
         <Route path="joinevent" element={<JoinEvent />} />
 
-        {/* ✅ EVENT DETAILS ROUTE */}
-        <Route
-          path="event/:eventId"
-          element={<EventDetails />}
-        />
-
+        <Route path="event/:eventId" element={<EventDetails />} />
       </Route>
 
       {/* Auth */}
-      <Route
-        path="/login"
-        element={<LoginPage loggedIn={true} />}
-      />
-      <Route
-        path="/signup"
-        element={<LoginPage loggedIn={false} />}
-      />
+      <Route path="/login" element={<LoginPage loggedIn={true} />} />
+      <Route path="/signup" element={<LoginPage loggedIn={false} />} />
 
       {/* Root */}
       <Route

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 
 import AddEvent from "../components/Addfolder";
@@ -6,10 +6,10 @@ import DeleteEventModal from "../components/DeleteEvent";
 import EditNameModal from "../components/ChangeEvent";
 import PopUpBox from "../components/PopupBox";
 import FolderCard from "../components/Folder";
-
+import type { zuContextType } from "../context/zuContext";
+import { useProfile } from "../context/zuContext";
 import type { eventType } from "../types/eventType";
-import { onGetEvent } from "../utility/eventUtils";
-import { UserContext } from "../context/UserContext";
+import { useEvents } from "../hooks/eventHooks";
 
 import {
   CalendarDays,
@@ -21,11 +21,10 @@ import {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const userContext = useContext(UserContext);
-
+  const userName = useProfile((s : zuContextType)=> s.userName) 
+  const userId = useProfile((s:zuContextType) => s.id)
   const [searchQuery, setSearchQuery] = useState("");
-  const [events, setEvents] = useState<eventType[]>([]);
-
+  const {data : events=[] }  = useEvents(userId) as {data : eventType[]}
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isDeleteEventModalOpen, setIsDeleteEventModalOpen] = useState(false);
   const [isChangeEventModalOpen, setIsChangeEventModalOpen] = useState(false);
@@ -36,21 +35,6 @@ export default function HomePage() {
   const [titleError, setTitleError] = useState("");
   const [subTitleError, setSubTitleError] = useState("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
-
-  const userName =
-    userContext?.contextState?.userName ?? "there";
-
-  useEffect(() => {
-    if (!userContext?.contextState?.id) return;
-
-    onGetEvent(
-      setTitleError,
-      setSubTitleError,
-      setIsErrorOpen,
-      setEvents,
-      userContext.contextState.id
-    );
-  }, [userContext?.contextState?.id]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -105,8 +89,7 @@ export default function HomePage() {
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
-        setEvents={setEvents}
-        userId={userContext?.contextState?.id as string}
+        userId={userId}
       />
 
       <DeleteEventModal
@@ -116,10 +99,9 @@ export default function HomePage() {
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
-        setEvents={setEvents}
         eventId={selectedEventId as string}
         eventName={selectedEventName as string}
-        userId={userContext?.contextState?.id as string}
+        userId={userId}
       />
 
       <EditNameModal
@@ -131,8 +113,7 @@ export default function HomePage() {
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
-        setEvents={setEvents}
-        userId={userContext?.contextState?.id as string}
+        userId={userId}
       />
 
       {/* CONTENT */}
@@ -204,10 +185,9 @@ export default function HomePage() {
                 createdAt={String()}
                 numberOfImages={item.numberOfImages}
 
-                // 🔥 FIXED NAVIGATION
                 onClick={() =>
                   navigate(`/dashboard/event/${item.id}`, {
-                    state: item, // 👈 IMPORTANT FIX
+                    state: item, 
                   })
                 }
 
