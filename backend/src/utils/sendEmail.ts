@@ -1,11 +1,6 @@
 import nodemailer from 'nodemailer';
 
-interface SendEmailParams {
-  email: string;
-  redirectUrl: string;
-}
-
-const sendEmail = async ({ email, redirectUrl }: SendEmailParams): Promise<void> => {
+const sendEmail = async (email: string, redirectUrl: string): Promise<void> => {
   try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -19,7 +14,7 @@ const sendEmail = async ({ email, redirectUrl }: SendEmailParams): Promise<void>
       from: `"SpotME" <${process.env.EMAIL}>`,
       to: email,
       subject: 'Verify your SpotME Sign-In',
-      text: `Welcome to SpotME! Please verify your sign-in by copying and pasting this link into your browser: ${redirectUrl}`,
+      // text: 'Welcome to SpotME',
       html: `
         <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e1e1e1; border-radius: 8px;">
           <h2 style="color: #111111; margin-bottom: 16px;">Verify your sign-in</h2>
@@ -31,12 +26,13 @@ const sendEmail = async ({ email, redirectUrl }: SendEmailParams): Promise<void>
               Verify and Sign In
             </a>
           </div>
-          <p style="color: #888888; font-size: 12px; line-height: 1.4; margin-top: 32px; border-top: 1px solid #eeeeee; padding-top: 16px;">
+          <p style="color: #888888; font-size: 12px; line-height: 1.4; margin-top: 32px; ">
             If you did not request this email, you can safely ignore it. This link will expire shortly.
           </p>
         </div>
       `,
     });
+    console.log('Email sent successfully to:', email);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error(`[Email Error] ${err.name}: ${err.message}`);

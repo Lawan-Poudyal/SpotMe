@@ -17,11 +17,9 @@ import type { zuContextType } from '../context/zuContext.js';
 
 export function LoginBox({
   loggedIn,
-  open,
   setOpen,
   setErrorMsg,
   setOpenErrorPopUp,
-  openError,
 }: LoginOrSignupBox): React.ReactNode {
   const timerReference = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [userName, setUserName] = useState<string>('');
@@ -141,11 +139,8 @@ export function LoginBox({
         </p>
       </div>
 
-      {/* Form wrapper */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-        {/* Fields */}
         <div className="flex flex-col gap-5">
-          {/* Username — signup only */}
           {!loggedIn ? (
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-[#888888]">
@@ -217,7 +212,6 @@ export function LoginBox({
                   handleFormValidation('password', e.target.value);
                 }}
               />
-              {/* Note: Changed button triggers to type="button" to prevent them from firing the form submission */}
               {!seePassword ? (
                 <button
                   type="button"
@@ -260,7 +254,6 @@ export function LoginBox({
             ) : null}
           </div>
 
-          {/* Toggle link */}
           <span
             className="text-center text-sm cursor-pointer text-[#888888] hover:text-white underline underline-offset-2 transition-colors"
             onClick={() => {
@@ -273,7 +266,6 @@ export function LoginBox({
 
         {/* CTAs */}
         <div className="flex flex-col gap-2.5">
-          {/* Main Primary Action Button (Triggers onSubmit on the parent form) */}
           <button
             type="submit"
             disabled={loggedIn ? isLogInLoading : isSignUpLoading || !checkSubmissionPermission()}
@@ -311,7 +303,6 @@ export function LoginBox({
             <div className="flex-1 h-px bg-[#2a2a2a]" />
           </div>
 
-          {/* Secondary Action Button (Explicit type="button" so it does not submit the form) */}
           <button
             type="button"
             onClick={googleSignIn}
