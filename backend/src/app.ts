@@ -13,6 +13,7 @@ import { corsOptions } from './config/corsOptions';
 import { limiter } from './config/rateLimit';
 import { uploadrouter } from './routers/uploadRoute';
 import { photoRouter } from './routers/photoRoute';
+import { globalErrorHandler } from './middlewares/errorHandler';
 
 const app = express();
 
@@ -38,4 +39,5 @@ app.use('/api/driveAPI', googleAPIController);
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);
 
+app.use(globalErrorHandler);
 export default app;
