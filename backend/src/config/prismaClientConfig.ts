@@ -2,7 +2,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma/index';
 
 const adapter = new PrismaPg({
-  connectionString: process.env.DIRECT_URL!,
+  connectionString: process.env.DATABASE_URL!,
   max: 10,
 });
 
