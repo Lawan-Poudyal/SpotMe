@@ -159,8 +159,8 @@ export default function HomePage() {
                 key={item.id}
                 name={item.eventName}
                 createdAt={String(item.createdAt)}
-                numberOfImages={item._count?.photos ?? 0}
-                thumbNailUrl=""
+                numberOfImages={item.photoCount ?? 0}
+                thumbNailUrl={item.thumbnail?.photo_url ?? ''}
                 onClick={() =>
                   navigate(`/dashboard/event/${item.id}`, {
                     state: item,

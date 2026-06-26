@@ -34,13 +34,15 @@ const addEvent = async (
 const updateEvent = async (
   eventName: string,
   eventId: string,
+  thumbNailId: string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
   try {
     setIsLoading(true);
     const response = await api.put('/api/event', {
-      eventName: eventName,
-      eventId: eventId,
+      eventName,
+      eventId,
+      thumbNailId,
     });
     return response.data.data as eventType;
   } catch (err: unknown) {
@@ -57,6 +59,7 @@ const updateEvent = async (
     setIsLoading(false);
   }
 };
+
 const deleteEvent = async (
   eventName: string,
   userId: string,

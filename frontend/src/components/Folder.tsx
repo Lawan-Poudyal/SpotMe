@@ -60,12 +60,22 @@ const FolderCard: React.FC<FolderCardProps> = ({
       style={{ minHeight: 220 }}
     >
       {/* Color banner */}
-      <div
-        style={{
-          background: resolvedColor,
-          height: 100, // Slightly reduced to give content better spacing layout
-        }}
-      />
+      {/* Color banner / Thumbnail */}
+      {thumbNailUrl ? (
+        <img
+          src={thumbNailUrl}
+          alt={name}
+          className="w-full object-cover"
+          style={{ height: 100 }}
+        />
+      ) : (
+        <div
+          style={{
+            background: resolvedColor,
+            height: 100,
+          }}
+        />
+      )}
 
       {/* Content */}
       <div className="flex flex-col justify-between flex-1 p-5 gap-3 bg-[#111111]">

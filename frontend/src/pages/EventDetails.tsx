@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  ArrowLeft,
-  Calendar,
-  ImageIcon,
-  Users,
-  Link2,
-  Upload,
-  ScanFace,
-  Download,
-} from 'lucide-react';
+import { ArrowLeft, Calendar, ImageIcon, Link2, Upload, ScanFace, Download } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import { photo } from '../api/photoApi';
@@ -93,7 +84,6 @@ export default function EventDetails() {
             })}
           />
           <MetaPill icon={<ImageIcon size={13} />} label={`${data?.length} photos`} />
-          <MetaPill icon={<Users size={13} />} label={`${event.people} people`} />
 
           <div className="w-px h-4 bg-white/10 mx-1" />
 
@@ -136,7 +126,7 @@ export default function EventDetails() {
 }
 function MetaPill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/4">
+    <div className="flex  items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/4">
       {icon}
       <span>{label}</span>
     </div>
@@ -156,7 +146,7 @@ function ActionButton({
 }) {
   return (
     <button
-      className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
+      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
         primary
           ? 'bg-white text-black font-medium hover:bg-white/90'
           : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/4'

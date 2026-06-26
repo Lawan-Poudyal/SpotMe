@@ -4,5 +4,6 @@ export type eventType = {
   eventName: string;
   createdAt?: Date;
   updatedAt?: Date;
-  _count?: { photos: number };
+  photoCount: number;
+  thumbnail: { id: string; photo_url: string; width: number | null; height: number | null } | null;
 };
