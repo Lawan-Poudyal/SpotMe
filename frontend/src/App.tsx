@@ -2,7 +2,7 @@ import './App.css';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { LoginPage } from './pages/LoginPage';
-import { PageNotFound } from './pages/PageNotFound';
+import RouterErrorElement from './pages/PageNotFound';
 import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
@@ -39,7 +39,7 @@ function App() {
       />
 
       {/* 404 */}
-      <Route path="*" element={<PageNotFound />} />
+      <Route path="*" element={<RouterErrorElement />} />
     </Routes>
   );
 }

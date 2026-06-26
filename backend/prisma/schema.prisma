@@ -81,9 +81,16 @@ model Event {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   driveApproved Boolean  @default(true)
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  photos        Photo[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  photos Photo[] @relation("EventPhotos")
+
+  thumbnailId String? @unique
+  thumbnail   Photo?  @relation("EventThumbnail", fields: [thumbnailId], references: [id])
+
+  photoCount Int @default(0)
 
   @@unique([eventName, userId])
   @@index([userId])
@@ -93,14 +100,18 @@ model Event {
 model Photo {
   id          String   @id @default(uuid())
   photo_url   String
-  event_id    String
-  uploaded_at DateTime @default(now())
-  uploaded_by String
   public_id   String   @unique
   width       Int?
   height      Int?
-  event       Event    @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [uploaded_by], references: [id], onDelete: Cascade)
+  uploaded_at DateTime @default(now())
+
+  event_id String
+  event    Event  @relation("EventPhotos", fields: [event_id], references: [id], onDelete: Cascade)
+
+  uploaded_by String
+  user        User   @relation(fields: [uploaded_by], references: [id], onDelete: Cascade)
+
+  thumbnailOf Event? @relation("EventThumbnail")
 
   @@index([event_id])
   @@map("photo")

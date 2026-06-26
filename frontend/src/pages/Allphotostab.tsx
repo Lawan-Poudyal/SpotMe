@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, ImageIcon, Trash2 } from 'lucide-react';
+import { Download, GalleryThumbnails, ImageIcon, Trash2, X } from 'lucide-react'; // Added missing X import
 import type { eventType } from '../types/eventType';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { photo } from '../api/photoApi';
@@ -16,14 +16,18 @@ import {
   Button,
 } from '@mui/material';
 import { downloadPhoto } from '../utility/downloadImages';
+import type { Photo } from '../types/photoType';
+import { updateEvent } from '../api/eventApi';
 
 interface AllPhotosTabProps {
   event: eventType;
 }
 
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
+  // 1. All hooks must execute unconditionally at the top level
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isUpdatingThumb, setIsUpdatingThumb] = useState(false); // Fixed positioning & variable casing
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
@@ -33,15 +37,29 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
   const deletePhoto = useMutation({
     mutationFn: (photoId: string) => photo.deletePhoto(photoId, event.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
+    onMutate: async (photoId) => {
+      await queryClient.cancelQueries({ queryKey: ['photos', event.id] });
+      const previous = queryClient.getQueryData(['photos', event.id]);
+
+      queryClient.setQueryData(['photos', event.id], (old: Photo[] | undefined) =>
+        old ? old.filter((p) => p.id !== photoId) : [],
+      );
+
       setConfirmOpen(false);
       setLightboxIndex(-1);
+      return { previous };
+    },
+    onError: (_err, _photoId, context) => {
+      queryClient.setQueryData(['photos', event.id], context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
     },
   });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error: {error.message}</p>;
+  // 2. Early returns must come AFTER every hook declaration
+  if (isLoading) return <p className="text-white p-4">Loading...</p>;
+  if (isError) return <p className="text-red-400 p-4">Error: {error.message}</p>;
   if (!data) return null;
 
   if (data.length === 0) {
@@ -54,6 +72,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
     );
   }
 
+  // 3. Safe to compute display logic variables down here
   const slides = data.map((p) => ({
     src: p.photo_url,
     width: p.width ?? 800,
@@ -79,12 +98,15 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
         toolbar={{
           buttons: [
             <button
-              key="delete"
-              onClick={() => setConfirmOpen(true)}
-              className="flex  mr-1 items-center justify-center w-10 h-10 text-white/70 hover:text-red-400"
-              title="Delete photo"
+              key="Thumbnail"
+              disabled={isUpdatingThumb}
+              onClick={() =>
+                updateEvent(event.eventName, event.id, data[lightboxIndex]?.id, setIsUpdatingThumb)
+              }
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-[#E8572A] hover:bg-[#2a2a2a]/30 transition-all duration-200 disabled:opacity-40"
+              title="Set as Thumbnail"
             >
-              <Trash2 size={32} color="#CE1126" className="cursor-pointer" />
+              <GalleryThumbnails size={18} strokeWidth={1.75} />
             </button>,
 
             <button
@@ -95,12 +117,29 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
                   `photo_${data[lightboxIndex]?.id}.jpg`,
                 )
               }
-              className="flex items-center justify-center w-10 h-10"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-white hover:bg-[#2a2a2a]/30 transition-all duration-200"
               title="Download photo"
             >
-              <Download size={32} className="cursor-pointer" />
+              <Download size={18} strokeWidth={1.75} />
             </button>,
-            'close',
+
+            <button
+              key="delete"
+              onClick={() => setConfirmOpen(true)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+              title="Delete photo"
+            >
+              <Trash2 size={18} strokeWidth={1.75} />
+            </button>,
+
+            <button
+              key="close"
+              onClick={() => setLightboxIndex(-1)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-white hover:bg-[#2a2a2a]/30 transition-all duration-200"
+              title="Close Lightbox"
+            >
+              <X size={18} strokeWidth={1.75} />
+            </button>,
           ],
         }}
       />
@@ -113,16 +152,13 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button className="cursor-pointer" onClick={() => setConfirmOpen(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
           <Button
             color="error"
             onClick={() => {
               const photoId = data[lightboxIndex]?.id;
-              if (photoId) deletePhoto.mutateAsync(photoId);
+              if (photoId) deletePhoto.mutate(photoId);
             }}
-            className="cursor-pointer"
           >
             Delete
           </Button>
