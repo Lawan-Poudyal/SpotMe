@@ -130,9 +130,13 @@ const getEventHandler = async (req: Request, res: Response) => {
           eventName: true,
           createdAt: true,
           updatedAt: true,
-          _count: {
+          photoCount: true,
+          thumbnail: {
             select: {
-              photos: true,
+              id: true,
+              photo_url: true,
+              width: true,
+              height: true,
             },
           },
         },
