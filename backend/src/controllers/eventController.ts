@@ -127,6 +127,11 @@ const getEventHandler = async (req: Request, res: Response) => {
           eventName: true,
           createdAt: true,
           updatedAt: true,
+          _count: {
+            select: {
+              photos: true,
+            },
+          },
         },
       });
     } catch (dbError: unknown) {
