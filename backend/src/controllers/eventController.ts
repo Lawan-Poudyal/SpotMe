@@ -3,15 +3,18 @@ import { prisma } from '../config/prismaClientConfig';
 import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
 import type { dbErrorType } from '../utils/dbErrorHash';
+import { asyncHandler } from '../utils/asyncHandler';
+import { NotFoundError, ValidationError } from '../errors/Error';
+import { updateEventSchema } from '../validations/event.validation';
 
 type postRequestPayloadType = {
   eventName: string;
   ownerId: string;
 };
 type updateRequestPayloadType = {
-  eventName: string;
-  ownerId: string;
-  currentName: string;
+  eventId: string;
+  eventName?: string;
+  thumbNailId?: string;
 };
 
 type getRequestPaylaodType = {
@@ -167,85 +170,39 @@ const getEventHandler = async (req: Request, res: Response) => {
     }
   }
 };
-const updateEventHandler = async (req: Request, res: Response) => {
-  try {
-    let { ownerId, eventName, currentName } = req.body as updateRequestPayloadType;
-    if (!ownerId || ownerId.trim() === '') {
-      // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
-    }
-    if (!eventName || eventName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing event name in the request payload',
-        },
-      });
-    }
-    if (!currentName || currentName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing current Name in the request payload',
-        },
-      });
-    }
 
-    try {
-      const data = await prisma.event.update({
-        where: {
-          eventName_userId: {
-            userId: ownerId,
-            eventName: currentName,
-          },
-        },
-        data: {
-          eventName: eventName,
-        },
-      });
+const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
+  const result = updateEventSchema.safeParse(req.body);
 
-      return res.status(200).json({
-        success: true,
-        data: data,
-      });
-    } catch (dbError: unknown) {
-      if (dbError instanceof PrismaClientKnownRequestError) {
-        const dbErrorCode = dbError.code;
-        const dbErrorName: dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType;
-        if (dbErrorName === 'CompositeKeyViolation') {
-          return res.status(404).json({
-            success: false,
-            err: {
-              name: `Couldn't find ${eventName}`,
-              message: `You have never created a event named ${eventName}`,
-            },
-          });
-        } else throw dbError;
-      } else throw dbError;
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      console.log(err.name);
-      console.log(err.stack);
-      console.log(err.message);
-      return res.status(500).json({
-        success: false,
-        err: {
-          name: err.name,
-          message: err.message,
-        },
-      });
-    }
+  if (!result.success) {
+    const fieldErrors: Record<string, string> = {};
+
+    result.error.errors.forEach((err) => {
+      const fieldName = err.path[0] as string;
+      fieldErrors[fieldName] = err.message;
+    });
+
+    throw new ValidationError('Validation failed', fieldErrors);
   }
-};
+  const { eventId, eventName, thumbNailId } = result.data;
+
+  try {
+    const data = await prisma.event.update({
+      where: { id: eventId },
+      data: {
+        ...(eventName !== undefined && { eventName }),
+        ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
+      },
+    });
+    res.status(200).json({ success: true, data });
+  } catch (err) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
+      throw new NotFoundError(`Event with id ${eventId} not found`);
+    }
+    throw err;
+  }
+});
+
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
     let { ownerId, eventName } = req.body as deleteRequestPayloadType;

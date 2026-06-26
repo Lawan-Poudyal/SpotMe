@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { AppError } from '../errors/Error';
+import { AppError, ValidationError } from '../errors/Error';
 import { ErrorResponse } from '../types/error.types';
 
 export const globalErrorHandler = (
@@ -8,20 +8,26 @@ export const globalErrorHandler = (
   res: Response,
   next: NextFunction,
 ): void => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
   if (err instanceof AppError) {
     const response: ErrorResponse = {
       status: err.status,
       message: err.message,
     };
 
+    if (err instanceof ValidationError && err.fields) {
+      response.errors = err.fields;
+    }
+
     res.status(err.status).json(response);
     return;
   }
 
-  console.error('Unexpected error:', err);
-
-  res.status(500).json({
+  const response: ErrorResponse = {
     status: 500,
-    message: err.message,
-  } satisfies ErrorResponse);
+    message: isDevelopment ? err.message : 'An unexpected error occurred on the server.',
+  };
+
+  res.status(500).json(response);
 };

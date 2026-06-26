@@ -16,6 +16,7 @@ import {
   Button,
 } from '@mui/material';
 import { downloadPhoto } from '../utility/downloadImages';
+import type { Photo } from '../types/photoType';
 
 interface AllPhotosTabProps {
   event: eventType;
@@ -33,10 +34,24 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
   const deletePhoto = useMutation({
     mutationFn: (photoId: string) => photo.deletePhoto(photoId, event.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
+    onMutate: async (photoId) => {
+      await queryClient.cancelQueries({ queryKey: ['photos', event.id] });
+
+      const previous = queryClient.getQueryData(['photos', event.id]);
+
+      queryClient.setQueryData(['photos', event.id], (old: Photo[]) =>
+        old.filter((p) => p.id !== photoId),
+      );
+
       setConfirmOpen(false);
       setLightboxIndex(-1);
+      return { previous };
+    },
+    onError: (_err, _photoId, context) => {
+      queryClient.setQueryData(['photos', event.id], context?.previous);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
     },
   });
 
@@ -120,7 +135,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
             color="error"
             onClick={() => {
               const photoId = data[lightboxIndex]?.id;
-              if (photoId) deletePhoto.mutateAsync(photoId);
+              if (photoId) deletePhoto.mutate(photoId);
             }}
             className="cursor-pointer"
           >

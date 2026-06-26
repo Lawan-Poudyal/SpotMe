@@ -41,9 +41,9 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
     throw new ValidationError('Missing or invalid photos array in the request body');
 
   const session = await getSession(req.headers as HeadersInit);
-  const event = await prisma.event.findUnique({ where: { id: eventId } });
-
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
+
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
   const saved = await prisma.photo.createMany({
@@ -56,7 +56,17 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       height: p.height,
     })),
   });
+
   res.status(201).json({ success: true, data: saved });
+
+  await prisma.event
+    .update({
+      where: { id: eventId },
+      data: { photoCount: { increment: photos.length } },
+    })
+    .catch((err) => {
+      console.error('Error in post-update cleanup:', err);
+    });
 });
 
 export { signedUploadRequest, saveUploadRequest };
