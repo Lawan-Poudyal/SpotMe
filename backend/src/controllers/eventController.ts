@@ -4,8 +4,9 @@ import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
 import type { dbErrorType } from '../utils/dbErrorHash';
 import { asyncHandler } from '../utils/asyncHandler';
-import { NotFoundError, ValidationError } from '../errors/Error';
+import { NotFoundError, UnauthorizedError, ValidationError } from '../errors/Error';
 import { updateEventSchema } from '../validations/event.validation';
+import { getSession } from '../utils/getSessions';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -177,7 +178,9 @@ const getEventHandler = async (req: Request, res: Response) => {
 
 const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const result = updateEventSchema.safeParse(req.body);
+  const session = await getSession(req.headers as HeadersInit);
 
+  if (!session) throw new UnauthorizedError();
   if (!result.success) {
     const fieldErrors: Record<string, string> = {};
 
@@ -192,7 +195,7 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
 
   try {
     const data = await prisma.event.update({
-      where: { id: eventId },
+      where: { id: eventId, userId: session.user.id },
       data: {
         ...(eventName !== undefined && { eventName }),
         ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
