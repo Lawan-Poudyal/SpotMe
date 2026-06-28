@@ -4,8 +4,10 @@ import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
 import type { dbErrorType } from '../utils/dbErrorHash';
 import { asyncHandler } from '../utils/asyncHandler';
-import { NotFoundError, ValidationError } from '../errors/Error';
+import { NotFoundError, UnauthorizedError } from '../errors/Error';
 import { updateEventSchema } from '../validations/event.validation';
+import { getSession } from '../utils/getSessions';
+import { validateSchema } from '../utils/validateSchema';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -33,6 +35,7 @@ type eventType = {
   createdAt: Date;
   updatedAt: Date;
 };
+
 const createEventHandler = async (req: Request, res: Response) => {
   try {
     let { eventName, ownerId } = req.body as postRequestPayloadType;
@@ -58,11 +61,16 @@ const createEventHandler = async (req: Request, res: Response) => {
     let event: eventType | null = null;
 
     try {
-      event = await prisma.event.create({
-        data: {
-          userId: ownerId,
-          eventName: eventName,
-        },
+      event = await prisma.$transaction(async (tx) => {
+        const newEvent = await tx.event.create({
+          data: { userId: ownerId, eventName },
+        });
+
+        await tx.participant.create({
+          data: { eventId: newEvent.id, userId: ownerId },
+        });
+
+        return newEvent;
       });
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
@@ -105,6 +113,7 @@ const createEventHandler = async (req: Request, res: Response) => {
     }
   }
 };
+
 const getEventHandler = async (req: Request, res: Response) => {
   try {
     let { ownerId } = req.query as getRequestPaylaodType;
@@ -176,23 +185,14 @@ const getEventHandler = async (req: Request, res: Response) => {
 };
 
 const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
-  const result = updateEventSchema.safeParse(req.body);
+  const session = await getSession(req.headers as HeadersInit);
 
-  if (!result.success) {
-    const fieldErrors: Record<string, string> = {};
-
-    result.error.errors.forEach((err) => {
-      const fieldName = err.path[0] as string;
-      fieldErrors[fieldName] = err.message;
-    });
-
-    throw new ValidationError('Validation failed', fieldErrors);
-  }
-  const { eventId, eventName, thumbNailId } = result.data;
+  if (!session) throw new UnauthorizedError();
+  const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
     const data = await prisma.event.update({
-      where: { id: eventId },
+      where: { id: eventId, userId: session.user.id },
       data: {
         ...(eventName !== undefined && { eventName }),
         ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
