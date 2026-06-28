@@ -268,7 +268,11 @@ export function LoginBox({
         <div className="flex flex-col gap-2.5">
           <button
             type="submit"
-            disabled={loggedIn ? isLogInLoading : isSignUpLoading || !checkSubmissionPermission()}
+            disabled={
+              loggedIn
+                ? isLogInLoading || !email || !password
+                : isSignUpLoading || !checkSubmissionPermission()
+            }
             className="relative h-11 w-full rounded-lg bg-[#E8572A] text-white font-semibold text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border border-[#E8572A]/10 transition-colors flex items-center justify-center gap-2 hover:border-[#E8572A]/20 "
           >
             {(loggedIn ? isLogInLoading : isSignUpLoading) && (

@@ -1,15 +1,14 @@
 import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
-import { ValidationError, UnauthorizedError, NotFoundError, ForbiddenError } from '../errors/Error';
+import { UnauthorizedError, NotFoundError, ForbiddenError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { cloudinary } from '../lib/cloudinary';
 import { getSession } from '../utils/getSessions';
+import { validateSchema } from '../utils/validateSchema';
+import { deletePhotoSchema, eventSchema } from '../validations/upload.validation';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const eventId = req.query.eventid;
-  if (typeof eventId !== 'string') {
-    throw new ValidationError('Missing or invalid eventId query parameter');
-  }
+  const { eventId } = validateSchema(eventSchema, req.query);
 
   const photos = await prisma.photo.findMany({
     where: {
@@ -34,15 +33,10 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const photoId = req.query.photoid;
-
-  if (!photoId || typeof photoId !== 'string') {
-    throw new ValidationError('Missing photoId parameter');
-  }
-
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
+  const { photoId } = validateSchema(deletePhotoSchema, req.query);
   const dbPhoto = await prisma.photo.findUnique({
     where: { id: photoId },
     include: {
