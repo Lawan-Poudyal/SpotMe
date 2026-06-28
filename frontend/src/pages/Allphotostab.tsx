@@ -18,17 +18,16 @@ import {
 import { downloadPhoto } from '../utility/downloadImages';
 import type { Photo } from '../types/photoType';
 import { updateEvent } from '../api/eventApi';
+import { queryClient } from '../config/tanstack';
 
 interface AllPhotosTabProps {
   event: eventType;
 }
 
 export default function AllPhotosTab({ event }: AllPhotosTabProps) {
-  // 1. All hooks must execute unconditionally at the top level
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [isUpdatingThumb, setIsUpdatingThumb] = useState(false); // Fixed positioning & variable casing
-  const queryClient = useQueryClient();
+  const [isUpdatingThumb, setIsUpdatingThumb] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['photos', event.id],
@@ -57,7 +56,6 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
     },
   });
 
-  // 2. Early returns must come AFTER every hook declaration
   if (isLoading) return <p className="text-white p-4">Loading...</p>;
   if (isError) return <p className="text-red-400 p-4">Error: {error.message}</p>;
   if (!data) return null;
@@ -72,7 +70,6 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
     );
   }
 
-  // 3. Safe to compute display logic variables down here
   const slides = data.map((p) => ({
     src: p.photo_url,
     width: p.width ?? 800,

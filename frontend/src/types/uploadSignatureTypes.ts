@@ -1,4 +1,4 @@
-export type uploadSignatureResponse = {
+export type UploadSignatureResponse = {
   signature: string;
   timestamp: number;
   apiKey: string;
