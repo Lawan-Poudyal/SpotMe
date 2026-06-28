@@ -4,7 +4,7 @@ import { cloudinary } from '../lib/cloudinary';
 import { NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { getSession } from '../utils/getSessions';
-import { saveUploadSchema, signUploadSchema } from '../validations/upload.validation';
+import { eventSchema, saveUploadSchema } from '../validations/upload.validation';
 import { validateSchema } from '../utils/validateSchema';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
@@ -13,7 +13,7 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
 
-  const { eventId } = validateSchema(signUploadSchema, req.body);
+  const { eventId } = validateSchema(eventSchema, req.body);
   const folderName = `SpotMe/events/${eventId}/photos`;
   const params = { timestamp, folder: folderName };
   const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);

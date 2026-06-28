@@ -5,10 +5,10 @@ import { prisma } from '../config/prismaClientConfig';
 import { cloudinary } from '../lib/cloudinary';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
-import { deletePhotoSchema, signUploadSchema } from '../validations/upload.validation';
+import { deletePhotoSchema, eventSchema } from '../validations/upload.validation';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { eventId } = validateSchema(signUploadSchema, req.query);
+  const { eventId } = validateSchema(eventSchema, req.query);
 
   const photos = await prisma.photo.findMany({
     where: {

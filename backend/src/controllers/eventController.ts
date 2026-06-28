@@ -61,11 +61,16 @@ const createEventHandler = async (req: Request, res: Response) => {
     let event: eventType | null = null;
 
     try {
-      event = await prisma.event.create({
-        data: {
-          userId: ownerId,
-          eventName: eventName,
-        },
+      event = await prisma.$transaction(async (tx) => {
+        const newEvent = await tx.event.create({
+          data: { userId: ownerId, eventName },
+        });
+
+        await tx.participant.create({
+          data: { eventId: newEvent.id, userId: ownerId },
+        });
+
+        return newEvent;
       });
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
