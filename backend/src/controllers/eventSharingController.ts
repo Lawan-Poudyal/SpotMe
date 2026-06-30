@@ -41,4 +41,6 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const joinEvent = asyncHandler;
+
 export { inviteLinkHandler };

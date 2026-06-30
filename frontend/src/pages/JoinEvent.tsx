@@ -1,29 +1,31 @@
-import { useState } from "react";
-import { Link2, ArrowRight, Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { Link2, ArrowRight, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function JoinEvent() {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [searchParams] = useSearchParams();
+  const prefillCode = searchParams.get('code');
 
   const handleJoin = async () => {
     if (!code.trim()) {
-      setError("Please enter an invite code or link.");
+      setError('Please enter an invite code or link.');
       return;
     }
-    setError("");
+    setError('');
     setLoading(true);
 
     // TODO: replace with real API call
     await new Promise((r) => setTimeout(r, 1200));
     setLoading(false);
-    setError("Event not found. Check the code and try again.");
+    setError('Event not found. Check the code and try again.');
   };
 
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto bg-[#1C1C1E]">
       <div className="flex-1 px-6 lg:px-10 py-8 max-w-2xl w-full mx-auto">
-
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-white">Join an event</h1>
@@ -40,9 +42,6 @@ export default function JoinEvent() {
             </div>
             <div>
               <p className="text-white font-semibold text-sm">Invite code</p>
-              <p className="text-white/35 text-xs">
-                e.g. KU-FEST-2026 or a full invite URL
-              </p>
             </div>
           </div>
 
@@ -51,18 +50,16 @@ export default function JoinEvent() {
             value={code}
             onChange={(e) => {
               setCode(e.target.value);
-              if (error) setError("");
+              if (error) setError('');
             }}
-            onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
             placeholder="Paste code or link here…"
             className={`w-full bg-[#1C1C1E] border rounded-xl px-4 py-3 text-white text-sm
               placeholder-white/25 focus:outline-none transition
-              ${error ? "border-red-500/60 focus:border-red-500" : "border-white/10 focus:border-orange-500/50"}`}
+              ${error ? 'border-red-500/60 focus:border-red-500' : 'border-white/10 focus:border-orange-500/50'}`}
           />
 
-          {error && (
-            <p className="text-red-400 text-xs mt-2">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
 
           <button
             onClick={handleJoin}
@@ -89,3 +86,4 @@ export default function JoinEvent() {
     </div>
   );
 }
+
