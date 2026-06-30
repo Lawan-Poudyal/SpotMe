@@ -3,7 +3,7 @@ export class AppError extends Error {
   constructor(message: string, status: number = 500, name: string = '') {
     super(message);
     this.status = status;
-    this.name = this.constructor.name;
+    this.name = name || this.constructor.name;
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }

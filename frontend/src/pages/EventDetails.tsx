@@ -1,30 +1,58 @@
 import { useState } from 'react';
 import { ArrowLeft, Calendar, ImageIcon, Link2, Upload, ScanFace, Download } from 'lucide-react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-
+import { useNavigate, useLocation } from 'react-router-dom';
 import { photo } from '../api/photoApi';
 import AllPhotosTab from './Allphotostab';
 import FindMeTab from './FindMeTab';
 import UploadTab from './Upload';
-
-import { EVENTS_MOCK } from '../mockdata/eventMock';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { downloadBulk } from '../utility/downloadImages';
+import { inviteLink } from '../api/inviteLinkApi';
+import { queryClient } from '../config/tanstack';
 
 type Tab = 'all' | 'findme' | 'upload';
 
+const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  {
+    id: 'all',
+    label: 'All photos',
+    icon: <ImageIcon size={16} />,
+  },
+  {
+    id: 'findme',
+    label: 'Find me',
+    icon: <ScanFace size={16} />,
+  },
+  {
+    id: 'upload',
+    label: 'Upload',
+    icon: <Upload size={16} />,
+  },
+];
+
 export default function EventDetails() {
   const navigate = useNavigate();
-  const { eventId } = useParams();
   const { state } = useLocation();
-
   const [activeTab, setActiveTab] = useState<Tab>('all');
-
-  const event = state || EVENTS_MOCK.find((e) => e.id === eventId);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+  const event = state;
 
   const { data } = useQuery({
     queryKey: ['photos', event.id],
     queryFn: () => photo.getPhotos(event.id),
+  });
+
+  const handleInviteLink = useMutation({
+    mutationFn: () => inviteLink.generate(event.id),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['inviteLink', event.id], data);
+      if (data?.token) {
+        const inviteLink = `${window.location.origin}/join/${data.token}`;
+        navigator.clipboard.writeText(inviteLink);
+      }
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    },
   });
 
   if (!event) {
@@ -42,24 +70,6 @@ export default function EventDetails() {
       </div>
     );
   }
-
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    {
-      id: 'all',
-      label: 'All photos',
-      icon: <ImageIcon size={16} />,
-    },
-    {
-      id: 'findme',
-      label: 'Find me',
-      icon: <ScanFace size={16} />,
-    },
-    {
-      id: 'upload',
-      label: 'Upload',
-      icon: <Upload size={16} />,
-    },
-  ];
 
   return (
     <div className="bg-[#1C1C1E] min-h-screen px-8 pt-3 pb-6">
@@ -87,7 +97,11 @@ export default function EventDetails() {
 
           <div className="w-px h-4 bg-white/10 mx-1" />
 
-          <ActionButton icon={<Link2 size={14} />} label="Copy link" />
+          <ActionButton
+            onClick={() => handleInviteLink.mutate()}
+            icon={<Link2 size={14} />}
+            label={isCopied ? 'Copied!' : handleInviteLink.isPending ? 'Copying...' : 'Copy link'}
+          />
           <ActionButton
             icon={<Download size={14} />}
             onClick={() => downloadBulk(data ?? [])}

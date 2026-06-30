@@ -54,7 +54,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
         relative flex flex-col rounded-2xl overflow-hidden
         bg-[#111111] border border-[#2a2a2a] cursor-pointer
         transition-all duration-200 ease-out shadow-lg
-        hover:border-[#E8572A]/40 hover:shadow-2xl
+         hover:shadow-2xl
         ${isPressed ? 'scale-[0.98]' : 'hover:scale-[1.01]'}
       `}
       style={{ minHeight: 220 }}
@@ -131,4 +131,3 @@ const FolderCard: React.FC<FolderCardProps> = ({
 };
 
 export default FolderCard;
-

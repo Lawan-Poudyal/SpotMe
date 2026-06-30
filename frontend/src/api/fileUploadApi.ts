@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { api } from '../config/axios';
-import type { uploadSignatureResponse } from '../types/uploadSignatureTypes';
+import type { UploadSignatureResponse } from '../types/uploadSignatureTypes';
 
 export const fileUploads = {
-  signRequest: async (eventId: string): Promise<uploadSignatureResponse> => {
-    const res = await api.post('/api/upload/sign', { eventId });
+  signRequest: async (eventId: string): Promise<UploadSignatureResponse> => {
+    const res = await api.post('/api/upload/photo/sign', { eventId });
     return res.data.data;
   },
 
@@ -18,7 +18,7 @@ export const fileUploads = {
     eventId: string,
     photos: { url: string; publicId: string; height: number; width: number }[],
   ) => {
-    const res = await api.post('/api/upload/save', { eventId, photos });
+    const res = await api.post('/api/upload/photo/save', { eventId, photos });
     return res.data;
   },
 };

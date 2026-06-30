@@ -8,20 +8,20 @@ datasource db {
 }
 
 model User {
-  id               String         @id @default(uuid())
+  id               String        @id @default(uuid())
   user_name        String?
-  email            String         @unique
+  email            String        @unique
   profile_pic_link String?
   name             String
-  emailVerified    Boolean        @default(false)
+  emailVerified    Boolean       @default(false)
   image            String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   sessions         Session[]
   accounts         Account[]
   events           Event[]
   photos           Photo[]
-  participant     Participant[]
+  participant      Participant[]
 
   @@map("user")
 }
@@ -91,9 +91,9 @@ model Event {
   thumbnailId String? @unique
   thumbnail   Photo?  @relation("EventThumbnail", fields: [thumbnailId], references: [id])
 
-  photoCount   Int            @default(0)
+  photoCount  Int           @default(0)
   participant Participant[]
-  invitelink   InviteLink?
+  invitelink  InviteLink?
 
   @@unique([eventName, userId])
   @@index([userId])
@@ -108,9 +108,9 @@ model Photo {
   height      Int?
   uploaded_at DateTime @default(now())
   uploaded_by String
-  event_id String
+  event_id    String
 
-  event    Event  @relation("EventPhotos", fields: [event_id], references: [id], onDelete: Cascade)
+  event       Event  @relation("EventPhotos", fields: [event_id], references: [id], onDelete: Cascade)
   user        User   @relation(fields: [uploaded_by], references: [id], onDelete: Cascade)
   thumbnailOf Event? @relation("EventThumbnail")
 
@@ -119,26 +119,26 @@ model Photo {
 }
 
 model Participant {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   eventId   String
   userId    String
-  joinedAt  DateTime @default(now())
-  revokedAt DateTime? 
+  joinedAt  DateTime  @default(now())
+  revokedAt DateTime?
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([eventId,userId])
+  @@unique([eventId, userId])
   @@map("participant")
 }
 
 model InviteLink {
-  id        String   @id @default(uuid())
-  token     String   @unique @default(cuid())
+  id        String    @id @default(uuid())
+  token     String    @unique @default(cuid())
   eventId   String
-  createdAt DateTime @default(now())
-  expiresAt DateTime? 
-  revokedAt DateTime? 
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+  revokedAt DateTime?
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
