@@ -2,5 +2,5 @@ export interface ErrorResponse {
   status: number;
   message: string;
   stack?: string;
-  errors?: string[]; // for validation errors
+  errors?: Record<string, string> | undefined; // for validation errors
 }

@@ -12,30 +12,29 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { handleLogOut } from '../api/sign-out';
-import { CalendarDays } from 'lucide-react';
+import { SwitchCamera } from 'lucide-react';
 import type { zuContextType } from '../context/zuContext';
 import { useProfile } from '../context/zuContext';
 
-const pages: string[] = [];
 const settings = ['Profile', 'Account', 'Logout'];
-
-function ResponsiveAppBar() {
-  const setProfile = useProfile((s:zuContextType) => s.setProfile)
-  const profilePicLink = useProfile((s:zuContextType)=>s.profilePicLink)
-  const fullName = useProfile((s:zuContextType) =>s.userName)
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+export function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
+  const setProfile = useProfile((s: zuContextType) => s.setProfile);
+  const profilePicLink = useProfile((s: zuContextType) => s.profilePicLink);
+  const fullName = useProfile((s: zuContextType) => s.userName);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const navigation = useNavigate();
 
-  const twoInitials = fullName.split(' ').map(item => item[0].toUpperCase()).join("");
+  const twoInitials = fullName
+    ?.split(' ')
+    .map((item) => item[0].toUpperCase())
+    .join('');
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
-  const handleCloseNavMenu = () => setAnchorElNav(null);
   const handleCloseUserMenu = () => setAnchorElUser(null);
 
   return (
@@ -43,23 +42,26 @@ function ResponsiveAppBar() {
       position="static"
       elevation={0}
       sx={{
-        background: "#0A0A12",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        background: '#0A0A12',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 60 } }}>
-
           {/* Desktop logo */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 4 }}>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 0 }}>
             <Box
               sx={{
-                width: 32, height: 32, borderRadius: '10px',
+                width: 32,
+                height: 32,
+                borderRadius: '10px',
                 background: '#F97316',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              <CalendarDays size={16} color="#fff" />
+              <SwitchCamera size={16} color="#fff" />
             </Box>
             <Typography
               variant="h6"
@@ -78,59 +80,34 @@ function ResponsiveAppBar() {
             </Typography>
           </Box>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — now calls onMenuClick */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}>
             <IconButton
               size="large"
               aria-label="open navigation menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
+              onClick={onMenuClick}
               sx={{ color: 'rgba(255,255,255,0.4)' }}
             >
               <MenuIcon />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-              keepMounted
-              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-                '& .MuiPaper-root': {
-                  background: '#1A1A2E',
-                  border: '0.5px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px',
-                  mt: 1,
-                },
-                '& .MuiMenuItem-root': {
-                  color: 'rgba(255,255,255,0.6)',
-                  fontSize: '0.875rem',
-                  '&:hover': { background: 'rgba(255,255,255,0.04)', color: '#EAEAF5' },
-                },
-              }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
 
           {/* Mobile logo */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}>
+          <Box
+            sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}
+          >
             <Box
               sx={{
-                width: 28, height: 28, borderRadius: '8px',
+                width: 28,
+                height: 28,
+                borderRadius: '8px',
                 background: '#F97316',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              <CalendarDays size={14} color="#fff" />
+              <SwitchCamera size={14} color="#fff" />
             </Box>
             <Typography
               variant="h6"
@@ -149,7 +126,6 @@ function ResponsiveAppBar() {
             </Typography>
           </Box>
 
-          {/* Desktop nav pages spacer */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }} />
 
           {/* Avatar / user menu */}
@@ -159,10 +135,14 @@ function ResponsiveAppBar() {
                 {!profilePicLink ? (
                   <Box
                     sx={{
-                      width: 36, height: 36, borderRadius: '50%',
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
                       background: 'rgba(249,115,22,0.15)',
                       border: '1.5px solid rgba(249,115,22,0.35)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       color: '#F97316',
                       fontSize: '0.75rem',
                       fontWeight: 600,
@@ -176,7 +156,8 @@ function ResponsiveAppBar() {
                     alt={twoInitials}
                     src={profilePicLink}
                     sx={{
-                      width: 36, height: 36,
+                      width: 36,
+                      height: 36,
                       border: '1.5px solid rgba(249,115,22,0.35)',
                     }}
                   />
@@ -185,7 +166,6 @@ function ResponsiveAppBar() {
             </Tooltip>
 
             <Menu
-              sx={{ mt: '48px' }}
               id="menu-appbar-user"
               anchorEl={anchorElUser}
               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -224,8 +204,8 @@ function ResponsiveAppBar() {
                 <MenuItem
                   key={setting}
                   onClick={() => {
-                    if (setting === "Logout") {
-                      handleLogOut(navigation,setProfile);
+                    if (setting === 'Logout') {
+                      handleLogOut(navigation, setProfile);
                     }
                     handleCloseUserMenu();
                   }}
@@ -235,7 +215,6 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-
         </Toolbar>
       </Container>
     </AppBar>
