@@ -1,151 +1,136 @@
-import React from "react";
-import { Home, CalendarDays, UserPlus, Clock, ChevronRight, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Home, CalendarDays, Link2, X } from 'lucide-react';
 
-type SidebarSection = "home" | "myevents" | "joinevent";
-type SidebarProps = {
+export type SidebarSection = 'home' | 'myevents' | 'joinevent';
+
+interface SidebarProps {
   activeSection: SidebarSection;
   setActiveSection: (section: SidebarSection) => void;
-};
+  onMyEventsClick?: () => void;
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
+}
+const recentEvents: { label: string; icon: React.ReactNode }[] = [
+  // your existing recentEvents array
+];
 
-const recentEvents = ["KUCC Hackathon", "Tech Summit 2025", "Open Source Day"];
-
-const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
-  const [collapsed, setCollapsed] = useState(false);
+const Sidebar: React.FC<SidebarProps> = ({
+  activeSection,
+  setActiveSection,
+  onMyEventsClick,
+  mobileOpen,
+  setMobileOpen,
+}) => {
+  const collapsed = false;
 
   const menuItems: { label: string; key: SidebarSection; icon: React.ReactNode }[] = [
-    { label: "Home", key: "home", icon: <Home size={18} /> },
-    { label: "My Events", key: "myevents", icon: <CalendarDays size={18} /> },
-    { label: "Join Event", key: "joinevent", icon: <UserPlus size={18} /> },
+    { label: 'Home', key: 'home', icon: <Home size={18} /> },
+    { label: 'My events', key: 'myevents', icon: <CalendarDays size={18} /> },
+    { label: 'Join event', key: 'joinevent', icon: <Link2 size={18} /> },
   ];
 
   return (
     <>
-      {/* Mobile overlay toggle */}
-      <button
-        onClick={() => setCollapsed((c) => !c)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-[#0F0F17] border border-white/10 text-white p-2 rounded-lg shadow-lg"
-        aria-label="Toggle sidebar"
-      >
-        {collapsed ? <Menu size={20} /> : <X size={20} />}
-      </button>
-
       {/* Sidebar */}
       <aside
         className={`
-          bg-[#0F0F17] text-white flex flex-col
-          border-r border-white/[0.06]
-          transition-all duration-300 ease-in-out shrink-0
-          fixed md:relative z-40 h-full md:h-auto
-          ${collapsed ? "-translate-x-full md:translate-x-0 md:w-16" : "translate-x-0 w-64"}
-        `}
-        style={{ minHeight: "100vh" }}
+    bg-[#232323] text-white flex flex-col
+    border-r border-white/6
+    shrink-0
+    md:relative md:translate-x-0
+    ${collapsed ? 'md:w-16' : 'md:w-60'}
+    w-60
+    ${mobileOpen ? 'fixed z-40 h-full translate-x-0' : 'hidden md:flex'}
+  `}
+        style={{ minHeight: '100vh' }}
       >
-        {/* Logo / Brand */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/[0.06]">
-          <div className="w-8 h-8 rounded-lg bg-[#F97316] flex items-center justify-center shrink-0">
-            <CalendarDays size={16} className="text-white" />
-          </div>
-          {!collapsed && (
-            <span className="font-bold text-lg tracking-tight text-[#EAEAF5]">EventHub</span>
-          )}
+        <div className="md:hidden flex items-center justify-between px-3 pt-3 pb-1">
+          <span className="text-[10.5px] font-semibold uppercase tracking-widest text-white/35">
+            Menu
+          </span>
           <button
-            onClick={() => setCollapsed((c) => !c)}
-            className="hidden md:flex ml-auto text-white/20 hover:text-white/60 transition"
-            aria-label="Collapse sidebar"
+            onClick={() => setMobileOpen(false)}
+            className="text-white/40 hover:text-white/80 p-1"
+            aria-label="Close sidebar"
           >
-            <ChevronRight
-              size={16}
-              className={`transition-transform duration-300 ${collapsed ? "" : "rotate-180"}`}
-            />
+            <X size={18} />
           </button>
         </div>
+        {/* Body */}
 
-        {/* Menu */}
-        <div className="px-3 pt-6 flex-1 overflow-y-auto">
+        <nav className="flex flex-col gap-0.5">
+          {menuItems.map(({ label, key, icon }) => {
+            const isActive = activeSection === key;
+            return (
+              <button
+                key={key}
+                onClick={() => {
+                  setActiveSection(key);
+                  setMobileOpen(false);
+                  if (key === 'myevents' && onMyEventsClick) {
+                    onMyEventsClick();
+                  }
+                }}
+                title={collapsed ? label : undefined}
+                className={`
+                    flex items-center gap-3 rounded-xl w-full text-left
+                    cursor-pointer
+                    text-[14.5px]
+                    ${collapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'}
+                    ${
+                      isActive
+                        ? 'bg-[#2E2E2E] text-white font-semibold'
+                        : 'text-white/50 hover:text-white/85 hover:bg-white/5'
+                    }
+                  `}
+              >
+                <span className={`shrink-0 ${isActive ? 'text-white' : 'text-white/45'}`}>
+                  {icon}
+                </span>
+                {!collapsed && <span>{label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="mt-6">
           {!collapsed && (
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/20 px-3 mb-2">
-              Menu
+            <p className="text-[10.5px] font-semibold uppercase tracking-widest text-white/35 px-3 mb-1.5">
+              Recent
             </p>
           )}
-          <nav className="flex flex-col gap-0.5">
-            {menuItems.map(({ label, key, icon }) => {
-              const isActive = activeSection === key;
-              return (
+
+          {collapsed ? (
+            <div className="flex flex-col items-center gap-1 mt-1">
+              {recentEvents.map(({ label, icon }) => (
                 <button
-                  key={key}
-                  onClick={() => setActiveSection(key)}
-                  title={collapsed ? label : undefined}
-                  className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left
-                    text-sm font-medium transition-all duration-150
-                    ${isActive
-                      ? "bg-[#F97316]/10 text-[#F97316] border border-[#F97316]/20"
-                      : "text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent"
-                    }
-                    ${collapsed ? "justify-center" : ""}
-                  `}
+                  key={label}
+                  title={label}
+                  className="flex items-center justify-center w-full py-2.5
+                      text-white/30 hover:text-white/65 hover:bg-white/5
+                      rounded-xl"
                 >
-                  <span className={isActive ? "text-[#F97316]" : ""}>{icon}</span>
-                  {!collapsed && <span>{label}</span>}
-                  {!collapsed && isActive && (
-                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#F97316]" />
-                  )}
+                  {icon}
                 </button>
-              );
-            })}
-          </nav>
-
-          {/* Recent */}
-          <div className="mt-8">
-            {!collapsed && (
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/20 px-3 mb-2">
-                Recent
-              </p>
-            )}
-            {collapsed ? (
-              <div className="flex justify-center">
-                <Clock size={18} className="text-white/20" />
-              </div>
-            ) : (
-              <div className="flex flex-col gap-0.5">
-                {recentEvents.map((event) => (
-                  <button
-                    key={event}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-left
-                      text-xs text-white/30 hover:text-white/60 hover:bg-white/[0.04]
-                      transition group"
-                  >
-                    <Clock
-                      size={13}
-                      className="shrink-0 text-white/20 group-hover:text-[#F97316] transition"
-                    />
-                    <span className="truncate">{event}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              {recentEvents.map(({ label, icon }) => (
+                <button
+                  key={label}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl w-full text-left
+                      text-[13.5px] text-white/45 hover:text-white/75 hover:bg-white/5 group"
+                >
+                  <span className="shrink-0 text-white/30 group-hover:text-white/55">{icon}</span>
+                  <span className="truncate">{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-
-        {/* Footer */}
-        {!collapsed && (
-          <div className="px-5 py-4 border-t border-white/[0.06]">
-            <p className="text-[10px] text-white/15 text-center">EventHub v1.0</p>
-          </div>
-        )}
       </aside>
-
-      {/* Mobile backdrop */}
-      {!collapsed && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/60 z-30"
-          onClick={() => setCollapsed(true)}
-        />
-      )}
     </>
   );
 };
 
 export default Sidebar;
-export type { SidebarSection };

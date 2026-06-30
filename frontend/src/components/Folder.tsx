@@ -1,42 +1,33 @@
-import React, { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import React, { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 type FolderCardProps = {
   name: string;
   color?: string;
   createdAt: Date | string;
+  numberOfImages?: number;
+  thumbNailUrl?: string;
+
   onEdit: () => void;
   onRemove: () => void;
   onClick?: () => void;
 };
 
-const FOLDER_COLORS = [
-  "#F97316", // orange
-  "#8B5CF6", // purple
-  "#06B6D4", // cyan
-  "#10B981", // emerald
-  "#F43F5E", // rose
-  "#3B82F6", // blue
-  "#EAB308", // yellow
-];
+const FOLDER_COLORS = ['#E8572A', '#8B5CF6', '#06B6D4', '#10B981', '#F43F5E', '#3B82F6', '#EAB308'];
 
 function getColorForName(name: string): string {
   let hash = 0;
-
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-
   return FOLDER_COLORS[Math.abs(hash) % FOLDER_COLORS.length];
 }
 
 function formatDate(raw: Date | string): string {
-  const d = new Date(raw as string);
-
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  const d = new Date(raw);
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -44,12 +35,13 @@ const FolderCard: React.FC<FolderCardProps> = ({
   name,
   color,
   createdAt,
+  numberOfImages = 0,
+  thumbNailUrl,
   onEdit,
   onRemove,
   onClick,
 }) => {
   const [isPressed, setIsPressed] = useState(false);
-
   const resolvedColor = color ?? getColorForName(name);
 
   return (
@@ -60,99 +52,77 @@ const FolderCard: React.FC<FolderCardProps> = ({
       onMouseLeave={() => setIsPressed(false)}
       className={`
         relative flex flex-col rounded-2xl overflow-hidden
-        border border-white/[0.07] cursor-pointer
-        transition-all duration-150
-        hover:border-white/20 hover:scale-[1.02]
-        ${isPressed ? "scale-95" : "scale-100"}
+        bg-[#111111] border border-[#2a2a2a] cursor-pointer
+        transition-all duration-200 ease-out shadow-lg
+        hover:border-[#E8572A]/40 hover:shadow-2xl
+        ${isPressed ? 'scale-[0.98]' : 'hover:scale-[1.01]'}
       `}
-      style={{ minHeight: 180 }}
+      style={{ minHeight: 220 }}
     >
-      {/* Smaller top folder section */}
-      <div
-        className="flex items-center justify-center"
-        style={{
-          background: resolvedColor,
-          flex: "0 0 50%",
-          minHeight: 90,
-        }}
-      >
-        {/* Folder icon */}
+      {/* Color banner */}
+      {/* Color banner / Thumbnail */}
+      {thumbNailUrl ? (
+        <img
+          src={thumbNailUrl}
+          alt={name}
+          className="w-full object-cover"
+          style={{ height: 100 }}
+        />
+      ) : (
         <div
-          className="flex flex-col items-start gap-0"
-          style={{ opacity: 0.22 }}
-        >
-          <div
-            style={{
-              width: 40,
-              height: 8,
-              background: "#fff",
-              borderRadius: "6px 6px 0 0",
-              marginLeft: 4,
-            }}
-          />
+          style={{
+            background: resolvedColor,
+            height: 100,
+          }}
+        />
+      )}
 
-          <div
-            style={{
-              width: 72,
-              height: 48,
-              background: "#fff",
-              borderRadius: "0 8px 8px 8px",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Bottom info section */}
-      <div
-        className="flex flex-col justify-between px-3 py-2.5"
-        style={{
-          flex: "0 0 50%",
-          background: "#13131F",
-          borderTop: `2px solid ${resolvedColor}22`,
-        }}
-      >
+      {/* Content */}
+      <div className="flex flex-col justify-between flex-1 p-5 gap-3 bg-[#111111]">
         <div>
-          <p className="text-[#EAEAF5] text-sm font-semibold truncate leading-tight">
-            {name}
-          </p>
+          <h3 className="text-white font-semibold text-lg truncate">{name}</h3>
 
-          <p className="text-[10px] text-white/30 mt-1">
-            {formatDate(createdAt)}
+          <p className="text-[#888888] text-sm mt-1">
+            {formatDate(createdAt)} • {numberOfImages.toLocaleString()} photos
           </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1 mt-3">
+        {/* Actions */}
+        <div className="flex gap-2 mt-2">
+          {/* Edit Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit();
             }}
             className="
-              flex items-center gap-1 px-2 py-1 rounded-md text-[11px]
-              text-white/35 hover:text-[#F97316]
-              hover:bg-[#F97316]/10 transition
+              flex items-center gap-1.5
+              px-3 py-1.5 rounded-lg text-sm
+              text-[#555555] font-medium
+              hover:text-white hover:bg-[#2a2a2a]
+              transition-colors duration-200
             "
-            aria-label="Edit"
           >
-            <Pencil size={11} />
-            <span>Edit</span>
+            <Pencil size={14} />
+            Edit
           </button>
 
+          {/* Delete Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onRemove();
             }}
             className="
-              flex items-center gap-1 px-2 py-1 rounded-md text-[11px]
-              text-white/35 hover:text-red-400
-              hover:bg-red-500/10 transition
+              flex items-center gap-1.5
+              px-3 py-1.5 rounded-lg text-sm
+              text-[#555555] font-medium
+              hover:text-red-400 hover:bg-red-500/10
+              transition-colors duration-200
             "
-            aria-label="Delete"
           >
-            <Trash2 size={11} />
-            <span>Delete</span>
+            <Trash2 size={14} />
+            Delete
           </button>
         </div>
       </div>
@@ -161,3 +131,4 @@ const FolderCard: React.FC<FolderCardProps> = ({
 };
 
 export default FolderCard;
+
