@@ -16,6 +16,7 @@ import { uploadrouter } from './routers/uploadRoute';
 import { photoRouter } from './routers/photoRoute';
 import {initSocket} from './server';
 import { globalErrorHandler } from './middlewares/errorHandler';
+import { inviteRouter } from './routers/inviteRoute';
 
 const app = express();
 export const server = http.createServer(app)
@@ -37,11 +38,12 @@ app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_ORIGIN as string);
 });
 app.use('/api/driveUploadAPI', drivePhotoController);
-app.use('/api/upload', uploadrouter);
-app.use('/api/photos', photoRouter);
+app.use('/api/upload/photo', uploadrouter);
+app.use('/api/event/photo', photoRouter);
 app.use('/api/driveAPI', googleAPIController);
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);
+app.use('/api/share/event', inviteRouter);
 
 app.use(globalErrorHandler);
 export default app;
