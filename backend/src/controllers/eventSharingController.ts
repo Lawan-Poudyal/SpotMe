@@ -12,11 +12,12 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
-  const { eventId } = validateSchema(eventSchema, req.body);
+  const { eventId } = validateSchema(eventSchema, req.params);
   const event = await prisma.event.findUnique({
     where: {
       id: eventId,
     },
+    select: { userId: true },
   });
 
   if (!event) throw new NotFoundError('Event');
@@ -41,11 +42,11 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const joinEvent = asyncHandler(async (req: Request, res: Response) => {
+const joinEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
-  const { eventId, token } = validateSchema(inviteLinkSchema, req.body);
+  const { eventId, token } = validateSchema(inviteLinkSchema, req.params);
   const inviteLink = await prisma.inviteLink.findUnique({ where: { eventId } });
 
   if (!inviteLink || token != inviteLink.token) throw new NotFoundError('Event');
@@ -69,4 +70,4 @@ const joinEvent = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { inviteLinkHandler };
+export { inviteLinkHandler, joinEventHandler };
