@@ -1,13 +1,13 @@
-import type { eventType } from "../types/eventType";
-import type { Dispatch, SetStateAction } from "react";
-import { addEvent, getEvent, updateEvent, deleteEvent } from "../api/eventApi";
+import type { eventType } from '../types/eventType';
+import type { Dispatch, SetStateAction } from 'react';
+import { addEvent, getEvent, updateEvent, deleteEvent } from '../api/eventApi';
 
 type errType = {
   name: string;
   message: string;
 };
 
-const handleNonUniqueEventNames = (
+export const handleNonUniqueEventNames = (
   eventName: string,
   events: eventType[],
   setTitleError: Dispatch<SetStateAction<string>>,
@@ -18,8 +18,8 @@ const handleNonUniqueEventNames = (
   const exists = events.find((item) => item.eventName === eventName);
   if (exists) {
     setIsErrorOpen(true);
-    setTitleError("Same events already exists");
-    setSubTitleError("Try a different name please");
+    setTitleError('Same events already exists');
+    setSubTitleError('Try a different name please');
     return false;
   }
   return true;
@@ -43,11 +43,10 @@ export const onAddEvent = async (
   );
   if (!conflictExists) return;
 
-  const data = (await addEvent(
-    eventName,
-    userId,
-    setIsLoading,
-  )) as eventType & { success: boolean; err: errType };
+  const data = (await addEvent(eventName, userId, setIsLoading)) as eventType & {
+    success: boolean;
+    err: errType;
+  };
 
   if (!data.success) {
     setTitleError(data.err.name);
@@ -66,6 +65,7 @@ export const onAddEvent = async (
   };
   setEvents([...events, newEvent]);
 };
+
 export const onUpdateEvent = async (
   currentName: string,
   eventName: string,
@@ -87,12 +87,10 @@ export const onUpdateEvent = async (
   );
   if (!conflictExists) return;
 
-  const data = (await updateEvent(
-    eventName,
-    userId,
-    currentName,
-    setIsLoading,
-  )) as eventType & { success: boolean; err: errType };
+  const data = (await updateEvent(eventName, userId, currentName, setIsLoading)) as eventType & {
+    success: boolean;
+    err: errType;
+  };
   if (!data.success) {
     setTitleError(data.err.name);
     setSubTitleError(data.err.message);
@@ -118,11 +116,10 @@ export const onDeleteEvent = async (
   setIsLoading: Dispatch<SetStateAction<boolean>>,
   userId: string,
 ) => {
-  const data = (await deleteEvent(
-    eventName,
-    userId,
-    setIsLoading,
-  )) as eventType & { success: boolean; err: errType };
+  const data = (await deleteEvent(eventName, userId, setIsLoading)) as eventType & {
+    success: boolean;
+    err: errType;
+  };
   if (!data.success) {
     setTitleError(data.err.name);
     setSubTitleError(data.err.message);
@@ -145,7 +142,7 @@ export const onGetEvent = async (
     err: errType;
   };
 
-  if (!data.success) {
+  if (!data?.success) {
     setTitleError(data.err.name);
     setSubTitleError(data.err.message);
     setIsErrorOpen(true);
