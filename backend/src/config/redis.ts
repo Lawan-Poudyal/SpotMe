@@ -1,6 +1,9 @@
-import IORedis from 'ioredis';
+const redisUrl = process.env.UPSTASH_REDIS_HOST;
+const redisPassword = process.env.UPSTASH_REDIS_PASSWORD;
 
-export const connection = new IORedis(process.env.UPSTASH_REDIS_URL!, {
-  maxRetriesPerRequest: null,
-  tls: {},
-});
+export const connection = {
+    host : redisUrl,
+    port : 6379,
+    password : redisPassword,
+    tls : {}
+}

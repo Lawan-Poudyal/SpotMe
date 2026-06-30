@@ -1,4 +1,4 @@
-import {createPhotoHandler} from "../controllers/googlePhotoUploadController"
+import {createPhotoHandler} from "../controllers/asyncGooglePhotoUploadController"
 import express from 'express'
 const router = express.Router()
 
