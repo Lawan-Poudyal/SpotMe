@@ -6,13 +6,13 @@ import { getSession } from '../utils/getSessions';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { redis } from '../config/redisConfig';
+import { inviteLinkSchema } from '../validations/inviteLink.validation';
 
 const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { eventId } = validateSchema(eventSchema, req.body);
-
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
+  const { eventId } = validateSchema(eventSchema, req.body);
   const event = await prisma.event.findUnique({
     where: {
       id: eventId,
@@ -41,6 +41,32 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const joinEvent = asyncHandler;
+const joinEvent = asyncHandler(async (req: Request, res: Response) => {
+  const session = await getSession(req.headers as HeadersInit);
+  if (!session) throw new UnauthorizedError();
+
+  const { eventId, token } = validateSchema(inviteLinkSchema, req.body);
+  const inviteLink = await prisma.inviteLink.findUnique({ where: { eventId } });
+
+  if (!inviteLink || token != inviteLink.token) throw new NotFoundError('Event');
+  await prisma.participant.upsert({
+    where: {
+      userId_eventId: {
+        userId: session.user.id,
+        eventId,
+      },
+    },
+    update: {},
+    create: {
+      userId: session.user.id,
+      eventId,
+    },
+  });
+
+  res.status(201).json({
+    success: true,
+    data: { eventId },
+  });
+});
 
 export { inviteLinkHandler };
