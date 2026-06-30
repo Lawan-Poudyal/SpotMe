@@ -1,17 +1,15 @@
 import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
-import { auth } from '../config/auth';
 import { cloudinary } from '../lib/cloudinary';
 import { NotFoundError, UnauthorizedError, ValidationError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
+import { getSession } from '../utils/getSessions';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
 
-  console.time('sign');
-  const session = await auth.api.getSession({
-    headers: req.headers as HeadersInit,
-  });
+  const session = await getSession(req.headers as HeadersInit);
+
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
 
   const eventId = req.body.eventId;
@@ -33,7 +31,6 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
       cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
     },
   });
-  console.timeEnd('sign');
 });
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
@@ -43,17 +40,12 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   if (!photos || !Array.isArray(photos))
     throw new ValidationError('Missing or invalid photos array in the request body');
 
-  console.time('parallel');
-  const [session, event] = await Promise.all([
-    auth.api.getSession({ headers: req.headers as HeadersInit }),
-    prisma.event.findUnique({ where: { id: eventId } }),
-  ]);
-  console.timeEnd('parallel');
-
+  const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
+
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
-  console.time('createMany');
   const saved = await prisma.photo.createMany({
     data: photos.map((p) => ({
       event_id: eventId,
@@ -64,8 +56,17 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       height: p.height,
     })),
   });
-  console.timeEnd('createMany');
+
   res.status(201).json({ success: true, data: saved });
+
+  await prisma.event
+    .update({
+      where: { id: eventId },
+      data: { photoCount: { increment: photos.length } },
+    })
+    .catch((err) => {
+      console.error('Error in post-update cleanup:', err);
+    });
 });
 
 export { signedUploadRequest, saveUploadRequest };

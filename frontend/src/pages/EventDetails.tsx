@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  ArrowLeft,
-  Calendar,
-  ImageIcon,
-  Users,
-  Link2,
-  Upload,
-  ScanFace,
-  Download,
-} from 'lucide-react';
+import { ArrowLeft, Calendar, ImageIcon, Link2, Upload, ScanFace, Download } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import { photo } from '../api/photoApi';
@@ -18,6 +9,7 @@ import UploadTab from './Upload';
 
 import { EVENTS_MOCK } from '../mockdata/eventMock';
 import { useQuery } from '@tanstack/react-query';
+import { downloadBulk } from '../utility/downloadImages';
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -28,7 +20,6 @@ export default function EventDetails() {
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
 
-  // 1. Navigation state first, 2. mock fallback
   const event = state || EVENTS_MOCK.find((e) => e.id === eventId);
 
   const { data } = useQuery({
@@ -72,7 +63,6 @@ export default function EventDetails() {
 
   return (
     <div className="bg-[#1C1C1E] min-h-screen px-8 pt-3 pb-6">
-      {/* Single unified row */}
       <div className="flex mb-2 gap-3 items-center ">
         <button
           onClick={() => navigate(-1)}
@@ -82,10 +72,8 @@ export default function EventDetails() {
           <ArrowLeft size={15} color="#E4E4E7" />
         </button>
 
-        {/* Event title */}
         <span className="text-white text-3xl font-sans truncate min-w-0">{event.eventName}</span>
 
-        {/* Meta pills — pushed right */}
         <div className="ml-auto flex items-center gap-2 shrink-0">
           <MetaPill
             icon={<Calendar size={13} />}
@@ -96,18 +84,18 @@ export default function EventDetails() {
             })}
           />
           <MetaPill icon={<ImageIcon size={13} />} label={`${data?.length} photos`} />
-          <MetaPill icon={<Users size={13} />} label={`${event.people} people`} />
 
-          {/* Separator */}
           <div className="w-px h-4 bg-white/10 mx-1" />
 
-          {/* Actions */}
           <ActionButton icon={<Link2 size={14} />} label="Copy link" />
-          <ActionButton icon={<Download size={14} />} label="Download" />
+          <ActionButton
+            icon={<Download size={14} />}
+            onClick={() => downloadBulk(data ?? [])}
+            label="Download"
+          />
         </div>
       </div>
 
-      {/* ── Tabs ── */}
       <div className="border-b border-white/10 px-8">
         <div className="flex gap-1">
           {tabs.map((tab) => (
@@ -128,7 +116,6 @@ export default function EventDetails() {
         </div>
       </div>
 
-      {/* ── Tab Content ── */}
       <div className="p-8">
         {activeTab === 'all' && <AllPhotosTab event={event} />}
         {activeTab === 'findme' && <FindMeTab event={event} />}
@@ -139,7 +126,7 @@ export default function EventDetails() {
 }
 function MetaPill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/4">
+    <div className="flex  items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/4">
       {icon}
       <span>{label}</span>
     </div>
@@ -150,18 +137,21 @@ function ActionButton({
   icon,
   label,
   primary,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   primary?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
-      className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
+      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
         primary
           ? 'bg-white text-black font-medium hover:bg-white/90'
           : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/4'
       }`}
+      onClick={onClick}
     >
       {icon}
       {label}

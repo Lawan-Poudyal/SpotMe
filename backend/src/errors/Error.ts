@@ -1,8 +1,9 @@
 export class AppError extends Error {
   status: number;
-  constructor(message: string, status: number = 500) {
+  constructor(message: string, status: number = 500, name: string = '') {
     super(message);
     this.status = status;
+    this.name = this.constructor.name;
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
@@ -14,8 +15,11 @@ export class NotFoundError extends AppError {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string) {
+  fields?: Record<string, string> | undefined;
+
+  constructor(message: string, fields?: Record<string, string>) {
     super(message, 400);
+    this.fields = fields;
   }
 }
 

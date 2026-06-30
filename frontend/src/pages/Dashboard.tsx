@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate ,useLocation} from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import ResponsiveAppBar from "../components/Navbar"; 
-import type { SidebarSection } from "../components/Sidebar";
-import type { zuContextType } from "../context/zuContext";
-import { useProfile } from "../context/zuContext";
+import React, { useEffect, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import ResponsiveAppBar from '../components/Navbar';
+import type { SidebarSection } from '../components/Sidebar';
+import type { zuContextType } from '../context/zuContext';
+import { useProfile } from '../context/zuContext';
 
 const Dashboard: React.FC = () => {
-  const loggedIn = useProfile((s:zuContextType) => s.loggedIn)
+  const loggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const getSectionFromPath = (): SidebarSection => {
     if (location.pathname.includes('myevents')) return 'myevents';
@@ -25,27 +26,23 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (!loggedIn) {
-      navigate("/signup", { replace: true });
+      navigate('/signup', { replace: true });
     }
   }, [loggedIn, navigate]);
-
-  if (!loggedIn) return null;
-
   return (
     <div className="flex flex-col h-screen bg-[#1C1C1E]">
-      <ResponsiveAppBar />
-
+      <ResponsiveAppBar onMenuClick={() => setMobileOpen((o) => !o)} />
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <Sidebar
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
           activeSection={activeSection}
           setActiveSection={(section) => {
             setActiveSection(section);
+            setMobileOpen(false);
             navigate(`/dashboard/${section}`);
           }}
         />
-
-        {/* Main content */}
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>

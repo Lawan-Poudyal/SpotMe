@@ -3,12 +3,13 @@ import 'dotenv/config';
 import { Server } from 'socket.io';
 import { corsOptions } from './config/corsOptions';
 import { redis } from './config/redisConfig';
+import { redisPubSubClient } from './config/redisPubSub';
 
 let io : Server; 
 
 let idMap = new Map<string, string>()
 
-export const initSocket = (server: any) => {
+export const initSocket = async (server: any) => {
   io = new Server(server, {
     cors: corsOptions,
   });
@@ -21,12 +22,13 @@ export const initSocket = (server: any) => {
     console.log("connected:", socket.id);
   });
 
-  const subscriber = redis.subscribe(["image_news"])
-  subscriber.on("message" , (data)=>{
+  await redisPubSubClient.subscribe("image_news")
+  redisPubSubClient.on("message" , (channel, message)=>{
       try{
-      const userId = data.message.userId 
-      const driveFileId = data.message.driveFileId
-      const success = data.message.success
+      const data = JSON.parse(message)
+      const userId = data.userId 
+      const driveFileId = data.driveFileId
+      const success = data.success
       console.log(success ,userId , driveFileId)
       console.log(idMap.get(userId) as string)
       io.to(idMap.get(userId) as string).emit("image_news" , {success : success , driveFileId : driveFileId})
