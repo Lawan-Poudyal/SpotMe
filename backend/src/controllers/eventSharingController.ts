@@ -5,11 +5,12 @@ import { eventSchema } from '../validations/upload.validation';
 import { getSession } from '../utils/getSessions';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
+import { redis } from '../config/redisConfig';
 
 const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = validateSchema(eventSchema, req.body);
-  const session = await getSession(req.headers as HeadersInit);
 
+  const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
   const event = await prisma.event.findUnique({
@@ -21,15 +22,22 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   if (!event) throw new NotFoundError('Event');
   if (event.userId !== session.user.id) throw new ForbiddenError();
 
-  const inviteLink = await prisma.inviteLink.upsert({
-    where: { eventId },
-    update: {},
-    create: { eventId, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
-  });
+  let token = await redis.get(`invitelink:${eventId}`);
+  const oneWeekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  if (!token) {
+    const inviteLink = await prisma.inviteLink.upsert({
+      where: { eventId },
+      update: { expiresAt: oneWeekFromNow },
+      create: { eventId, expiresAt: oneWeekFromNow },
+    });
+    token = inviteLink.token;
+    await redis.set(`invitelink:${eventId}`, token, 'EX', 120);
+  }
 
   res.status(201).json({
     success: true,
-    data: { token: inviteLink.token, eventId: inviteLink.eventId },
+    data: { token, eventId },
   });
 });
 
