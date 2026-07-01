@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { LoginOrSignupBox } from '../types/LoginOrSignUpType';
 import { Eye, EyeOff } from 'lucide-react';
 import {
@@ -39,6 +39,10 @@ export function LoginBox({
   const [isEmailUniqueError, setIsEmailUniqueError] = useState<boolean>(true);
   const zuContextLoggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawRedirect = searchParams.get('redirect');
+  const redirectTo =
+    rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard';
 
   useEffect(() => {
     if (zuContextLoggedIn) {
@@ -66,6 +70,7 @@ export function LoginBox({
       setOpenErrorPopUp,
       setErrorMsg,
       setIsLogInLoading,
+      redirectTo,
     );
   };
 
@@ -268,7 +273,11 @@ export function LoginBox({
         <div className="flex flex-col gap-2.5">
           <button
             type="submit"
-            disabled={loggedIn ? isLogInLoading : isSignUpLoading || !checkSubmissionPermission()}
+            disabled={
+              loggedIn
+                ? isLogInLoading || !email || !password
+                : isSignUpLoading || !checkSubmissionPermission()
+            }
             className="relative h-11 w-full rounded-lg bg-[#E8572A] text-white font-semibold text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border border-[#E8572A]/10 transition-colors flex items-center justify-center gap-2 hover:border-[#E8572A]/20 "
           >
             {(loggedIn ? isLogInLoading : isSignUpLoading) && (

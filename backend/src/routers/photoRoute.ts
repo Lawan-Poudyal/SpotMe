@@ -1,6 +1,6 @@
-import express from 'express';
+import { Router } from 'express';
 import { deletePhotoHandler, getPhotoHandler } from '../controllers/photoController';
-const photoRouter = express.Router();
+const photoRouter = Router();
 
 photoRouter.route('/').get(getPhotoHandler);
 photoRouter.route('/delete').delete(deletePhotoHandler);

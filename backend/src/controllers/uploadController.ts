@@ -1,22 +1,19 @@
 import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { cloudinary } from '../lib/cloudinary';
-import { NotFoundError, UnauthorizedError, ValidationError } from '../errors/Error';
+import { NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { getSession } from '../utils/getSessions';
+import { eventSchema, saveUploadSchema } from '../validations/upload.validation';
+import { validateSchema } from '../utils/validateSchema';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
 
   const session = await getSession(req.headers as HeadersInit);
-
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
 
-  const eventId = req.body.eventId;
-  if (!eventId || typeof eventId !== 'string') {
-    throw new ValidationError('Missing or invalid eventId in the request body');
-  }
-
+  const { eventId } = validateSchema(eventSchema, req.body);
   const folderName = `SpotMe/events/${eventId}/photos`;
   const params = { timestamp, folder: folderName };
   const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);
@@ -34,14 +31,10 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 });
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
-  const { eventId, photos } = req.body;
-
-  if (!eventId) throw new ValidationError('Missing or invalid eventId in the request body');
-  if (!photos || !Array.isArray(photos))
-    throw new ValidationError('Missing or invalid photos array in the request body');
-
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
+
+  const { eventId, photos } = validateSchema(saveUploadSchema, req.body);
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);

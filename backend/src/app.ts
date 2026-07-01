@@ -1,4 +1,4 @@
-import http from 'http'
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -14,12 +14,14 @@ import { corsOptions } from './config/corsOptions';
 import { limiter } from './config/rateLimit';
 import { uploadrouter } from './routers/uploadRoute';
 import { photoRouter } from './routers/photoRoute';
-import {initSocket} from './server';
+import { initSocket } from './server';
 import { globalErrorHandler } from './middlewares/errorHandler';
+import { shareRouter } from './routers/inviteRoute';
+import { joinRouter } from './routers/joinRouter';
 
 const app = express();
-export const server = http.createServer(app)
-initSocket(server)
+export const server = http.createServer(app);
+initSocket(server);
 
 app.use(limiter);
 app.use(helmet());
@@ -37,11 +39,13 @@ app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_ORIGIN as string);
 });
 app.use('/api/driveUploadAPI', drivePhotoController);
-app.use('/api/upload', uploadrouter);
-app.use('/api/photos', photoRouter);
+app.use('/api/upload/photo', uploadrouter);
+app.use('/api/event/photo', photoRouter);
 app.use('/api/driveAPI', googleAPIController);
 app.use('/api/uniqueEmail', uniqueEmailController);
 app.use('/api/event', eventController);
+app.use('/api/events/:eventId/share', shareRouter);
+app.use('/api/invite-links/:token/join', joinRouter);
 
 app.use(globalErrorHandler);
 export default app;
