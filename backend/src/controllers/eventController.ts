@@ -222,7 +222,8 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
 
 const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
-
+  console.log("This is from teh validation user middleware")
+  console.log(req.validatedUserId)
   if (!session) throw new UnauthorizedError();
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
