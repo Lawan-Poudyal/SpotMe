@@ -103,63 +103,66 @@ export default function EventDetails() {
   }
 
   return (
-    <div className="bg-[#1C1C1E] min-h-screen px-8 pt-3 pb-6">
-      <div className="flex mb-2 gap-3 items-center ">
-        <button
-          onClick={() => navigate(-1)}
-          style={{ outline: 'none', boxShadow: 'none' }}
-          className="shrink-0 cursor-pointer flex items-center justify-center w-8 h-8 rounded-lg bg-white/20"
-        >
-          <ArrowLeft size={15} color="#E4E4E7" />
-        </button>
+    <div className="bg-[#1C1C1E] min-h-screen px-8  pb-6">
+      <header className="sticky top-0 z-50 bg-[#1C1C1E] pt-3">
+        {/* Title & Action Buttons Row */}
+        <div className="flex mb-2 gap-3 items-center">
+          <button
+            onClick={() => navigate(-1)}
+            style={{ outline: 'none', boxShadow: 'none' }}
+            className="shrink-0 cursor-pointer flex items-center justify-center w-8 h-8 rounded-lg bg-white/20"
+          >
+            <ArrowLeft size={15} color="#E4E4E7" />
+          </button>
 
-        <span className="text-white text-3xl font-sans truncate min-w-0">{event.eventName}</span>
+          <span className="text-white text-3xl font-sans truncate min-w-0">{event.eventName}</span>
 
-        <div className="ml-auto flex items-center gap-2 shrink-0">
-          <MetaPill
-            icon={<Calendar size={13} />}
-            label={new Date(event.createdAt).toLocaleDateString('en-US', {
-              month: 'long',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-          />
-          <MetaPill icon={<ImageIcon size={13} />} label={`${event.photoCount} photos`} />
+          <div className="ml-auto flex items-center gap-2 shrink-0">
+            <MetaPill
+              icon={<Calendar size={13} />}
+              label={new Date(event.createdAt).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            />
+            <MetaPill icon={<ImageIcon size={13} />} label={`${event.photoCount} photos`} />
 
-          <div className="w-px h-4 bg-white/10 mx-1" />
+            <div className="w-px h-4 bg-white/10 mx-1" />
 
-          <ActionButton
-            onClick={() => handleInviteLink.mutate()}
-            icon={<Link2 size={14} />}
-            label={isCopied ? 'Copied!' : handleInviteLink.isPending ? 'Copying...' : 'Copy link'}
-          />
-          <ActionButton
-            icon={<Download size={14} />}
-            onClick={() => downloadBulk(event ?? [])}
-            label="Download"
-          />
+            <ActionButton
+              onClick={() => handleInviteLink.mutate()}
+              icon={<Link2 size={14} />}
+              label={isCopied ? 'Copied!' : handleInviteLink.isPending ? 'Copying...' : 'Copy link'}
+            />
+            <ActionButton
+              icon={<Download size={14} />}
+              onClick={() => downloadBulk(event ?? [])}
+              label="Download"
+            />
+          </div>
         </div>
-      </div>
 
-      <div className="border-b border-white/10 px-8">
-        <div className="flex gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-4 px-4 text-sm font-medium border-b-2 transition
-                ${
-                  activeTab === tab.id
-                    ? 'border-[#F97316] text-[#F97316]'
-                    : 'border-transparent text-white/50 hover:text-white/80'
-                }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
+        <div className="border-b border-white/10">
+          <div className="flex gap-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-4 px-4 text-sm font-medium border-b-2 transition
+                  ${
+                    activeTab === tab.id
+                      ? 'border-[#F97316] text-[#F97316]'
+                      : 'border-transparent text-white/50 hover:text-white/80'
+                  }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </header>
 
       <div className="p-8">
         {activeTab === 'all' && <AllPhotosTab event={event} />}

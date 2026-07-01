@@ -6,8 +6,13 @@ export default function JoinEventRedirect() {
   const { code } = useParams();
   const isLoggedIn = useProfile((s: zuContextType) => s.loggedIn);
 
-  if (!isLoggedIn) {
-    return <Navigate to={`/login?redirect=/join/${code}`} replace />;
+  if (!code) {
+    return <Navigate to="/" replace />;
   }
-  return <Navigate to={`/dashboard/joinevent?code=${code}`} replace />;
+
+  if (!isLoggedIn) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(`/join/${code}`)}`} replace />;
+  }
+
+  return <Navigate to={`/dashboard/joinevent?code=${encodeURIComponent(code)}`} replace />;
 }
