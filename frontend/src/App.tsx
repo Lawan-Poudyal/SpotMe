@@ -25,7 +25,6 @@ function App() {
         <Route path="home" element={<HomePage />} />
         <Route path="myevents" element={<MyEvents userId="current-user-id" />} />
         <Route path="joinevent" element={<JoinEvent />} />
-
         <Route path="event/:eventId" element={<EventDetails />} />
       </Route>
       <Route path="/join/:code" element={<JoinEventRedirect />} />
