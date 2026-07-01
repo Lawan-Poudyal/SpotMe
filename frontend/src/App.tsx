@@ -10,6 +10,7 @@ import MyEvents from './pages/MyEvent';
 import JoinEvent from './pages/JoinEvent';
 import EventDetails from './pages/EventDetails';
 import { UserContext } from './context/UserContext';
+import JoinEventRedirect from './pages/JoinEventRedirect';
 
 function App() {
   const { contextState } = useContext(UserContext) ?? {};
@@ -24,9 +25,9 @@ function App() {
         <Route path="home" element={<HomePage />} />
         <Route path="myevents" element={<MyEvents userId="current-user-id" />} />
         <Route path="joinevent" element={<JoinEvent />} />
-
         <Route path="event/:eventId" element={<EventDetails />} />
       </Route>
+      <Route path="/join/:code" element={<JoinEventRedirect />} />
 
       {/* Auth */}
       <Route path="/login" element={<LoginPage loggedIn={true} />} />

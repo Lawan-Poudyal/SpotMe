@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { LoginOrSignupBox } from '../types/LoginOrSignUpType';
 import { Eye, EyeOff } from 'lucide-react';
 import {
@@ -39,6 +39,10 @@ export function LoginBox({
   const [isEmailUniqueError, setIsEmailUniqueError] = useState<boolean>(true);
   const zuContextLoggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawRedirect = searchParams.get('redirect');
+  const redirectTo =
+    rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard';
 
   useEffect(() => {
     if (zuContextLoggedIn) {
@@ -66,6 +70,7 @@ export function LoginBox({
       setOpenErrorPopUp,
       setErrorMsg,
       setIsLogInLoading,
+      redirectTo,
     );
   };
 
