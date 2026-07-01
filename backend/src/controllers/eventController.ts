@@ -117,7 +117,18 @@ const createEventHandler = async (req: Request, res: Response) => {
 
 const getEventHandler = async (req: Request, res: Response) => {
   try {
+      // let's make it so that other users can't see someone else's events 
+    const {validatedUserId} = req
     let { ownerId } = req.query as getRequestPaylaodType;
+    if(validatedUserId !== ownerId){
+	return res.status(403).json({
+	    success : false,
+	    err: {
+		name : 'Unauthorized action intended',
+		message :  "You can't get someone elses events"
+	    }
+	})
+    }
     if (!ownerId || ownerId.trim() === '') {
       return res.status(400).json({
         success: false,
@@ -243,7 +254,17 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
+    const {validatedUserId} = req
     let { ownerId, eventName } = req.body as deleteRequestPayloadType;
+    if(validatedUserId !== ownerId){
+	return res.status(403).json({
+	    success : false,
+	    err: {
+		name : 'Unauthorized action intended',
+		message :  "You can't get someone elses events"
+	    }
+	})
+    }
     if (!ownerId || ownerId.trim() === '') {
       // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
       return res.status(400).json({
