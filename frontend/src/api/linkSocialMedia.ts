@@ -6,7 +6,7 @@ export async function requestDriveScope(event : string ,setError : Dispatch<SetS
   const { error } = await authClient.linkSocial({
     provider: "google",
     scopes: ["https://www.googleapis.com/auth/drive.file"],
-    callbackURL: `/drive/${event}`, // come back to where they were
+    callbackURL: `/dashboard/${event}`, // come back to where they were
   });
 
   if (error) {

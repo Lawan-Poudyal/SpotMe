@@ -3,8 +3,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import { addEvent, updateEvent, getEvent, deleteEvent } from '../api/eventApi';
 import { ApiError } from '../error/requestPayloadError';
 import type { eventType } from '../types/eventType';
-import { handleNonUniqueEventNames } from '../utility/eventUtils';
-
 export function useEvents(userId: string) {
   return useQuery<eventType[]>({
     queryKey: ['events'],
@@ -28,7 +26,7 @@ export function useUpdateEvent(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (eventName: string) => updateEvent(eventName, eventId, setIsLoading),
+    mutationFn: (eventName: string) => updateEvent(eventName, eventId, undefined , setIsLoading),
     onSuccess: (response: eventType) => {
       const newEvents = events.map((item) => {
         if (item.id !== eventId) return item;
