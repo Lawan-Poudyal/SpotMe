@@ -1,65 +1,106 @@
 import { useState } from 'react';
-import { ArrowLeft, Calendar, ImageIcon, Link2, Upload, ScanFace, Download } from 'lucide-react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-
-import { photo } from '../api/photoApi';
+import {
+  ArrowLeft,
+  Calendar,
+  Image as ImageIcon,
+  Link2,
+  Upload,
+  ScanFace,
+  Download,
+} from 'lucide-react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import AllPhotosTab from './Allphotostab';
 import FindMeTab from './FindMeTab';
 import UploadTab from './Upload';
-
-import { EVENTS_MOCK } from '../mockdata/eventMock';
-import { useQuery } from '@tanstack/react-query';
 import { downloadBulk } from '../utility/downloadImages';
+import { inviteLink } from '../api/inviteLinkApi';
+import { queryClient } from '../config/tanstack';
+import { getEventById } from '../api/eventApi';
 
 type Tab = 'all' | 'findme' | 'upload';
 
+const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
+  {
+    id: 'all',
+    label: 'All photos',
+    icon: <ImageIcon size={16} />,
+  },
+  {
+    id: 'findme',
+    label: 'Find me',
+    icon: <ScanFace size={16} />,
+  },
+  {
+    id: 'upload',
+    label: 'Upload',
+    icon: <Upload size={16} />,
+  },
+];
+
 export default function EventDetails() {
   const navigate = useNavigate();
-  const { eventId } = useParams();
-  const { state } = useLocation();
+  const { eventId: id } = useParams<{ eventId: string }>();
+  console.log({ id });
+  const { state: routerState } = useLocation();
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
-  const event = state || EVENTS_MOCK.find((e) => e.id === eventId);
-
-  const { data } = useQuery({
-    queryKey: ['photos', event.id],
-    queryFn: () => photo.getPhotos(event.id),
+  const {
+    data: fetchedEvent,
+    isLoading: eventLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['events', id],
+    queryFn: () => getEventById(id!),
+    initialData: routerState,
+    staleTime: routerState ? 30_000 : 0,
   });
 
-  if (!event) {
+  const event = routerState || fetchedEvent;
+  console.log({ routerState });
+  console.log({ fetchedEvent });
+
+  const handleInviteLink = useMutation({
+    mutationFn: () => inviteLink.generate(id!),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['inviteLink', id], data.token ?? null);
+      if (data.token) {
+        const inviteLinkUrl = `${window.location.origin}/join/${data.token}`;
+        navigator.clipboard.writeText(inviteLinkUrl);
+      }
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    },
+  });
+
+  if (id && eventLoading) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Event not found</h1>
-          <button
-            onClick={() => navigate(-1)}
-            className="text-white/60 hover:text-white transition"
-          >
-            Go back
-          </button>
+        <div className="text-center space-y-2">
+          <div className="w-6 h-6 border-2 border-t-transparent border-orange-500 rounded-full animate-spin mx-auto" />
+          <p className="text-white/40 text-sm">Loading event details...</p>
         </div>
       </div>
     );
   }
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    {
-      id: 'all',
-      label: 'All photos',
-      icon: <ImageIcon size={16} />,
-    },
-    {
-      id: 'findme',
-      label: 'Find me',
-      icon: <ScanFace size={16} />,
-    },
-    {
-      id: 'upload',
-      label: 'Upload',
-      icon: <Upload size={16} />,
-    },
-  ];
+  if (!id || isError || !event) {
+    return (
+      <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Event not found</h1>
+          <button
+            onClick={() => navigate('/dashboard/home')}
+            className="text-orange-500 hover:text-orange-400 font-medium text-sm transition"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#1C1C1E] min-h-screen px-8 pt-3 pb-6">
@@ -83,14 +124,18 @@ export default function EventDetails() {
               year: 'numeric',
             })}
           />
-          <MetaPill icon={<ImageIcon size={13} />} label={`${data?.length} photos`} />
+          <MetaPill icon={<ImageIcon size={13} />} label={`${event.photoCount} photos`} />
 
           <div className="w-px h-4 bg-white/10 mx-1" />
 
-          <ActionButton icon={<Link2 size={14} />} label="Copy link" />
+          <ActionButton
+            onClick={() => handleInviteLink.mutate()}
+            icon={<Link2 size={14} />}
+            label={isCopied ? 'Copied!' : handleInviteLink.isPending ? 'Copying...' : 'Copy link'}
+          />
           <ActionButton
             icon={<Download size={14} />}
-            onClick={() => downloadBulk(data ?? [])}
+            onClick={() => downloadBulk(event ?? [])}
             label="Download"
           />
         </div>
@@ -124,9 +169,10 @@ export default function EventDetails() {
     </div>
   );
 }
+
 function MetaPill({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex  items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/4">
+    <div className="flex items-center gap-1.5 text-white/40 text-xs px-2.5 py-1 rounded-md bg-white/5">
       {icon}
       <span>{label}</span>
     </div>
@@ -146,10 +192,10 @@ function ActionButton({
 }) {
   return (
     <button
-      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all ${
+      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all focus:outline-none ${
         primary
           ? 'bg-white text-black font-medium hover:bg-white/90'
-          : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/4'
+          : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/5'
       }`}
       onClick={onClick}
     >

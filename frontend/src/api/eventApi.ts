@@ -110,4 +110,22 @@ const getEvent = async (userId: string) => {
   }
 };
 
-export { addEvent, getEvent, updateEvent, deleteEvent };
+const getEventById = async (eventId: string) => {
+  try {
+    const response = await api.get(`/api/event/${eventId}`);
+    return response.data.data as eventType[];
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new ApiError('Failed', {
+        payload: {
+          success: false,
+          name: err.response?.data.name,
+          message: err.response?.data.message,
+        },
+      });
+    }
+    throw err;
+  }
+};
+
+export { addEvent, getEvent, updateEvent, deleteEvent, getEventById };
