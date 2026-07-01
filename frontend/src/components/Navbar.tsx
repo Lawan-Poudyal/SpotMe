@@ -42,7 +42,7 @@ export function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
       position="static"
       elevation={0}
       sx={{
-        background: '#0A0A12',
+        background: '#181819',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}
     >
@@ -222,3 +222,4 @@ export function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
 }
 
 export default ResponsiveAppBar;
+

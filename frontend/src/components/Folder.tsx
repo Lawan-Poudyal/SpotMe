@@ -55,12 +55,9 @@ const FolderCard: React.FC<FolderCardProps> = ({
         bg-[#111111] border border-[#2a2a2a] cursor-pointer
         transition-all duration-200 ease-out shadow-lg
          hover:shadow-2xl
-        ${isPressed ? 'scale-[0.98]' : 'hover:scale-[1.01]'}
       `}
       style={{ minHeight: 220 }}
     >
-      {/* Color banner */}
-      {/* Color banner / Thumbnail */}
       {thumbNailUrl ? (
         <img
           src={thumbNailUrl}
@@ -77,7 +74,6 @@ const FolderCard: React.FC<FolderCardProps> = ({
         />
       )}
 
-      {/* Content */}
       <div className="flex flex-col justify-between flex-1 p-5 gap-3 bg-[#111111]">
         <div>
           <h3 className="text-white font-semibold text-lg truncate">{name}</h3>
@@ -87,9 +83,7 @@ const FolderCard: React.FC<FolderCardProps> = ({
           </p>
         </div>
 
-        {/* Actions */}
         <div className="flex gap-2 mt-2">
-          {/* Edit Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -107,7 +101,6 @@ const FolderCard: React.FC<FolderCardProps> = ({
             Edit
           </button>
 
-          {/* Delete Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
