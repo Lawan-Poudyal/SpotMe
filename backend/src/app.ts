@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.get('/drive/:event', (req, res) => {
+app.get('/dashboard/:event', (req, res) => {
   res.redirect(`${process.env.FRONTEND_ORIGIN as string}/dashboard/event/${req.params.event}`);
 });
 app.get('/', (req, res) => {
