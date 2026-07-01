@@ -221,15 +221,12 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
-  const session = await getSession(req.headers as HeadersInit);
-  console.log("This is from teh validation user middleware")
-  console.log(req.validatedUserId)
-  if (!session) throw new UnauthorizedError();
+  const {validatedUserId} = req
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
     const data = await prisma.event.update({
-      where: { id: eventId, userId: session.user.id },
+      where: { id: eventId, userId: validatedUserId },
       data: {
         ...(eventName !== undefined && { eventName }),
         ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
