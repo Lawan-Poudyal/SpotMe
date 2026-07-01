@@ -46,27 +46,28 @@ const joinEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
-  const { eventId, token } = validateSchema(inviteLinkSchema, req.params);
-  const inviteLink = await prisma.inviteLink.findUnique({ where: { eventId } });
+  const { token } = validateSchema(inviteLinkSchema, req.params);
 
-  if (!inviteLink || token != inviteLink.token) throw new NotFoundError('Event');
+  const inviteLink = await prisma.inviteLink.findUnique({ where: { token } });
+  if (!inviteLink) throw new NotFoundError('Event');
+
   await prisma.participant.upsert({
     where: {
-      userId_eventId: {
+      eventId_userId: {
         userId: session.user.id,
-        eventId,
+        eventId: inviteLink.eventId,
       },
     },
     update: {},
     create: {
       userId: session.user.id,
-      eventId,
+      eventId: inviteLink.eventId,
     },
   });
 
   res.status(201).json({
     success: true,
-    data: { eventId },
+    data: { eventId: inviteLink.eventId },
   });
 });
 

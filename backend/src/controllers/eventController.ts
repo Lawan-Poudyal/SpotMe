@@ -8,6 +8,7 @@ import { NotFoundError, UnauthorizedError } from '../errors/Error';
 import { updateEventSchema } from '../validations/event.validation';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
+import { eventSchema } from '../validations/upload.validation';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -184,6 +185,41 @@ const getEventHandler = async (req: Request, res: Response) => {
   }
 };
 
+const getEventById = asyncHandler(async (req: Request, res: Response) => {
+  const session = await getSession(req.headers as HeadersInit);
+  if (!session) throw new UnauthorizedError();
+
+  const { eventId } = validateSchema(eventSchema, req.params);
+
+  const event = await prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      eventName: true,
+      createdAt: true,
+      photoCount: true,
+      thumbnail: {
+        select: {
+          id: true,
+          photo_url: true,
+          width: true,
+          height: true,
+        },
+      },
+    },
+  });
+
+  if (!event) throw new NotFoundError('Event');
+
+  res.status(200).json({
+    success: true,
+    data: event,
+  });
+});
+
 const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
 
@@ -274,4 +310,10 @@ const deleteEventHandler = async (req: Request, res: Response) => {
   }
 };
 
-export { createEventHandler, getEventHandler, updateEventHandler, deleteEventHandler };
+export {
+  createEventHandler,
+  getEventById,
+  getEventHandler,
+  updateEventHandler,
+  deleteEventHandler,
+};

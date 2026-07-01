@@ -1,27 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link2, ArrowRight, Loader2 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { inviteLink } from '../api/inviteLinkApi';
 
 export default function JoinEvent() {
-  const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
-  const prefillCode = searchParams.get('code');
+  const navigate = useNavigate();
 
-  const handleJoin = async () => {
-    if (!code.trim()) {
-      setError('Please enter an invite code or link.');
-      return;
+  const [code, setCode] = useState(() => {
+    return searchParams.get('code') || '';
+  });
+
+  const {
+    mutate: joinEvent,
+    isPending,
+    isError,
+    error,
+    reset: resetMutation,
+  } = useMutation({
+    mutationFn: (inviteCode: string) => inviteLink.join(inviteCode),
+    onSuccess: (data) => {
+      navigate(`/dashboard/event/${data.eventId}`, { replace: true });
+    },
+  });
+
+  useEffect(() => {
+    const urlCode = searchParams.get('code');
+    if (urlCode) {
+      joinEvent(urlCode);
     }
-    setError('');
-    setLoading(true);
+  }, []);
 
-    // TODO: replace with real API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setError('Event not found. Check the code and try again.');
+  const handleJoin = () => {
+    if (!code.trim() || isPending) return;
+    joinEvent(code.trim());
   };
+
+  const errorMessage = isError
+    ? error?.response?.data?.message || error.message || 'Failed to join event'
+    : null;
 
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto bg-[#1C1C1E]">
@@ -50,26 +68,26 @@ export default function JoinEvent() {
             value={code}
             onChange={(e) => {
               setCode(e.target.value);
-              if (error) setError('');
+              if (isError) resetMutation();
             }}
             onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
             placeholder="Paste code or link here…"
             className={`w-full bg-[#1C1C1E] border rounded-xl px-4 py-3 text-white text-sm
               placeholder-white/25 focus:outline-none transition
-              ${error ? 'border-red-500/60 focus:border-red-500' : 'border-white/10 focus:border-orange-500/50'}`}
+              ${errorMessage ? 'border-red-500/60 focus:border-red-500' : 'border-white/10 focus:border-orange-500/50'}`}
           />
 
-          {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+          {errorMessage && <p className="text-red-400 text-xs mt-2">{errorMessage}</p>}
 
           <button
             onClick={handleJoin}
-            disabled={loading}
+            disabled={isPending || !code.trim()}
             className="mt-5 w-full flex items-center justify-center gap-2
               px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600
               disabled:opacity-60 disabled:cursor-not-allowed
               text-white font-semibold text-sm transition-all"
           >
-            {loading ? (
+            {isPending ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <>
@@ -86,4 +104,3 @@ export default function JoinEvent() {
     </div>
   );
 }
-
