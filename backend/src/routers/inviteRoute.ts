@@ -1,7 +1,8 @@
-import express from 'express';
+import { Router } from 'express';
 import { inviteLinkHandler } from '../controllers/eventSharingController';
-const inviteRouter = express.Router();
 
-inviteRouter.route('/').post(inviteLinkHandler);
+const shareRouter = Router({ mergeParams: true });
 
-export { inviteRouter };
+shareRouter.route('/').post(inviteLinkHandler);
+
+export { shareRouter };

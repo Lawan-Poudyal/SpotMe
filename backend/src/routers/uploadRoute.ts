@@ -1,6 +1,6 @@
-import express from 'express';
+import { Router } from 'express';
 import { saveUploadRequest, signedUploadRequest } from '../controllers/uploadController';
-const uploadrouter = express.Router();
+const uploadrouter = Router();
 
 uploadrouter.route('/sign').post(signedUploadRequest);
 uploadrouter.route('/save').post(saveUploadRequest);
