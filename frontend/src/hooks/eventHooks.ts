@@ -30,7 +30,41 @@ export function useUpdateEvent(
     onSuccess: (response: eventType) => {
       const newEvents = events.map((item) => {
         if (item.id !== eventId) return item;
-        else return { ...item, eventName: response.eventName };
+        else {
+	    return { ...item, eventName: response.eventName };
+	}
+      });
+      queryClient.setQueryData(['events'], newEvents);
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiError) {
+        setTitleError(err.payload?.name as string);
+        setSubTitleError(err.payload?.message as string);
+        setIsErrorOpen(true);
+      }
+    },
+  });
+}
+
+export function useUpdateThumbnail(
+  currentName: string,
+  eventId: string,
+  events: eventType[],
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+  setTitleError: Dispatch<SetStateAction<string>>,
+  setSubTitleError: Dispatch<SetStateAction<string>>,
+  setIsErrorOpen: Dispatch<SetStateAction<boolean>>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (thumbnailId: string) => updateEvent(currentName, eventId, thumbnailId , setIsLoading),
+    onSuccess: (response: eventType) => {
+      const newEvents = events.map((item) => {
+        if (item.id !== eventId) return item;
+	else{
+	    return { ...item, thumbnail: response.thumbnail };
+	}
       });
       queryClient.setQueryData(['events'], newEvents);
     },
@@ -84,7 +118,6 @@ export function useDeleteEvent(
     mutationFn: () => deleteEvent(eventName, userId, setIsLoading),
     onSuccess: () => {
       const newEvents = events.filter((event) => event.eventName !== eventName);
-      console.log(newEvents);
       queryClient.setQueryData(['events'], newEvents);
     },
     onError: (err: unknown) => {
