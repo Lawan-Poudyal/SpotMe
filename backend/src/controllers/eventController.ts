@@ -242,6 +242,22 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
         ...(eventName !== undefined && { eventName }),
         ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
       },
+      select :{
+	 id : true,
+	 userId : true,
+	 eventName : true,
+	 createdAt  :true,
+	 updatedAt : true,
+	 photoCount : true,
+	 thumbnail : {
+	     select : {
+		id : true,
+		photo_url : true,
+		width : true,
+		height : true
+	     }
+	 }
+      }
     });
     res.status(200).json({ success: true, data });
   } catch (err) {
