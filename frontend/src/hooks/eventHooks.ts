@@ -13,6 +13,13 @@ export function useEvents(userId: string) {
   });
 }
 
+type updateThumbnailType = {
+    thumbnailId : string;
+    photo_url : string;
+    width : number | null;
+    height : number | null ;
+}
+
 export function useUpdateEvent(
   currentName: string,
   eventId: string,
@@ -27,21 +34,31 @@ export function useUpdateEvent(
 
   return useMutation({
     mutationFn: (eventName: string) => updateEvent(eventName, eventId, undefined , setIsLoading),
-    onSuccess: (response: eventType) => {
-      const newEvents = events.map((item) => {
-        if (item.id !== eventId) return item;
-        else {
-	    return { ...item, eventName: response.eventName };
-	}
-      });
-      queryClient.setQueryData(['events'], newEvents);
+    onMutate : async(eventName : string)=>{
+	await queryClient.cancelQueries({queryKey : ['events']})
+	const previous = queryClient.getQueryData(['events'])
+	
+	queryClient.setQueryData(['events'] , (old :eventType[])=>
+	    old ? old.map((item)=> {
+		if (item.id !== eventId) return item;
+		else{
+		    return {...item , eventName :eventName }
+		}
+	    }) : []
+	)
+
+	return {previous}
     },
-    onError: (err: unknown) => {
+    onError: (err: unknown , eventName : string , context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
+      queryClient.setQueryData(['events'] , context?.previous)
+    },
+    onSettled: () => {
+	queryClient.invalidateQueries({queryKey : ['events']})
     },
   });
 }
@@ -58,23 +75,32 @@ export function useUpdateThumbnail(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (thumbnailId: string) => updateEvent(currentName, eventId, thumbnailId , setIsLoading),
-    onSuccess: (response: eventType) => {
-      const newEvents = events.map((item) => {
-        if (item.id !== eventId) return item;
-	else{
-	    return { ...item, thumbnail: response.thumbnail };
-	}
-      });
-      queryClient.setQueryData(['events'], newEvents);
+    mutationFn: ({thumbnailId , photo_url , width , height} : updateThumbnailType) => updateEvent(currentName, eventId, thumbnailId , setIsLoading),
+    onMutate : async({thumbnailId , photo_url , width , height} : updateThumbnailType) =>{
+	await queryClient.cancelQueries({queryKey : ['events']})
+	const previous = queryClient.getQueryData(['events'])
+
+	queryClient.setQueryData(['events'], (old : eventType[])=>
+	    old ? old.map(item =>{ 
+		if (item.id !== eventId) return item;
+		else{
+		    return {...item , thumbnail : {id : thumbnailId , photo_url : photo_url , width : width , height : height}}
+		}
+	    }) : []
+	)
+	return {previous}
     },
-    onError: (err: unknown) => {
+    onError: (err: unknown , unusable , context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
+      queryClient.setQueryData(['events'] , context?.previous)
     },
+    onSettled : ()=>{
+	queryClient.invalidateQueries({queryKey : ['events']})
+    }
   });
 }
 export function useCreateEvent(
@@ -116,16 +142,24 @@ export function useDeleteEvent(
 
   return useMutation({
     mutationFn: () => deleteEvent(eventName, userId, setIsLoading),
-    onSuccess: () => {
-      const newEvents = events.filter((event) => event.eventName !== eventName);
-      queryClient.setQueryData(['events'], newEvents);
-    },
-    onError: (err: unknown) => {
+    onMutate:async()=>{
+	await queryClient.cancelQueries({queryKey : ['events']})
+	const previous = queryClient.getQueryData(['events'])
+	queryClient.setQueryData(['events'] , (old : eventType[])=>
+				 old ? old.filter(item => item.eventName !== eventName) : []
+				)
+	return {previous}
+    } ,
+    onError: (err: unknown , arg : undefined  , context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
+      queryClient.setQueryData(['events'] , context?.previous)
     },
+    onSettled : ()=>{
+	queryClient.invalidateQueries({queryKey : ['events']})
+    }
   });
 }
