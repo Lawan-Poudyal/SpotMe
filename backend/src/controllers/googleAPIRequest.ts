@@ -14,15 +14,24 @@ type requestBodyType = {
 
 const getAPIKeyHandler = async(req : Request , res : Response)=>{
     try {
+	const {validatedUserId} = req
 
 	let {ownerId} = req.query as getRequestPaylaodType
-	console.log(ownerId)
 	if(!ownerId || ownerId.trim()=== "") {
 	    return res.status(400).json({
 		success : false,
 		err : {
 		    name : 'Bad request payload',
 		    msg : 'Missing owner id in the request payload'
+		}
+	    })
+	}
+	if(validatedUserId !== ownerId){
+	    return res.status(403).json({
+		success : false,
+		err: {
+		    name : 'Unauthorized action intended',
+		    message :  "You can't get someone elses events"
 		}
 	    })
 	}

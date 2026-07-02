@@ -5,6 +5,16 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
 
 	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayloadMultiple
+	const {validatedUserId} = req
+	if(validatedUserId !== ownerId){
+	    return res.status(403).json({
+		success : false,
+		err: {
+		    name : 'Unauthorized action intended',
+		    message :  "You can't get someone elses events"
+		}
+	    })
+	}
 	if(!eventId || eventId.trim()===""){
 	    return res.status(400).json({
 		success : false,

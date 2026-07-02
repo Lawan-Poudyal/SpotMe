@@ -118,8 +118,8 @@ const createEventHandler = async (req: Request, res: Response) => {
 const getEventHandler = async (req: Request, res: Response) => {
   try {
       // let's make it so that other users can't see someone else's events 
-    const {validatedUserId} = req
     let { ownerId } = req.query as getRequestPaylaodType;
+    const {validatedUserId} = req
     if(validatedUserId !== ownerId){
 	return res.status(403).json({
 	    success : false,
