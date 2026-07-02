@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft,
   Calendar,
@@ -17,35 +17,46 @@ import { downloadBulk } from '../utility/downloadImages';
 import { inviteLink } from '../api/inviteLinkApi';
 import { queryClient } from '../config/tanstack';
 import { getEventById } from '../api/eventApi';
+import { uploadEventPhotos } from '../api/eventPhotoUploadApi';
+import { fileUploads } from '../api/fileUploadApi';
+import { useProfile } from '../context/zuContext';
+import type { zuContextType } from '../context/zuContext';
+import { io } from 'socket.io-client';
+import PopUpBox from '../components/PopupBox';
 
 type Tab = 'all' | 'findme' | 'upload';
 
 const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  {
-    id: 'all',
-    label: 'All photos',
-    icon: <ImageIcon size={16} />,
-  },
-  {
-    id: 'findme',
-    label: 'Find me',
-    icon: <ScanFace size={16} />,
-  },
-  {
-    id: 'upload',
-    label: 'Upload',
-    icon: <Upload size={16} />,
-  },
+  { id: 'all', label: 'All photos', icon: <ImageIcon size={16} /> },
+  { id: 'findme', label: 'Find me', icon: <ScanFace size={16} /> },
+  { id: 'upload', label: 'Upload', icon: <Upload size={16} /> },
 ];
+
+// ── Shared type, now owned by the parent ─────────────────
+export interface UploadFile {
+  id: string;
+  file: File;
+  previewUrl: string;
+  status: "pending" | "uploading" | "done" | "error";
+  progress: number;
+  source: "local" | "drive";
+  driveFileId?: string;
+}
+
+type dataType = {
+  success: boolean;
+  driveFileId: string;
+};
 
 export default function EventDetails() {
   const navigate = useNavigate();
   const { eventId: id } = useParams<{ eventId: string }>();
-  console.log({ id });
   const { state: routerState } = useLocation();
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [isCopied, setIsCopied] = useState<boolean>(false);
+
+  const userId = useProfile((s: zuContextType) => s.id);
 
   const {
     data: fetchedEvent,
@@ -59,8 +70,216 @@ export default function EventDetails() {
   });
 
   const event = routerState || fetchedEvent;
-  console.log({ routerState });
-  console.log({ fetchedEvent });
+
+  // ── Upload queue state — lives here so it survives tab switches ──
+  const [files, setFiles] = useState<UploadFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [accessToken, setAccessToken] = useState<string>("");
+
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const pendingDriveSocketRef = useRef<Set<string>>(new Set());
+  const anyDriveSuccessRef = useRef<boolean>(false);
+
+  // ── Error popup state — also lifted, since handleUpload needs the setters ──
+  const [errorTitle, setErrorTitle] = useState<string>("");
+  const [subErrorTitle, setSubErrorTitle] = useState<string>("");
+  const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_SERVER_BASE_URL, {
+      auth: { userId }
+    });
+    socketRef.current = socket;
+
+    socket.on("image_news", (data: dataType) => {
+      const { success, driveFileId } = data;
+
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.driveFileId === driveFileId
+            ? { ...f, status: success ? "done" : "error", progress: success ? 100 : f.progress }
+            : f
+        )
+      );
+
+      if (success) anyDriveSuccessRef.current = true;
+
+      pendingDriveSocketRef.current.delete(driveFileId);
+
+      if (pendingDriveSocketRef.current.size === 0) {
+        if (anyDriveSuccessRef.current) {
+          queryClient.invalidateQueries({ queryKey: ["photos", id] });
+        }
+        anyDriveSuccessRef.current = false;
+        setFiles((prev) => prev.filter((f) => f.status !== "done"));
+        setIsUploading(false);
+      }
+    });
+
+    return () => {
+      socket.off("image_news");
+      socket.disconnect();
+    };
+  }, [userId]);
+
+  const addFiles = (incoming: FileList | File[]) => {
+    const imageFiles = Array.from(incoming).filter((f) => f.type.startsWith("image/"));
+    const mapped: UploadFile[] = imageFiles.map((f) => ({
+      id: `${f.name}-${f.lastModified}-${Math.random()}`,
+      file: f,
+      previewUrl: URL.createObjectURL(f),
+      status: "pending",
+      progress: 0,
+      source: "local",
+    }));
+    setFiles((prev) => [...prev, ...mapped]);
+  };
+
+  const addDriveFiles = (
+    driveFiles: { id: string; name: string; mimeType: string; url: string; sizeBytes?: number; thumbnailUrl?: string }[],
+  ) => {
+    const mapped: UploadFile[] = driveFiles.map((df) => ({
+      id: `drive-${df.id}-${Math.random()}`,
+      file: new File([], df.name, { type: df.mimeType }),
+      previewUrl: df.thumbnailUrl ?? "",
+      status: "pending",
+      progress: 0,
+      source: "drive",
+      driveFileId: df.id,
+    }));
+    setFiles((prev) => [...prev, ...mapped]);
+  };
+
+  const removeFile = (fileId: string) => {
+    setFiles((prev) => {
+      const target = prev.find((f) => f.id === fileId);
+      if (target && target.source === "local") URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((f) => f.id !== fileId);
+    });
+  };
+
+  const setFileStatus = (
+    ids: string[],
+    status: UploadFile["status"],
+    progress?: number,
+  ) => {
+    setFiles((prev) =>
+      prev.map((f) =>
+        ids.includes(f.id)
+          ? { ...f, status, progress: progress ?? f.progress }
+          : f,
+      ),
+    );
+  };
+
+  const uploadSignatureMutation = useMutation({
+    mutationFn: () => fileUploads.signRequest(id),
+  });
+
+  const saveUploadMutation = useMutation({
+    mutationFn: (photos: { url: string; publicId: string; width: number; height: number }[]) =>
+      fileUploads.saveUpload(id, photos),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["photos", id] });
+    },
+  });
+
+  const handleUpload = async () => {
+    if (files.length === 0 || isUploading) return;
+    setIsUploading(true);
+
+    const localFiles = files.filter((f) => f.source === "local");
+    const driveFiles = files.filter((f) => f.source === "drive");
+
+    setFiles((prev) =>
+      prev.map((f) => ({ ...f, status: "uploading" as const, progress: 0 })),
+    );
+
+    if (localFiles.length > 0) {
+      try {
+        const sig = await uploadSignatureMutation.mutateAsync();
+        setFileStatus(localFiles.map((f) => f.id), "uploading", 30);
+
+        const uploads = localFiles.map((f) => {
+          const formData = new FormData();
+          formData.append("file", f.file);
+          formData.append("api_key", sig.apiKey);
+          formData.append("timestamp", sig.timestamp.toString());
+          formData.append("signature", sig.signature);
+          formData.append("folder", sig.folder);
+          return fileUploads.uploadFile(formData, sig.cloudName).then((res) => ({ f, res }));
+        });
+
+        setFileStatus(localFiles.map((f) => f.id), "uploading", 60);
+
+        const results = await Promise.allSettled(uploads);
+
+        const succeeded = results
+          .filter((r): r is PromiseFulfilledResult<{ f: UploadFile; res: any }> => r.status === "fulfilled")
+          .map((r) => r.value);
+
+        const failedIds = results
+          .map((r, i) => (r.status === "rejected" ? localFiles[i].id : null))
+          .filter((idVal): idVal is string => idVal !== null);
+
+        if (succeeded.length > 0) {
+          setFileStatus(succeeded.map(({ f }) => f.id), "uploading", 90);
+
+          await saveUploadMutation.mutateAsync(
+            succeeded.map(({ res }) => ({
+              url: res.secure_url,
+              publicId: res.public_id,
+              width: res.width,
+              height: res.height,
+            })),
+          );
+          setFileStatus(succeeded.map(({ f }) => f.id), "done", 100);
+        }
+
+        if (failedIds.length > 0) {
+          setFileStatus(failedIds, "error");
+        }
+      } catch {
+        setFileStatus(localFiles.map((f) => f.id), "error");
+      }
+    }
+
+    if (driveFiles.length > 0) {
+      const driveFileIds = driveFiles
+        .map((f) => f.driveFileId)
+        .filter((idVal): idVal is string => Boolean(idVal));
+
+      pendingDriveSocketRef.current = new Set(driveFileIds);
+      anyDriveSuccessRef.current = false;
+
+      setFileStatus(driveFiles.map((f) => f.id), "uploading", 20);
+
+      const driveSuccess = await uploadEventPhotos({
+        eventId: String(id),
+        ownerId: String(userId),
+        accessToken,
+        driveFileIds,
+        setIsUploading: () => {},
+        setErrorTitle,
+        setSubErrorTitle,
+        setIsErrorOpen,
+      });
+
+      if (!driveSuccess) {
+        setFileStatus(driveFiles.map((f) => f.id), "error");
+        pendingDriveSocketRef.current.clear();
+        setIsUploading(false);
+        return;
+      }
+
+      setFileStatus(driveFiles.map((f) => f.id), "uploading", 60);
+    }
+
+    if (driveFiles.length === 0) {
+      setFiles((prev) => prev.filter((f) => f.status !== "done"));
+      setIsUploading(false);
+    }
+  };
 
   const handleInviteLink = useMutation({
     mutationFn: () => inviteLink.generate(id!),
@@ -104,6 +323,8 @@ export default function EventDetails() {
 
   return (
     <div className="bg-[#1C1C1E] min-h-screen px-8 pt-3 pb-6">
+      <PopUpBox title={errorTitle} subTitle={subErrorTitle} open={isErrorOpen} setOpen={setIsErrorOpen} />
+
       <div className="flex mb-2 gap-3 items-center ">
         <button
           onClick={() => navigate(-1)}
@@ -164,7 +385,22 @@ export default function EventDetails() {
       <div className="p-8">
         {activeTab === 'all' && <AllPhotosTab event={event} />}
         {activeTab === 'findme' && <FindMeTab event={event} />}
-        {activeTab === 'upload' && <UploadTab event={event} />}
+        {activeTab === 'upload' && (
+          <UploadTab
+            event={event}
+            files={files}
+            isUploading={isUploading}
+            accessToken={accessToken}
+            setAccessToken={setAccessToken}
+            addFiles={addFiles}
+            addDriveFiles={addDriveFiles}
+            removeFile={removeFile}
+            handleUpload={handleUpload}
+            setErrorTitle={setErrorTitle}
+            setSubErrorTitle={setSubErrorTitle}
+            setIsErrorOpen={setIsErrorOpen}
+          />
+        )}
       </div>
     </div>
   );
