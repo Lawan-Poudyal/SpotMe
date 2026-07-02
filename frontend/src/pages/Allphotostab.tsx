@@ -115,7 +115,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
               key="Thumbnail"
               disabled={isUpdatingThumb}
               onClick={() =>
-		  updateThumbnail.mutate(data[lightboxIndex]?.id)
+		  updateThumbnail.mutate({thumbnailId : data[lightboxIndex]?.id , photo_url :data[lightboxIndex]?.photo_url , width : data[lightboxIndex]?.width  , height : data[lightboxIndex]?.height})
               }
               className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-[#E8572A] hover:bg-[#2a2a2a]/30 transition-all duration-200 disabled:opacity-40"
               title="Set as Thumbnail"
