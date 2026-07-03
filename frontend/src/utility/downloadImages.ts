@@ -12,7 +12,7 @@ const downloadPhoto = async (url: string, filename: string) => {
   URL.revokeObjectURL(blobURL);
 };
 
-const downloadBulk = async (images: Photo[]) => {
+const downloadBulk = async (images: Photo[], eventName: string) => {
   const zip = new JSZip();
 
   await Promise.all(
@@ -26,7 +26,7 @@ const downloadBulk = async (images: Photo[]) => {
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(zipBlob);
-  a.download = 'photos.zip';
+  a.download = `${eventName}.zip`;
   a.click();
 };
 

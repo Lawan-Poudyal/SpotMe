@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Download, GalleryThumbnails, ImageIcon, Trash2, X } from 'lucide-react'; // Added missing X import
 import type { eventType } from '../types/eventType';
-import { useQuery, useMutation} from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
 import PhotoAlbum from 'react-photo-album';
@@ -22,7 +22,7 @@ import { updateEvent } from '../api/eventApi';
 import { queryClient } from '../config/tanstack';
 import { useUpdateEvent, useUpdateThumbnail } from '../hooks/eventHooks';
 import type { zuContextType } from '../context/zuContext';
-import { useProfile } from '../context/zuContext'; 
+import { useProfile } from '../context/zuContext';
 import { useEvents } from '../hooks/eventHooks';
 
 interface AllPhotosTabProps {
@@ -36,9 +36,18 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isUpdatingThumb, setIsUpdatingThumb] = useState(false);
-  const userId = useProfile((s:zuContextType) => s.id)
-  const {data : events = []} = useEvents(userId) as {data : eventType[]}; 
-  const updateThumbnail = useUpdateThumbnail(event.eventName , event.id , events , setIsUpdatingThumb , setTitleError , setSubTitleError , setIsErrorOpen )
+  const userId = useProfile((s: zuContextType) => s.id);
+  const { data: events = [] } = useEvents(userId) as { data: eventType[] };
+  const updateThumbnail = useUpdateThumbnail(
+    event.eventName,
+    event.id,
+    events,
+    setIsUpdatingThumb,
+    setTitleError,
+    setSubTitleError,
+    setIsErrorOpen,
+  );
+
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['photos', event.id],
     queryFn: () => photo.getPhotos(event.id),
@@ -88,7 +97,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
   return (
     <div className="p-1">
-        <PopUpBox
+      <PopUpBox
         title={titleError}
         subTitle={subTitleError}
         open={isErrorOpen}
@@ -115,7 +124,12 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
               key="Thumbnail"
               disabled={isUpdatingThumb}
               onClick={() =>
-		  updateThumbnail.mutate({thumbnailId : data[lightboxIndex]?.id , photo_url :data[lightboxIndex]?.photo_url , width : data[lightboxIndex]?.width  , height : data[lightboxIndex]?.height})
+                updateThumbnail.mutate({
+                  thumbnailId: data[lightboxIndex]?.id,
+                  photo_url: data[lightboxIndex]?.photo_url,
+                  width: data[lightboxIndex]?.width,
+                  height: data[lightboxIndex]?.height,
+                })
               }
               className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-[#E8572A] hover:bg-[#2a2a2a]/30 transition-all duration-200 disabled:opacity-40"
               title="Set as Thumbnail"
