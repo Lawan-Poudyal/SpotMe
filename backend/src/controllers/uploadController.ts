@@ -9,10 +9,6 @@ import { validateSchema } from '../utils/validateSchema';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
-
-  const session = await getSession(req.headers as HeadersInit);
-  if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
-
   const { eventId } = validateSchema(eventSchema, req.body);
   const folderName = `SpotMe/events/${eventId}/photos`;
   const params = { timestamp, folder: folderName };
@@ -31,9 +27,7 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 });
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
-  const session = await getSession(req.headers as HeadersInit);
-  if (!session) throw new UnauthorizedError('User must be authenticated to upload files');
-
+  const {validatedUserId} = req
   const { eventId, photos } = validateSchema(saveUploadSchema, req.body);
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
@@ -42,7 +36,7 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const saved = await prisma.photo.createMany({
     data: photos.map((p) => ({
       event_id: eventId,
-      uploaded_by: session.user.id,
+      uploaded_by: validatedUserId,
       photo_url: p.url,
       public_id: p.publicId,
       width: p.width,

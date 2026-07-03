@@ -117,7 +117,18 @@ const createEventHandler = async (req: Request, res: Response) => {
 
 const getEventHandler = async (req: Request, res: Response) => {
   try {
+      // let's make it so that other users can't see someone else's events 
     let { ownerId } = req.query as getRequestPaylaodType;
+    const {validatedUserId} = req
+    if(validatedUserId !== ownerId){
+	return res.status(403).json({
+	    success : false,
+	    err: {
+		name : 'Unauthorized action intended',
+		message :  "You can't get someone elses events"
+	    }
+	})
+    }
     if (!ownerId || ownerId.trim() === '') {
       return res.status(400).json({
         success: false,
@@ -221,18 +232,32 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
-  const session = await getSession(req.headers as HeadersInit);
-
-  if (!session) throw new UnauthorizedError();
+  const {validatedUserId} = req
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
     const data = await prisma.event.update({
-      where: { id: eventId, userId: session.user.id },
+      where: { id: eventId, userId: validatedUserId },
       data: {
         ...(eventName !== undefined && { eventName }),
         ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
       },
+      select :{
+	 id : true,
+	 userId : true,
+	 eventName : true,
+	 createdAt  :true,
+	 updatedAt : true,
+	 photoCount : true,
+	 thumbnail : {
+	     select : {
+		id : true,
+		photo_url : true,
+		width : true,
+		height : true
+	     }
+	 }
+      }
     });
     res.status(200).json({ success: true, data });
   } catch (err) {
@@ -245,7 +270,17 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
+    const {validatedUserId} = req
     let { ownerId, eventName } = req.body as deleteRequestPayloadType;
+    if(validatedUserId !== ownerId){
+	return res.status(403).json({
+	    success : false,
+	    err: {
+		name : 'Unauthorized action intended',
+		message :  "You can't get someone elses events"
+	    }
+	})
+    }
     if (!ownerId || ownerId.trim() === '') {
       // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
       return res.status(400).json({

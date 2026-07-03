@@ -3,8 +3,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import { addEvent, updateEvent, getEvent, deleteEvent } from '../api/eventApi';
 import { ApiError } from '../error/requestPayloadError';
 import type { eventType } from '../types/eventType';
-import { handleNonUniqueEventNames } from '../utility/eventUtils';
-
 export function useEvents(userId: string) {
   return useQuery<eventType[]>({
     queryKey: ['events'],
@@ -13,6 +11,13 @@ export function useEvents(userId: string) {
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
   });
+}
+
+type updateThumbnailType = {
+    thumbnailId : string;
+    photo_url : string;
+    width : number | null;
+    height : number | null ;
 }
 
 export function useUpdateEvent(
@@ -28,21 +33,74 @@ export function useUpdateEvent(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (eventName: string) => updateEvent(eventName, eventId, setIsLoading),
-    onSuccess: (response: eventType) => {
-      const newEvents = events.map((item) => {
-        if (item.id !== eventId) return item;
-        else return { ...item, eventName: response.eventName };
-      });
-      queryClient.setQueryData(['events'], newEvents);
+    mutationFn: (eventName: string) => updateEvent(eventName, eventId, undefined , setIsLoading),
+    onMutate : async(eventName : string)=>{
+	await queryClient.cancelQueries({queryKey : ['events']})
+	const previous = queryClient.getQueryData(['events'])
+	
+	queryClient.setQueryData(['events'] , (old :eventType[])=>
+	    old ? old.map((item)=> {
+		if (item.id !== eventId) return item;
+		else{
+		    return {...item , eventName :eventName }
+		}
+	    }) : []
+	)
+
+	return {previous}
     },
-    onError: (err: unknown) => {
+    onError: (err: unknown , eventName : string , context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
+      queryClient.setQueryData(['events'] , context?.previous)
     },
+    onSettled: () => {
+	queryClient.invalidateQueries({queryKey : ['events']})
+    },
+  });
+}
+
+export function useUpdateThumbnail(
+  currentName: string,
+  eventId: string,
+  events: eventType[],
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+  setTitleError: Dispatch<SetStateAction<string>>,
+  setSubTitleError: Dispatch<SetStateAction<string>>,
+  setIsErrorOpen: Dispatch<SetStateAction<boolean>>,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({thumbnailId , photo_url , width , height} : updateThumbnailType) => updateEvent(currentName, eventId, thumbnailId , setIsLoading),
+    onMutate : async({thumbnailId , photo_url , width , height} : updateThumbnailType) =>{
+	await queryClient.cancelQueries({queryKey : ['events']})
+	const previous = queryClient.getQueryData(['events'])
+
+	queryClient.setQueryData(['events'], (old : eventType[])=>
+	    old ? old.map(item =>{ 
+		if (item.id !== eventId) return item;
+		else{
+		    return {...item , thumbnail : {id : thumbnailId , photo_url : photo_url , width : width , height : height}}
+		}
+	    }) : []
+	)
+	return {previous}
+    },
+    onError: (err: unknown , unusable , context) => {
+      if (err instanceof ApiError) {
+        setTitleError(err.payload?.name as string);
+        setSubTitleError(err.payload?.message as string);
+        setIsErrorOpen(true);
+      }
+      queryClient.setQueryData(['events'] , context?.previous)
+    },
+    onSettled : ()=>{
+	queryClient.invalidateQueries({queryKey : ['events']})
+    }
   });
 }
 export function useCreateEvent(
@@ -84,17 +142,24 @@ export function useDeleteEvent(
 
   return useMutation({
     mutationFn: () => deleteEvent(eventName, userId, setIsLoading),
-    onSuccess: () => {
-      const newEvents = events.filter((event) => event.eventName !== eventName);
-      console.log(newEvents);
-      queryClient.setQueryData(['events'], newEvents);
-    },
-    onError: (err: unknown) => {
+    onMutate:async()=>{
+	await queryClient.cancelQueries({queryKey : ['events']})
+	const previous = queryClient.getQueryData(['events'])
+	queryClient.setQueryData(['events'] , (old : eventType[])=>
+				 old ? old.filter(item => item.eventName !== eventName) : []
+				)
+	return {previous}
+    } ,
+    onError: (err: unknown , arg : undefined  , context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
+      queryClient.setQueryData(['events'] , context?.previous)
     },
+    onSettled : ()=>{
+	queryClient.invalidateQueries({queryKey : ['events']})
+    }
   });
 }

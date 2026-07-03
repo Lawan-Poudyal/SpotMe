@@ -16,7 +16,7 @@ type toInjectType = {
 
 const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
-
+	const {validatedUserId} = req
 	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayloadMultiple
 	
 	if(!eventId || eventId.trim()===""){
@@ -37,6 +37,16 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 		}
 	    })
 	}
+	if(validatedUserId !== ownerId){
+	    return res.status(403).json({
+		success : false,
+		err: {
+		    name : 'Unauthorized action intended',
+		    message :  "You can't get someone elses events"
+		}
+	    })
+	}
+
 	if(!accessToken || accessToken.trim()=== "") {
 	    return res.status(400).json({
 		success : false,
