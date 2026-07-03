@@ -23,6 +23,7 @@ import { useProfile } from '../context/zuContext';
 import type { zuContextType } from '../context/zuContext';
 import { io } from 'socket.io-client';
 import PopUpBox from '../components/PopupBox';
+import { photo } from '../api/photoApi';
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -71,6 +72,10 @@ export default function EventDetails() {
 
   const event = routerState || fetchedEvent;
 
+  const { data: photos } = useQuery({
+    queryKey: ['photos', event.id],
+    queryFn: () => photo.getPhotos(event.id),
+  });
   // ── Upload queue state — lives here so it survives tab switches ──
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -394,7 +399,7 @@ export default function EventDetails() {
             />
             <ActionButton
               icon={<Download size={14} />}
-              onClick={() => downloadBulk(event ?? [])}
+              onClick={() => downloadBulk(photos ?? [], event.eventName)}
               label="Download"
             />
           </div>
