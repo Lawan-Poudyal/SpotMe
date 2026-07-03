@@ -103,9 +103,8 @@ export function LoginBox({
     }
   };
 
-  // Unified submission wrapper handler
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevents the browser from reloading the page
+    e.preventDefault();
     if (loggedIn) {
       handleLogin();
     } else {
