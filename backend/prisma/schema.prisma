@@ -128,7 +128,7 @@ model Participant {
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([eventId, userId])
+  @@unique(name : "eventId_userId" , [eventId, userId])
   @@map("participant")
 }
 
