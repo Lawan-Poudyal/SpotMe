@@ -71,10 +71,13 @@ export default function EventDetails() {
   });
 
   const event = routerState || fetchedEvent;
+  console.log(event)
+  console.log(routerState)
+  console.log(fetchedEvent)
 
   const { data: photos } = useQuery({
-    queryKey: ['photos', event.id],
-    queryFn: () => photo.getPhotos(event.id),
+    queryKey: ['photos', event?.id],
+    queryFn: () => photo.getPhotos(event?.id),
   });
   // ── Upload queue state — lives here so it survives tab switches ──
   const [files, setFiles] = useState<UploadFile[]>([]);
