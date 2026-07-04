@@ -25,9 +25,9 @@ type Props = {
   setTitleError: Dispatch<SetStateAction<string>>;
   setSubTitleError: Dispatch<SetStateAction<string>>;
   setIsErrorOpen: Dispatch<SetStateAction<boolean>>;
+  eventId: string;
   eventName: string;
   userId: string;
-  eventId: string;
 };
 
 const DeleteEventModal: React.FC<Props> = ({
@@ -37,8 +37,9 @@ const DeleteEventModal: React.FC<Props> = ({
   setTitleError,
   setSubTitleError,
   setIsErrorOpen,
+  eventId,
   eventName,
-  userId,
+  userId
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -46,6 +47,7 @@ const DeleteEventModal: React.FC<Props> = ({
     eventName,
     events,
     userId,
+    eventId,
     setIsLoading,
     setTitleError,
     setSubTitleError,
