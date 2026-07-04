@@ -4,11 +4,13 @@ import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
 import type { dbErrorType } from '../utils/dbErrorHash';
 import { asyncHandler } from '../utils/asyncHandler';
-import { NotFoundError, UnauthorizedError } from '../errors/Error';
+import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { updateEventSchema } from '../validations/event.validation';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
 import { eventSchema } from '../validations/upload.validation';
+import { isParticipant } from '../utils/isParticipant';
+import { redis } from '../config/redisConfig';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -201,7 +203,10 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
   if (!session) throw new UnauthorizedError();
   const {validatedUserId} = req
   const { eventId } = validateSchema(eventSchema, req.params);
-
+  const hasParticipated = await isParticipant(eventId , validatedUserId)
+  if(!hasParticipated) {
+      throw new ForbiddenError("Event")
+  }
   const event = await prisma.event.findUnique({
     where: {
       id: eventId,
@@ -228,13 +233,6 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  const userIdArray : string[] = event?.participant.map(item => item.userId ) as string[]
-
-  if (!userIdArray.includes(validatedUserId)){
-      throw new UnauthorizedError('Event')
-  }
-
-  if (!event) throw new NotFoundError('Event');
 
   res.status(200).json({
     success: true,
