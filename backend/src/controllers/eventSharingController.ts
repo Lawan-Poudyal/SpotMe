@@ -34,6 +34,8 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
     });
     token = inviteLink.token;
     await redis.set(`invitelink:${eventId}`, token, 'EX', 120);
+    const cacheKey = `participation-${validatedUserId}-${eventId}`
+    await redis.set( cacheKey, "1"   , 'EX' ,  600 )    
   }
 
   res.status(201).json({

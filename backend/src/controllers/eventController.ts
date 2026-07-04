@@ -11,7 +11,6 @@ import { validateSchema } from '../utils/validateSchema';
 import { eventSchema } from '../validations/upload.validation';
 import { isParticipant} from '../utils/isParticipant';
 import { redis } from '../config/redisConfig';
-import { success } from 'better-auth';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -247,21 +246,13 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId} = req
+const updateEventHandler = asyncHandler(async(req : Request , res : Response) => {
+    const {validatedUserId} = req
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
       const participated = await isParticipant(eventId , validatedUserId)
-      if(!participated){
-	  return res.status(403).json({
-	      success : false,
-	      err : {
-		  name : 'Forbidden',
-		  message  : 'This action cannot be performed',
-	      }
-	  })
-      }
+      if(!participated) throw new ForbiddenError("Forbidden")
     const data = await prisma.event.update({
       where: { id: eventId, userId: validatedUserId },
       data: {
@@ -292,7 +283,9 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
     }
     throw err;
   }
+
 });
+
 
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
