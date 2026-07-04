@@ -40,6 +40,7 @@ type eventType = {
 };
 
 const createEventHandler = async (req: Request, res: Response) => {
+    
   try {
     let { eventName, ownerId } = req.body as postRequestPayloadType;
     if (!eventName || eventName.trim() === '') {
@@ -75,6 +76,9 @@ const createEventHandler = async (req: Request, res: Response) => {
 
         return newEvent;
       });
+    const cacheKey = `participation-${ownerId}-${event.id}`
+    await redis.set( cacheKey, "1"   , 'EX' ,  600 )    
+      
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
         const dbErrorCode = dbError.code;
