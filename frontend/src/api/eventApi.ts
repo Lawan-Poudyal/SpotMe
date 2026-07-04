@@ -63,6 +63,7 @@ const updateEvent = async (
 const deleteEvent = async (
   eventName: string,
   userId: string,
+  eventId : string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
   try {
@@ -71,6 +72,7 @@ const deleteEvent = async (
       data: {
         eventName: eventName,
         ownerId: userId,
+	eventId : eventId
       },
     });
     return { success: true };

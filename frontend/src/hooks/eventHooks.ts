@@ -133,6 +133,7 @@ export function useDeleteEvent(
   eventName: string,
   events: eventType[],
   userId: string,
+  eventId : string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
   setTitleError: Dispatch<SetStateAction<string>>,
   setSubTitleError: Dispatch<SetStateAction<string>>,
@@ -141,7 +142,7 @@ export function useDeleteEvent(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => deleteEvent(eventName, userId, setIsLoading),
+    mutationFn: () => deleteEvent(eventName, userId , eventId, setIsLoading),
     onMutate:async()=>{
 	await queryClient.cancelQueries({queryKey : ['events']})
 	const previous = queryClient.getQueryData(['events'])

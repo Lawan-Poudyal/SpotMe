@@ -9,8 +9,9 @@ import { updateEventSchema } from '../validations/event.validation';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
 import { eventSchema } from '../validations/upload.validation';
-import { isParticipant } from '../utils/isParticipant';
+import { isParticipant} from '../utils/isParticipant';
 import { redis } from '../config/redisConfig';
+import { success } from 'better-auth';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -29,6 +30,7 @@ type getRequestPaylaodType = {
 type deleteRequestPayloadType = {
   ownerId: string;
   eventName: string;
+  eventId : string;
 };
 
 type eventType = {
@@ -208,6 +210,7 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const {validatedUserId} = req
   const { eventId } = validateSchema(eventSchema, req.params);
   const hasParticipated = await isParticipant(eventId , validatedUserId)
+  
   if(!hasParticipated) {
       throw new ForbiddenError("Event")
   }
@@ -249,6 +252,16 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
+      const participated = await isParticipant(eventId , validatedUserId)
+      if(!participated){
+	  return res.status(403).json({
+	      success : false,
+	      err : {
+		  name : 'Forbidden',
+		  message  : 'This action cannot be performed',
+	      }
+	  })
+      }
     const data = await prisma.event.update({
       where: { id: eventId, userId: validatedUserId },
       data: {
@@ -284,7 +297,7 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
     const {validatedUserId} = req
-    let { ownerId, eventName } = req.body as deleteRequestPayloadType;
+    let { ownerId, eventName , eventId} = req.body as deleteRequestPayloadType;
     if(validatedUserId !== ownerId){
 	return res.status(403).json({
 	    success : false,
