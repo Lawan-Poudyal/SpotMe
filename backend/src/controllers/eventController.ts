@@ -199,7 +199,7 @@ const getEventHandler = async (req: Request, res: Response) => {
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
-
+  const {validatedUserId} = req
   const { eventId } = validateSchema(eventSchema, req.params);
 
   const event = await prisma.event.findUnique({
@@ -220,8 +220,19 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
           height: true,
         },
       },
+      participant : {
+	  select:{
+	      userId: true
+	  }
+      }
     },
   });
+
+  const userIdArray : string[] = event?.participant.map(item => item.userId ) as string[]
+
+  if (!userIdArray.includes(validatedUserId)){
+      throw new UnauthorizedError('Event')
+  }
 
   if (!event) throw new NotFoundError('Event');
 
