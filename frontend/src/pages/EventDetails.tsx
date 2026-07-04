@@ -9,7 +9,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { skipToken, useMutation, useQuery } from '@tanstack/react-query';
 import AllPhotosTab from './Allphotostab';
 import FindMeTab from './FindMeTab';
 import UploadTab from './Upload';
@@ -60,25 +60,22 @@ export default function EventDetails() {
   const userId = useProfile((s: zuContextType) => s.id);
 
   const {
-    data: fetchedEvent,
+    data: event,
     isLoading: eventLoading,
     isError,
   } = useQuery({
     queryKey: ['events', id],
     queryFn: () => getEventById(id!),
     initialData: routerState,
+    enabled: !!id,
     staleTime: routerState ? 30_000 : 0,
   });
 
-  const event = routerState || fetchedEvent;
-  console.log(event)
-  console.log(routerState)
-  console.log(fetchedEvent)
-
   const { data: photos } = useQuery({
     queryKey: ['photos', event?.id],
-    queryFn: () => photo.getPhotos(event?.id),
+    queryFn: event?.id ? () => photo.getPhotos(event.id) : skipToken,
   });
+
   // ── Upload queue state — lives here so it survives tab switches ──
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -334,7 +331,7 @@ export default function EventDetails() {
     },
   });
 
-  if (id && eventLoading) {
+  if (!id || eventLoading) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
         <div className="text-center space-y-2">
@@ -345,7 +342,7 @@ export default function EventDetails() {
     );
   }
 
-  if (!id || isError || !event) {
+  if (isError || !event) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
         <div className="text-center">
