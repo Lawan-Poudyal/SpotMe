@@ -22,6 +22,7 @@ export const saveUploadSchema = z.object({
 
 export const deletePhotoSchema = z.object({
   photoId: z.string().min(1, 'Missing or invalid photoId in the request '),
+  eventId: z.string().min(1, 'Missing or invalid eventId in the request '),
 });
 
 export type SignUploadRequestPayload = z.infer<typeof eventSchema>;

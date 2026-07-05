@@ -6,6 +6,7 @@ import { cloudinary } from '../lib/cloudinary';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
 import { deletePhotoSchema, eventSchema } from '../validations/upload.validation';
+import { isThumbnail } from '../utils/isThumbnail';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   const { eventId } = validateSchema(eventSchema, req.query);
@@ -26,6 +27,7 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
+
   res.status(200).json({
     success: true,
     data: photos,
@@ -37,7 +39,12 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
-  const { photoId } = validateSchema(deletePhotoSchema, req.query);
+  const { photoId , eventId} = validateSchema(deletePhotoSchema, req.query);
+
+  const thumbnailed = await isThumbnail(eventId , photoId)
+
+  if(thumbnailed) throw new ForbiddenError('User doesnot have permission to delete this photo')
+
   const dbPhoto = await prisma.photo.findUnique({
     where: { id: photoId },
     include: {
