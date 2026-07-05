@@ -40,7 +40,7 @@ app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_ORIGIN as string);
 });
 app.use('/api/uniqueEmail', uniqueEmailController);
-//app.use('/api', requireAuth);
+app.use('/api', requireAuth);
 app.use('/api/driveUploadAPI', drivePhotoController);
 app.use('/api/upload/photo', uploadrouter);
 app.use('/api/event/photo', photoRouter);
