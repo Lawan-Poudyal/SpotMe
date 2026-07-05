@@ -4,7 +4,7 @@ import { redis } from '../config/redisConfig';
 export const isThumbnail : (eventId : string , photoId : string) => Promise<boolean> = async (eventId : string , photoId : string) =>{
     const cacheKey = `thumbnail-${eventId}` 
     const cachedThumbnailId = await redis.get(cacheKey)
-    if(!cachedThumbnailId){
+    if(!!cachedThumbnailId){
 	console.log("Cache hit")
 	return cachedThumbnailId === photoId
     }
