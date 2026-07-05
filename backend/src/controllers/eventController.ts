@@ -239,6 +239,11 @@ const updateEventHandler = asyncHandler(async(req : Request , res : Response) =>
 	 }
       }
     });
+    if(!!thumbNailId){
+	console.log("Setting up the thumbnail Cache")
+	const cacheKey = `thumbnail-${eventId}`
+	await redis.set(cacheKey , thumbNailId as string , 'EX' , 600)
+    }
     res.status(200).json({ success: true, data });
   } catch (err) {
     if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
