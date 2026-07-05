@@ -14,7 +14,7 @@ import type { CreateEventPayload , DeleteEventPayload , GetEventPayload } from '
 import { eventSchema } from '../validations/upload.validation';
 import { isParticipant} from '../utils/isParticipant';
 import { redis } from '../config/redisConfig';
-import { mapPrismaError } from '../errors/dbError';
+import { mapPrismaError, ZodValidationError } from '../errors/dbError';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -79,6 +79,9 @@ const createEventHandler = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
+	if(err instanceof ZodValidationError){
+	    return res.status(err.status).json(err.options)
+	}
       return res.status(500).json({
         success: false,
         err: {
@@ -94,14 +97,12 @@ const getEventHandler = async (req: Request, res: Response) => {
   try {
       // let's make it so that other users can't see someone else's events 
     let { ownerId} = validateData(getEventSchema , req.query  , res) as GetEventPayload 
-    console.log("Checking here ===============")
-    console.log(ownerId)
     const {validatedUserId} = req
     if(validatedUserId !== ownerId){
 	return res.status(403).json({
 	    success : false,
 	    err: {
-		name : ' Fuck you mom Unauthorized action intended',
+		name : 'Unauthorized action intended',
 		message :  "You can't get someone elses events"
 	    }
 	})
@@ -153,6 +154,9 @@ const getEventHandler = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
+	if(err instanceof ZodValidationError){
+	    return res.status(err.status).json(err.options)
+	}
       return res.status(500).json({
         success: false,
         err: {
@@ -289,6 +293,9 @@ const deleteEventHandler = async (req: Request, res: Response) => {
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
+	if(err instanceof ZodValidationError){
+	    return res.status(err.status).json(err.options)
+	}
       console.log(err.name);
       console.log(err.stack);
       console.log(err.message);

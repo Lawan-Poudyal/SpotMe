@@ -3,7 +3,18 @@ import { AppError } from "./Error";
 import type { dbErrorType } from "../utils/dbErrorHash";
 import dbErrorHash from "../utils/dbErrorHash";
 import { ApiFailurePayload } from "../types/apiFailurePayloadType";
-import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import type { PrismaClientKnownRequestError} from "@prisma/client/runtime/client";
+import type { validationFailurePayloadType } from "../types/validationFailurePayloadType";
+
+export class ZodValidationError extends Error{
+    status : number
+    options : validationFailurePayloadType
+    constructor(message : string , status : number,  options? : validationFailurePayloadType){
+	super(message)
+	this.status = status
+	this.options = options as validationFailurePayloadType
+    }
+}
 
 export class DbError extends AppError{
     payload? : ApiFailurePayload
