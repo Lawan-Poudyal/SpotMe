@@ -4,13 +4,17 @@ import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
 import type { dbErrorType } from '../utils/dbErrorHash';
 import { asyncHandler } from '../utils/asyncHandler';
-import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
+import { AppError, ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { updateEventSchema } from '../validations/event.validation';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
+import { validateData } from '../utils/validateSyncSchema';
+import { createEventSchema , deleteEventSchema , getEventSchema } from '../validations/eventSync.validation';
+import type { CreateEventPayload , DeleteEventPayload , GetEventPayload } from '../validations/eventSync.validation';
 import { eventSchema } from '../validations/upload.validation';
 import { isParticipant} from '../utils/isParticipant';
 import { redis } from '../config/redisConfig';
+import { mapPrismaError } from '../errors/dbError';
 
 type postRequestPayloadType = {
   eventName: string;
@@ -43,25 +47,7 @@ type eventType = {
 const createEventHandler = async (req: Request, res: Response) => {
     
   try {
-    let { eventName, ownerId } = req.body as postRequestPayloadType;
-    if (!eventName || eventName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing event name in the request payload',
-        },
-      });
-    }
-    if (!ownerId || ownerId.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
-    }
+    let { eventName, ownerId } = validateData(createEventSchema , req.body , res) as CreateEventPayload 
 
     let event: eventType | null = null;
 
@@ -82,27 +68,9 @@ const createEventHandler = async (req: Request, res: Response) => {
       
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
-        const dbErrorCode = dbError.code;
-        const dbErrorName: dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType;
-        if (dbErrorName === 'ForeignKeyConstraintViolation') {
-          return res.status(401).json({
-            success: false,
-            err: {
-              name: "Owner doesn't exist",
-              message:
-                'The account has been either deleted by the user or as per community guideline',
-            },
-          });
-        } else if (dbErrorName === 'UniqueConstraintViolation') {
-          return res.status(409).json({
-            success: false,
-            err: {
-              name: 'Conflicting names exist',
-              message: "Try using a different name which doesn't already exist in your events",
-            },
-          });
-        } else throw dbError;
-      } else throw dbError;
+	  throw mapPrismaError(dbError) 
+      }
+      else throw new AppError("Error")
     }
 
     return res.status(200).json({
@@ -125,25 +93,18 @@ const createEventHandler = async (req: Request, res: Response) => {
 const getEventHandler = async (req: Request, res: Response) => {
   try {
       // let's make it so that other users can't see someone else's events 
-    let { ownerId } = req.query as getRequestPaylaodType;
+    let { ownerId} = validateData(getEventSchema , req.query  , res) as GetEventPayload 
+    console.log("Checking here ===============")
+    console.log(ownerId)
     const {validatedUserId} = req
     if(validatedUserId !== ownerId){
 	return res.status(403).json({
 	    success : false,
 	    err: {
-		name : 'Unauthorized action intended',
+		name : ' Fuck you mom Unauthorized action intended',
 		message :  "You can't get someone elses events"
 	    }
 	})
-    }
-    if (!ownerId || ownerId.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
     }
 
     let events: eventType[] = [];
@@ -238,8 +199,6 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
       }
     },
   });
-
-
   res.status(200).json({
     success: true,
     data: event,
@@ -290,7 +249,7 @@ const updateEventHandler = asyncHandler(async(req : Request , res : Response) =>
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
     const {validatedUserId} = req
-    let { ownerId, eventName , eventId} = req.body as deleteRequestPayloadType;
+    let { ownerId, eventName , eventId} = validateData(deleteEventSchema , req.body , res) as DeleteEventPayload
     if(validatedUserId !== ownerId){
 	return res.status(403).json({
 	    success : false,
@@ -300,26 +259,6 @@ const deleteEventHandler = async (req: Request, res: Response) => {
 	    }
 	})
     }
-    if (!ownerId || ownerId.trim() === '') {
-      // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
-    }
-    if (!eventName || eventName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing event name in the request payload',
-        },
-      });
-    }
-
     try {
       await prisma.event.delete({
         where: {
@@ -337,7 +276,7 @@ const deleteEventHandler = async (req: Request, res: Response) => {
       if (dbError instanceof PrismaClientKnownRequestError) {
         const dbErrorCode = dbError.code;
         const dbErrorName: dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType;
-        if (dbErrorName === 'CompositeKeyViolation') {
+        if (dbErrorName === 'KeyNotFoundError') {
           return res.status(404).json({
             success: false,
             err: {
