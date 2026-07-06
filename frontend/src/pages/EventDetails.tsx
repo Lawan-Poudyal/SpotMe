@@ -24,6 +24,8 @@ import type { zuContextType } from '../context/zuContext';
 import { io } from 'socket.io-client';
 import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
+import { Users } from 'lucide-react'; // new icon for the button
+import ParticipantsDialog from '../components/ParticipantsDialog'; // adjust path
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -58,6 +60,7 @@ export default function EventDetails() {
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const userId = useProfile((s: zuContextType) => s.id);
+  const [showParticipants, setShowParticipants] = useState(false);
 
   const {
     data: event,
@@ -289,7 +292,7 @@ export default function EventDetails() {
         ownerId: String(userId),
         accessToken,
         driveFileIds,
-        setIsUploading: () => {},
+        setIsUploading: () => { },
         setErrorTitle,
         setSubErrorTitle,
         setIsErrorOpen,
@@ -367,6 +370,12 @@ export default function EventDetails() {
           open={isErrorOpen}
           setOpen={setIsErrorOpen}
         />
+        <ParticipantsDialog
+          open={showParticipants}
+          onClose={() => setShowParticipants(false)}
+          eventId={id}
+          ownerId={String(userId)}
+        />
 
         <div className="flex mb-2 gap-3 items-center ">
           <button
@@ -402,6 +411,11 @@ export default function EventDetails() {
               onClick={() => downloadBulk(photos ?? [], event.eventName)}
               label="Download"
             />
+            <ActionButton
+              icon={<Users size={14} />}
+              label="Show participants"
+              onClick={() => setShowParticipants(true)}
+            />
           </div>
         </div>
 
@@ -412,10 +426,9 @@ export default function EventDetails() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-4 px-4 text-sm font-medium border-b-2 transition
-                  ${
-                    activeTab === tab.id
-                      ? 'border-[#F97316] text-[#F97316]'
-                      : 'border-transparent text-white/50 hover:text-white/80'
+                  ${activeTab === tab.id
+                    ? 'border-[#F97316] text-[#F97316]'
+                    : 'border-transparent text-white/50 hover:text-white/80'
                   }`}
               >
                 {tab.icon}
@@ -472,11 +485,10 @@ function ActionButton({
 }) {
   return (
     <button
-      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all focus:outline-none ${
-        primary
-          ? 'bg-white text-black font-medium hover:bg-white/90'
-          : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/5'
-      }`}
+      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all focus:outline-none ${primary
+        ? 'bg-white text-black font-medium hover:bg-white/90'
+        : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/5'
+        }`}
       onClick={onClick}
     >
       {icon}

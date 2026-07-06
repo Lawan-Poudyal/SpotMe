@@ -119,7 +119,7 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 sm:grid-cols-3">
           {steps.map((step) => (
             <div key={step.number} className="flex gap-4">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-white/25 text-sm font-semibold">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/25 text-sm font-semibold">
                 {step.number}
               </div>
               <div>
