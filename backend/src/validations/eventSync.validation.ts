@@ -23,8 +23,8 @@ export const eventBaseSchema = z.object({
 });
 
 export const createEventSchema = eventBaseSchema.pick({
-    eventName : true,
-    ownerId : true 
+  eventName: true,
+  ownerId: true
 });
 
 export const getEventSchema = eventBaseSchema.pick({
@@ -33,10 +33,17 @@ export const getEventSchema = eventBaseSchema.pick({
 
 export const deleteEventSchema = eventBaseSchema.pick({
   ownerId: true,
-  eventName : true,
-  eventId : true
+  eventName: true,
+  eventId: true
 });
 
+
+export const getParticipantsSchema = eventBaseSchema.pick({
+  eventId: true,
+  ownerId: true,
+});
+
+export type GetParticipantsPayload = z.infer<typeof getParticipantsSchema>;
 export type CreateEventPayload = z.infer<typeof createEventSchema>;
 export type GetEventPayload = z.infer<typeof getEventSchema>;
 export type DeleteEventPayload = z.infer<typeof deleteEventSchema>;

@@ -10,6 +10,7 @@ import { router as uniqueEmailController } from './routers/uniqueEmailRoute';
 import { router as googleAPIController } from './routers/googleAPIRoute';
 import { router as drivePhotoController } from './routers/googleDriveRoute';
 import { router as eventController } from './routers/eventRoute';
+import { router as getParticipantController } from './routers/participantRoute'
 import { corsOptions } from './config/corsOptions';
 import { limiter } from './config/rateLimit';
 import { uploadrouter } from './routers/uploadRoute';
@@ -48,6 +49,6 @@ app.use('/api/driveAPI', googleAPIController);
 app.use('/api/event', eventController);
 app.use('/api/events/:eventId/share', shareRouter);
 app.use('/api/invite-links/:token/join', joinRouter);
-
+app.use("/api/participants", getParticipantController)
 app.use(globalErrorHandler);
 export default app;
