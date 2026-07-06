@@ -85,7 +85,7 @@ export default function JoinEvent() {
             className="mt-5 w-full flex items-center justify-center gap-2
               px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600
               disabled:opacity-60 disabled:cursor-not-allowed
-              text-white font-semibold text-sm transition-all"
+              text-white font-semibold text-sm transition-all cursor-pointer"
           >
             {isPending ? (
               <Loader2 size={16} className="animate-spin" />
