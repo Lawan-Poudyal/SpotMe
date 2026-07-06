@@ -326,7 +326,7 @@ export default function EventDetails() {
     onSuccess: (data) => {
       queryClient.setQueryData(['inviteLink', id], data.token ?? null);
       if (data.token) {
-        const inviteLinkUrl = `${window.location.origin}/join/${data.token}`;
+        const inviteLinkUrl = `${data.token}`;
         navigator.clipboard.writeText(inviteLinkUrl);
       }
       setIsCopied(true);
