@@ -166,8 +166,8 @@ export default function HomePage() {
                     state: item,
                   } )
                 }
-                onEdit={() => handleChangeEventButtonPressed(item.id, item.eventName)}
-                onRemove={() => handleRemoveButtonPressed(item.id, item.eventName)}
+                onEdit={item.userId === userId ? () => handleChangeEventButtonPressed(item.id, item.eventName) : undefined}
+                onRemove={item.userId === userId ? () => handleRemoveButtonPressed(item.id, item.eventName) : undefined}
               />
             ))}
           </div>
