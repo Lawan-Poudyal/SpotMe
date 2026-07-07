@@ -112,7 +112,16 @@ const getEventHandler = async (req: Request, res: Response) => {
     try {
       events = await prisma.event.findMany({
         where: {
-          userId: ownerId,
+          OR: [
+            { userId: ownerId },
+            {
+              participant: {
+                some: {
+                  userId: ownerId,
+                },
+              },
+            },
+          ],
         },
         select: {
           id: true,
