@@ -51,6 +51,7 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
       event: {
         select: {
           userId: true,
+          photoCount: true,
         },
       },
     },
@@ -64,11 +65,13 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
     throw new ForbiddenError('User does not have permission to delete this photo');
   }
 
+  const newPhotoCount = Math.max(0, (dbPhoto.event?.photoCount ?? 1) - 1);
+
   await prisma.$transaction([
     prisma.photo.delete({ where: { id: photoId } }),
     prisma.event.update({
       where: { id: dbPhoto.event_id },
-      data: { photoCount: { decrement: 1 } },
+      data: { photoCount: newPhotoCount },
     }),
   ]);
 
