@@ -117,6 +117,8 @@ export default function EventDetails() {
       if (pendingDriveSocketRef.current.size === 0) {
         if (anyDriveSuccessRef.current) {
           queryClient.invalidateQueries({ queryKey: ['photos', id] });
+          queryClient.invalidateQueries({ queryKey: ['events', id] });
+          queryClient.invalidateQueries({ queryKey: ['events'] });
         }
         anyDriveSuccessRef.current = false;
         setFiles((prev) => prev.filter((f) => f.status !== 'done'));
@@ -190,6 +192,8 @@ export default function EventDetails() {
       fileUploads.saveUpload(id!, photos),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['photos', id] });
+      queryClient.invalidateQueries({ queryKey: ['events', id] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 
