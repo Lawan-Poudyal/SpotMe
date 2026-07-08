@@ -35,7 +35,8 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
         .end(driveResponse.data);
     })) as toInjectType;
     try {
-      await prisma.photo.create({
+      await prisma.$transaction(async(tx)=>{
+	    await tx.photo.create({
         data: {
           uploaded_by: ownerId,
           event_id: eventId,
@@ -44,7 +45,14 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
           height: Number(uploadResult.height),
           width: Number(uploadResult.width),
         },
-      });
+      })
+	    await tx.event.update({
+		where : {id : eventId},
+		data : {
+		    photoCount : {increment : 1}
+		}
+	    })
+      })
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
         const dbErrorCode = dbError.code;
