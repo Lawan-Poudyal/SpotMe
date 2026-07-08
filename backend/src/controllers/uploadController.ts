@@ -56,8 +56,6 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const {validatedUserId} = req
-  console.log("Hey we are here tho")
-  console.log(req.body.userId , req.body.eventId , req.body.photo)
   const { userId , eventId, photo } = validateSchema(saveUploadSingularSchema, req.body);
   if(userId !== validatedUserId) throw new ForbiddenError('You are forbidden')
   const event = await prisma.event.findUnique({ where: { id: eventId } });
