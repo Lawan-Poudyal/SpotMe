@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link2, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { inviteLink } from '../api/inviteLinkApi';
 
 export default function JoinEvent() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [code, setCode] = useState(() => {
     return searchParams.get('code') || '';
@@ -21,6 +22,8 @@ export default function JoinEvent() {
   } = useMutation({
     mutationFn: (inviteCode: string) => inviteLink.join(inviteCode),
     onSuccess: (data) => {
+      // Invalidate events cache so HomePage & MyEvent instantly show the joined event
+      queryClient.invalidateQueries({ queryKey: ['events'] });
       navigate(`/dashboard/event/${data.eventId}`, { replace: true });
     },
   });

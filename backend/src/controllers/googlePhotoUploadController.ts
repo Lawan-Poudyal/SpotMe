@@ -85,9 +85,15 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 	}) 
 
 	try{
-	    await prisma.photo.createMany({
-		data : toInjectOnce
-	    })
+	    await prisma.$transaction([
+		prisma.photo.createMany({
+		    data : toInjectOnce
+		}),
+		prisma.event.update({
+		    where: { id: eventId },
+		    data: { photoCount: { increment: toInjectOnce.length } }
+		})
+	    ]);
 	}
 	catch(dbError : unknown){
 	    if(dbError instanceof PrismaClientKnownRequestError){
