@@ -17,7 +17,7 @@ import { downloadBulk } from '../utility/downloadImages';
 import { inviteLink } from '../api/inviteLinkApi';
 import { queryClient } from '../config/tanstack';
 import { getEventById } from '../api/eventApi';
-import { uploadEventPhotos } from '../api/eventPhotoUploadApi';
+import { uploadEventPhotos, uploadEventReferencePhoto } from '../api/eventPhotoUploadApi';
 import { fileUploads } from '../api/fileUploadApi';
 import { useProfile } from '../context/zuContext';
 import type { zuContextType } from '../context/zuContext';
@@ -36,6 +36,8 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 // ── Shared type, now owned by the parent ─────────────────
+// Reused as-is for the single reference-photo slot in FindMeTab —
+// same shape, just held as one nullable object instead of an array.
 export interface UploadFile {
   id: string;
   file: File;
@@ -79,16 +81,23 @@ export default function EventDetails() {
     queryFn: event?.id ? () => photo.getPhotos(event.id) : skipToken,
   });
 
-  // ── Upload queue state — lives here so it survives tab switches ──
+  // ── Gallery upload queue state — lives here so it survives tab switches ──
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [accessToken, setAccessToken] = useState<string>('');
 
+  // ── Reference photo (selfie) state — same lifting pattern, but a single
+  // slot instead of a queue: every new pick overwrites whatever was there ──
+  const [referenceFile, setReferenceFile] = useState<UploadFile | null>(null);
+  const [isReferenceUploading, setIsReferenceUploading] = useState(false);
+  const [referenceAccessToken, setReferenceAccessToken] = useState<string>('');
+
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const pendingDriveSocketRef = useRef<Set<string>>(new Set());
   const anyDriveSuccessRef = useRef<boolean>(false);
+  const pendingReferenceSocketRef = useRef<Set<string>>(new Set());
 
-  // ── Error popup state — also lifted, since handleUpload needs the setters ──
+  // ── Error popup state — also lifted, since both handlers need the setters ──
   const [errorTitle, setErrorTitle] = useState<string>('');
   const [subErrorTitle, setSubErrorTitle] = useState<string>('');
   const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
@@ -99,6 +108,7 @@ export default function EventDetails() {
     });
     socketRef.current = socket;
 
+    // Gallery drive-upload completion events
     socket.on('image_news', (data: dataType) => {
       const { success, driveFileId } = data;
 
@@ -126,11 +136,37 @@ export default function EventDetails() {
       }
     });
 
+    // Reference-photo (selfie) drive-upload completion events — separate
+    // channel so it never gets mixed up with gallery upload progress
+    socket.on('find_me_image', (data: dataType) => {
+	console.log("The image from this side has been processed")
+      const { success, driveFileId } = data;
+
+      setReferenceFile((prev) => {
+        if (!prev || prev.driveFileId !== driveFileId) return prev;
+        return { ...prev, status: success ? 'done' : 'error', progress: success ? 100 : prev.progress };
+      });
+
+      pendingReferenceSocketRef.current.delete(driveFileId);
+
+      if (pendingReferenceSocketRef.current.size === 0) {
+        if (success) {
+          // real endpoint (photo.getReferencePhoto) — refetch so the
+          // "previously uploaded" section in FindMeTab picks up the new one
+          queryClient.invalidateQueries({ queryKey: ['referencePhoto', id, userId] });
+        }
+        setIsReferenceUploading(false);
+      }
+    });
+
     return () => {
       socket.off('image_news');
+      socket.off('find_me_image');
       socket.disconnect();
     };
   }, [userId]);
+
+  // ── Gallery upload helpers (unchanged) ────────────────────────────────
 
   const addFiles = (incoming: FileList | File[]) => {
     const imageFiles = Array.from(incoming).filter((f) => f.type.startsWith('image/'));
@@ -325,6 +361,134 @@ export default function EventDetails() {
     }
   };
 
+  // ── Reference photo (selfie) helpers ──────────────────────────────────
+  // Only one slot ever exists — picking a new image (local, drive, or a
+  // fresh drive pick) always overwrites whatever was staged before.
+
+  const addReferenceFile = (incoming: FileList | File[]) => {
+    const imageFiles = Array.from(incoming).filter((f) => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+    const f = imageFiles[0];
+
+    setReferenceFile((prev) => {
+      if (prev && prev.source === 'local') URL.revokeObjectURL(prev.previewUrl);
+      return {
+        id: `${f.name}-${f.lastModified}-${Math.random()}`,
+        file: f,
+        previewUrl: URL.createObjectURL(f),
+        status: 'pending',
+        progress: 0,
+        source: 'local',
+      };
+    });
+  };
+
+  const addReferenceDriveFile = (driveFile: {
+    id: string;
+    name: string;
+    mimeType: string;
+    url: string;
+    sizeBytes?: number;
+    thumbnailUrl?: string;
+  }) => {
+    setReferenceFile((prev) => {
+      if (prev && prev.source === 'local') URL.revokeObjectURL(prev.previewUrl);
+      return {
+        id: `drive-${driveFile.id}-${Math.random()}`,
+        file: new File([], driveFile.name, { type: driveFile.mimeType }),
+        previewUrl: driveFile.thumbnailUrl ?? '',
+        status: 'pending',
+        progress: 0,
+        source: 'drive',
+        driveFileId: driveFile.id,
+      };
+    });
+  };
+
+  const removeReferenceFile = () => {
+    setReferenceFile((prev) => {
+      if (prev && prev.source === 'local') URL.revokeObjectURL(prev.previewUrl);
+      return null;
+    });
+  };
+
+  // Note: saveSingleUpload writes into the reference-photo table, not the
+  // gallery `photo` table, so it needs its own route on the backend — that's
+  // the "new route" the saveSingleUpload API function is calling.
+  const handleReferenceUpload = async () => {
+    if (!referenceFile || isReferenceUploading) return;
+    setIsReferenceUploading(true);
+    setReferenceFile((prev) => (prev ? { ...prev, status: 'uploading', progress: 0 } : prev));
+
+    if (referenceFile.source === 'local') {
+      try {
+        // Same signed-upload flow as the gallery (same Cloudinary sign
+        // endpoint) — only where the result gets saved afterwards differs.
+        const sig = await uploadSignatureMutation.mutateAsync();
+        setReferenceFile((prev) => (prev ? { ...prev, progress: 30 } : prev));
+
+        const formData = new FormData();
+        formData.append('file', referenceFile.file);
+        formData.append('api_key', sig.apiKey);
+        formData.append('timestamp', sig.timestamp.toString());
+        formData.append('signature', sig.signature);
+        formData.append('folder', sig.folder);
+
+        const res = await fileUploads.uploadFile(formData, sig.cloudName);
+        setReferenceFile((prev) => (prev ? { ...prev, progress: 70 } : prev));
+
+        // NEW route (different table than the gallery's saveUpload)
+        await fileUploads.saveSingleUpload(id!, String(userId), {
+          url: res.secure_url,
+          publicId: res.public_id,
+          width: res.width,
+          height: res.height,
+        });
+
+        setReferenceFile((prev) => (prev ? { ...prev, status: 'done', progress: 100 } : prev));
+        queryClient.invalidateQueries({ queryKey: ['referencePhoto', id, userId] });
+      } catch {
+        setReferenceFile((prev) => (prev ? { ...prev, status: 'error' } : prev));
+      } finally {
+        setIsReferenceUploading(false);
+      }
+      return;
+    }
+
+    // Drive source — separate route (driveFileId singular, not an array),
+    // completion reported back over the 'find_me_image' socket channel.
+    const driveFileId = referenceFile.driveFileId;
+    if (!driveFileId) {
+      setReferenceFile((prev) => (prev ? { ...prev, status: 'error' } : prev));
+      setIsReferenceUploading(false);
+      return;
+    }
+
+    pendingReferenceSocketRef.current = new Set([driveFileId]);
+    setReferenceFile((prev) => (prev ? { ...prev, progress: 20 } : prev));
+
+    const driveSuccess = await uploadEventReferencePhoto({
+      eventId: String(id),
+      ownerId: String(userId),
+      accessToken: referenceAccessToken,
+      driveFileId,
+      setIsUploading: () => { },
+      setErrorTitle,
+      setSubErrorTitle,
+      setIsErrorOpen,
+    });
+
+    if (!driveSuccess) {
+      setReferenceFile((prev) => (prev ? { ...prev, status: 'error' } : prev));
+      pendingReferenceSocketRef.current.clear();
+      setIsReferenceUploading(false);
+      return;
+    }
+
+    setReferenceFile((prev) => (prev ? { ...prev, progress: 60 } : prev));
+    // isReferenceUploading stays true until 'find_me_image' resolves it
+  };
+
   const handleInviteLink = useMutation({
     mutationFn: () => inviteLink.generate(id!),
     onSuccess: (data) => {
@@ -445,7 +609,22 @@ export default function EventDetails() {
 
       <div className="p-8">
         {activeTab === 'all' && <AllPhotosTab event={event} />}
-        {activeTab === 'findme' && <FindMeTab event={event} />}
+        {activeTab === 'findme' && (
+          <FindMeTab
+            event={event}
+            referenceFile={referenceFile}
+            isReferenceUploading={isReferenceUploading}
+            referenceAccessToken={referenceAccessToken}
+            setReferenceAccessToken={setReferenceAccessToken}
+            addReferenceFile={addReferenceFile}
+            addReferenceDriveFile={addReferenceDriveFile}
+            removeReferenceFile={removeReferenceFile}
+            handleReferenceUpload={handleReferenceUpload}
+            setErrorTitle={setErrorTitle}
+            setSubErrorTitle={setSubErrorTitle}
+            setIsErrorOpen={setIsErrorOpen}
+          />
+        )}
         {activeTab === 'upload' && (
           <UploadTab
             event={event}

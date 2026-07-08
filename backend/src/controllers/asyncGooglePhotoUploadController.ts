@@ -148,5 +148,5 @@ const createReferencePhotoHandler = async(req : Request , res : Response)=>{
     }
 } 
 
-export {createPhotoHandler}
+export {createPhotoHandler , createReferencePhotoHandler}
 

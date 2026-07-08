@@ -4,6 +4,11 @@ export const eventSchema = z.object({
   eventId: z.string().min(1, 'Missing or invalid eventId in the request '),
 });
 
+export const referencePhotoSchema = z.object({
+  eventId: z.string().min(1, 'Missing or invalid eventId in the request '),
+  userId : z.string().min(1, 'Missing or invalid userId in the request '),
+});
+
 export const saveUploadSchema = z.object({
   eventId: z.string().min(1, 'Missing or invalid eventId in the request body'),
 
@@ -42,3 +47,4 @@ export type SignUploadRequestPayload = z.infer<typeof eventSchema>;
 export type SaveUploadRequestPayload = z.infer<typeof saveUploadSchema>;
 export type DeletePhotoRequestPaylod = z.infer<typeof deletePhotoSchema>;
 export type SaveUploadSingularPayload = z.infer<typeof saveUploadSingularSchema>;
+export type referencePhotoPaylod = z.infer<typeof referencePhotoSchema>;
