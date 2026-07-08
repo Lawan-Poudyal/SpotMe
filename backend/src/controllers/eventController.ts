@@ -167,7 +167,6 @@ const getEventHandler = async (req: Request, res: Response) => {
     }
   }
 };
-
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
