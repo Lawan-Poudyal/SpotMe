@@ -90,7 +90,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
       'image_news',
       JSON.stringify({ userId: ownerId, success: true, driveFileId: driveFileId }),
     );
-    console.log(`The processing is completed for ${driveFileId}`); // don't forget to send a success webSocket call , and after the sucess webSocket call is received by the frontend for each successfull websocket transaction invalidate the query.
+    console.log(`The processing is completed for ${driveFileId}`); 
   } catch (err: unknown) {
     console.log('thrown error');
     if (err instanceof Error) {
