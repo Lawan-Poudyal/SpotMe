@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "queue": "tsx watch src/queue.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "vite build",
     "start": "node dist/index.js",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
