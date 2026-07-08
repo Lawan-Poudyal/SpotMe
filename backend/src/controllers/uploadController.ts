@@ -3,12 +3,8 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { cloudinary } from '../lib/cloudinary';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
-import { getSession } from '../utils/getSessions';
 import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../validations/upload.validation';
 import { validateSchema } from '../utils/validateSchema';
-import { photoQueue } from '../queues/photos.queue';
-import { validateData } from '../utils/validateSyncSchema';
-import e from 'express';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -60,6 +56,8 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const {validatedUserId} = req
+  console.log("Hey we are here tho")
+  console.log(req.body.userId , req.body.eventId , req.body.photo)
   const { userId , eventId, photo } = validateSchema(saveUploadSingularSchema, req.body);
   if(userId !== validatedUserId) throw new ForbiddenError('You are forbidden')
   const event = await prisma.event.findUnique({ where: { id: eventId } });

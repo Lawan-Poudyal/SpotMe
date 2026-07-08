@@ -12,6 +12,16 @@ export interface UploadEventPhotosPayload {
   setSubErrorTitle: Dispatch<SetStateAction<string>>;
   setIsErrorOpen: Dispatch<SetStateAction<boolean>>;
 }
+export interface UploadEventReferenceImagePayload {
+  eventId: string;
+  ownerId: string;
+  accessToken : string;
+  driveFileId: string;
+  setIsUploading: Dispatch<SetStateAction<boolean>>;
+  setErrorTitle: Dispatch<SetStateAction<string>>;
+  setSubErrorTitle: Dispatch<SetStateAction<string>>;
+  setIsErrorOpen: Dispatch<SetStateAction<boolean>>;
+}
 
 export async function uploadEventPhotos(
   payload: UploadEventPhotosPayload
@@ -41,6 +51,49 @@ export async function uploadEventPhotos(
 	ownerId,
 	accessToken,
 	driveFileIds
+    })
+
+    return true;
+  } catch (err) {
+    console.error("Upload failed:", err);
+    setErrorTitle("Upload failed");
+    setSubErrorTitle(
+      "We couldn't upload your photos. Please try again."
+    );
+    setIsErrorOpen(true);
+    return false;
+  } finally {
+    setIsUploading(false);
+  }
+}
+export async function uploadEventReferencePhoto(
+  payload: UploadEventReferenceImagePayload
+): Promise<boolean> {
+  const {
+    eventId,
+    ownerId,
+    accessToken,
+    driveFileId,
+    setIsUploading,
+    setErrorTitle,
+    setSubErrorTitle,
+    setIsErrorOpen,
+  } = payload;
+
+  setIsUploading(true);
+
+  try {
+    console.log("uploadEventPhotos called with:", {
+      eventId,
+      ownerId,
+      driveFileId,
+    });
+
+    await api.post("/api/driveUploadAPI/referencePhoto", {
+	eventId ,
+	ownerId,
+	accessToken,
+	driveFileId
     })
 
     return true;

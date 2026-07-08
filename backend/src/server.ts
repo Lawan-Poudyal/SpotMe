@@ -22,41 +22,23 @@ export const initSocket = async (server: any) => {
     console.log("connected:", socket.id);
   });
 
-  await redisPubSubClient.subscribe("image_news")
-  redisPubSubClient.on("message" , (channel, message)=>{
-      try{
-      const data = JSON.parse(message)
-      const userId = data.userId 
-      const driveFileId = data.driveFileId
-      const success = data.success
-      console.log(success ,userId , driveFileId)
-      console.log(idMap.get(userId) as string)
-      io.to(idMap.get(userId) as string).emit("image_news" , {success : success , driveFileId : driveFileId})
-      }
-      catch(err : unknown){
-	  if (err instanceof Error){
-	      console.log(err.stack)
-	  }
-      }
-  })
-  await redisPubSubClient.subscribe("find_me_image")
-  redisPubSubClient.on("message" , (channel, message)=>{
-      try{
-      const data = JSON.parse(message)
-      const userId = data.userId 
-      const driveFileId = data.driveFileId
-      const success = data.success
-      console.log(success ,userId , driveFileId)
-      console.log(idMap.get(userId) as string)
-      io.to(idMap.get(userId) as string).emit("image_news" , {success : success , driveFileId : driveFileId})
-      }
-      catch(err : unknown){
-	  if (err instanceof Error){
-	      console.log(err.stack)
-	  }
-      }
-  })
+  await redisPubSubClient.subscribe("image_news",  "find_me_image")
+  redisPubSubClient.on("message", (channel, message) => {
+  try {
+      console.log("Find me image is being called once again")
+    const data = JSON.parse(message);
+    const { userId, driveFileId, success } = data;
 
+    const socketId = idMap.get(userId);
+    if (!socketId) return; // user not connected on this instance
+
+    if (channel === "image_news" || channel === "find_me_image") {
+      io.to(socketId).emit(channel, { success, driveFileId });
+    }
+  } catch (err) {
+    if (err instanceof Error) console.log(err.stack);
+  }
+});
   return io;
 };
 
