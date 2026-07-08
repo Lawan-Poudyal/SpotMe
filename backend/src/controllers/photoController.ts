@@ -33,7 +33,7 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId} = req
+  const { validatedUserId } = req;
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
 
@@ -51,8 +51,8 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
 
   if (!dbPhoto) throw new NotFoundError('Photo');
 
-  const isUploader = dbPhoto.uploaded_by === validatedUserId
-  const isEventOwner = dbPhoto.event?.userId === validatedUserId 
+  const isUploader = dbPhoto.uploaded_by === validatedUserId;
+  const isEventOwner = dbPhoto.event?.userId === validatedUserId;
   if (!isUploader && !isEventOwner) {
     throw new ForbiddenError('User does not have permission to delete this photo');
   }

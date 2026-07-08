@@ -27,7 +27,7 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 });
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId} = req
+  const { validatedUserId } = req;
   const { eventId, photos } = validateSchema(saveUploadSchema, req.body);
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
