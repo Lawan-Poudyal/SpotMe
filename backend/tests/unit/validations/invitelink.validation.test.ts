@@ -37,4 +37,16 @@ describe("inviteLinkSchema", () => {
 
     expect(result.success).toBe(true);
   });
+
+  it("rejects a null token", () => {
+    const result = inviteLinkSchema.safeParse({ token: null });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a token that is only whitespace", () => {
+    const result = inviteLinkSchema.safeParse({ token: "   " });
+
+    expect(result.success).toBe(false);
+  });
 });
