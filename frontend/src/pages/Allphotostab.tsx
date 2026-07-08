@@ -57,21 +57,45 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
     mutationFn: (photoId: string) => photo.deletePhoto(photoId, event.id),
     onMutate: async (photoId) => {
       await queryClient.cancelQueries({ queryKey: ['photos', event.id] });
-      const previous = queryClient.getQueryData(['photos', event.id]);
+      await queryClient.cancelQueries({ queryKey: ['events', event.id] });
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+
+      const previousPhotos = queryClient.getQueryData(['photos', event.id]);
+      const previousEventDetails = queryClient.getQueryData(['events', event.id]);
+      const previousEventsList = queryClient.getQueryData(['events']);
 
       queryClient.setQueryData(['photos', event.id], (old: Photo[] | undefined) =>
         old ? old.filter((p) => p.id !== photoId) : [],
       );
 
+      queryClient.setQueryData(['events', event.id], (old: any) => {
+        if (!old) return old;
+        return { ...old, photoCount: Math.max(0, (old.photoCount ?? 0) - 1) };
+      });
+
+      queryClient.setQueryData(['events'], (old: any[] | undefined) => {
+        if (!old) return [];
+        return old.map((item) => {
+          if (item.id !== event.id) return item;
+          return { ...item, photoCount: Math.max(0, (item.photoCount ?? 0) - 1) };
+        });
+      });
+
       setConfirmOpen(false);
       setLightboxIndex(-1);
-      return { previous };
+      return { previousPhotos, previousEventDetails, previousEventsList };
     },
     onError: (_err, _photoId, context) => {
-      queryClient.setQueryData(['photos', event.id], context?.previous);
+      if (context) {
+        queryClient.setQueryData(['photos', event.id], context.previousPhotos);
+        queryClient.setQueryData(['events', event.id], context.previousEventDetails);
+        queryClient.setQueryData(['events'], context.previousEventsList);
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 

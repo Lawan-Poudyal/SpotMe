@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   UserCircle2,
   Camera,
@@ -7,6 +7,8 @@ import {
   Loader2,
   ImageIcon,
   Info,
+  X,
+  ZoomIn,
 } from "lucide-react";
 import type { eventType } from "../types/eventType";
 
@@ -27,9 +29,17 @@ export default function FindMeTab({ event }: FindMeTabProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [foundPhotos, setFoundPhotos] = useState<FoundPhoto[]>([]);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Camera modal state
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraReady, setCameraReady] = useState(false);
 
-  const photoCount = event.numberOfImages ?? 0;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const photoCount = Math.max(0, event.photoCount ?? 0);
 
   // ── Handlers ──────────────────────────────────────────
 
@@ -44,10 +54,75 @@ export default function FindMeTab({ event }: FindMeTabProps) {
     fileInputRef.current?.click();
   };
 
-  const handleTakeSelfie = () => {
-    // In a real app: open camera stream via getUserMedia
-    fileInputRef.current?.click();
+  const handleTakeSelfie = async () => {
+    setCameraError(null);
+    setCameraReady(false);
+    setCameraOpen(true);
   };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play();
+          setCameraReady(true);
+        };
+      }
+    } catch {
+      setCameraError("Could not access camera. Please allow camera permission and try again.");
+    }
+  };
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCameraReady(false);
+  };
+
+  const handleClosCamera = () => {
+    stopCamera();
+    setCameraOpen(false);
+    setCameraError(null);
+  };
+
+  const handleCapture = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Mirror horizontally (selfie feel)
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: "image/jpeg" });
+      handleFileSelected(file);
+      handleClosCamera();
+    }, "image/jpeg", 0.92);
+  };
+
+  // Start stream when modal opens
+  useEffect(() => {
+    if (cameraOpen) {
+      startCamera();
+    }
+    return () => {
+      if (!cameraOpen) stopCamera();
+    };
+  }, [cameraOpen]);
 
   const handleChange = () => {
     setUploadedFile(null);
@@ -88,6 +163,88 @@ export default function FindMeTab({ event }: FindMeTabProps) {
           e.target.value = "";
         }}
       />
+
+      {/* Hidden canvas for capture */}
+      <canvas ref={canvasRef} className="hidden" />
+
+      {/* ── Camera Modal ── */}
+      {cameraOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg mx-4 bg-[#1C1C1E] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+              <div className="flex items-center gap-2 text-white font-semibold">
+                <Camera size={18} className="text-[#F97316]" />
+                Take a selfie
+              </div>
+              <button
+                onClick={handleClosCamera}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition"
+              >
+                <X size={16} className="text-white" />
+              </button>
+            </div>
+
+            {/* Video preview */}
+            <div className="relative bg-black aspect-[4/3] flex items-center justify-center">
+              {cameraError ? (
+                <div className="flex flex-col items-center gap-3 px-8 text-center">
+                  <Camera size={40} className="text-white/20" />
+                  <p className="text-white/60 text-sm">{cameraError}</p>
+                </div>
+              ) : (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    style={{ transform: "scaleX(-1)" }}
+                  />
+                  {/* Face guide overlay */}
+                  {cameraReady && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-48 h-60 rounded-full border-2 border-white/30 border-dashed" />
+                    </div>
+                  )}
+                  {!cameraReady && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                      <Loader2 size={32} className="text-white animate-spin" />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center justify-center gap-4 px-5 py-5">
+              {cameraError ? (
+                <button
+                  onClick={startCamera}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#F97316] text-white text-sm font-semibold hover:opacity-90 transition"
+                >
+                  <Camera size={16} />
+                  Retry
+                </button>
+              ) : (
+                <button
+                  onClick={handleCapture}
+                  disabled={!cameraReady}
+                  className="w-16 h-16 rounded-full bg-white flex items-center justify-center
+                    hover:scale-105 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+                >
+                  <ZoomIn size={24} className="text-black" />
+                </button>
+              )}
+            </div>
+
+            <p className="text-center text-white/30 text-xs pb-4">
+              Position your face in the oval and tap the button
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Step 1: Upload ── */}
       <div className="mb-6">
