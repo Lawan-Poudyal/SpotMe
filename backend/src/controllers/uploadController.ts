@@ -8,6 +8,7 @@ import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../valid
 import { validateSchema } from '../utils/validateSchema';
 import { photoQueue } from '../queues/photos.queue';
 import { validateData } from '../utils/validateSyncSchema';
+import e from 'express';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -64,8 +65,18 @@ const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Respons
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
-  const saved = await prisma.referenceFace.create({
-      data : {
+  const saved = await prisma.referenceFace.upsert({
+      where : {
+	  eventId_userId : {
+	      eventId : eventId,
+	      userId : userId
+	  }
+      },
+      update : {
+	  photo_url : photo.url,
+	  public_id : photo.publicId
+      },
+      create : {
 	photo_url : photo.url,
 	eventId : eventId,
 	public_id : photo.publicId,

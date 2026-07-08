@@ -39,6 +39,23 @@ export const initSocket = async (server: any) => {
 	  }
       }
   })
+  await redisPubSubClient.subscribe("find_me_image")
+  redisPubSubClient.on("message" , (channel, message)=>{
+      try{
+      const data = JSON.parse(message)
+      const userId = data.userId 
+      const driveFileId = data.driveFileId
+      const success = data.success
+      console.log(success ,userId , driveFileId)
+      console.log(idMap.get(userId) as string)
+      io.to(idMap.get(userId) as string).emit("image_news" , {success : success , driveFileId : driveFileId})
+      }
+      catch(err : unknown){
+	  if (err instanceof Error){
+	      console.log(err.stack)
+	  }
+      }
+  })
 
   return io;
 };
