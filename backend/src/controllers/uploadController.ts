@@ -4,8 +4,10 @@ import { cloudinary } from '../lib/cloudinary';
 import { NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { getSession } from '../utils/getSessions';
-import { eventSchema, saveUploadSchema } from '../validations/upload.validation';
+import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../validations/upload.validation';
 import { validateSchema } from '../utils/validateSchema';
+import { photoQueue } from '../queues/photos.queue';
+import { validateData } from '../utils/validateSyncSchema';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -55,4 +57,23 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
     });
 });
 
+const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
+  const {validatedUserId} = req
+  const { eventId, photo } = validateSchema(saveUploadSingularSchema, req.body);
+  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
+
+  const saved = await prisma.referenceFace.create({
+      data : {
+	photo_url : photo.url,
+	eventId : eventId,
+	public_id : photo.publicId,
+	width : photo.width,
+	height : photo.height,
+	userId : validatedUserId,
+      }
+  });
+
+  res.status(201).json({ success: true, data: saved });
+});
 export { signedUploadRequest, saveUploadRequest };
