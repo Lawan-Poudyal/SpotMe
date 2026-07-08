@@ -26,6 +26,7 @@ export const fileUploads = {
     userId : string,
     photo: { url: string; publicId: string; height: number; width: number },
   ) => {
+      console.log("We are saving the singular one ")
     const res = await api.post('/api/upload/photo/save/singular', { eventId, photo , userId});
     return res.data;
   },
