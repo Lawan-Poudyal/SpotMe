@@ -1,7 +1,7 @@
 import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { cloudinary } from '../lib/cloudinary';
-import { NotFoundError, UnauthorizedError } from '../errors/Error';
+import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { getSession } from '../utils/getSessions';
 import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../validations/upload.validation';
@@ -59,7 +59,8 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const {validatedUserId} = req
-  const { eventId, photo } = validateSchema(saveUploadSingularSchema, req.body);
+  const { userId , eventId, photo } = validateSchema(saveUploadSingularSchema, req.body);
+  if(userId !== validatedUserId) throw new ForbiddenError('You are forbidden')
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
@@ -70,10 +71,10 @@ const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Respons
 	public_id : photo.publicId,
 	width : photo.width,
 	height : photo.height,
-	userId : validatedUserId,
+	userId : userId,
       }
   });
 
   res.status(201).json({ success: true, data: saved });
 });
-export { signedUploadRequest, saveUploadRequest };
+export { signedUploadRequest, saveUploadRequest , saveUploadRequestSingular};

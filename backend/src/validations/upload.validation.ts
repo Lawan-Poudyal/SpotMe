@@ -21,6 +21,9 @@ export const saveUploadSchema = z.object({
 });
 
 export const saveUploadSingularSchema = z.object({
+
+  userId : z.string().min(1 , 'Missing userId in the request body'),
+
   eventId: z.string().min(1, 'Missing or invalid eventId in the request body'),
 
   photo: z.object({
