@@ -9,7 +9,7 @@ import {
   ScanFace,
   Camera,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { eventType } from "../types/eventType";
 import { getAccessToken } from "../api/googleDriveRequestApi";
 import type { zuContextType } from "../context/zuContext";
@@ -128,6 +128,17 @@ export default function FindMeTab({
     queryFn: () => photo.getReferencePhoto(event.id, String(userId)),
     enabled: !!event.id && !!userId,
   });
+
+  // Re-fetch the "existing reference photo" card once a new upload finishes,
+  // so it reflects the freshly uploaded photo instead of the stale one.
+  const queryClient = useQueryClient();
+  const prevUploadingRef = useRef(isReferenceUploading);
+  useEffect(() => {
+    if (prevUploadingRef.current && !isReferenceUploading && referenceFile?.status === "done") {
+      queryClient.invalidateQueries({ queryKey: ["referencePhoto", event.id, userId] });
+    }
+    prevUploadingRef.current = isReferenceUploading;
+  }, [isReferenceUploading, referenceFile?.status, queryClient, event.id, userId]);
 
   // ── Drag & drop ───────────────────────────────────────
 
@@ -255,12 +266,12 @@ export default function FindMeTab({
             <Loader2 size={14} className="animate-spin" />
             Checking for an existing photo…
           </div>
-        ) : existingReferencePhoto ? (
+        ) : existingReferencePhoto?.photo_url ? (
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-[#1C1C1E]">
               <img
-                src={existingReferencePhoto.url}
-                alt="Reference"
+                src={existingReferencePhoto.photo_url}
+                alt="Your current reference"
                 className="w-full h-full object-cover"
               />
             </div>

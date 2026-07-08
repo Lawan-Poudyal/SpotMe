@@ -53,6 +53,7 @@ const getSingularPhotoHandler = asyncHandler(async (req: Request, res: Response)
 	height : true
     },
   });
+    console.log(photo)
   res.status(200).json({
     success: true,
     data: photo,

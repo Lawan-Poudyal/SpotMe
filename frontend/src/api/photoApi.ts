@@ -14,7 +14,7 @@ export const photo = {
 
   getReferencePhoto : async(eventId : string , userId : string)=>{
       const res =await api.get(`/api/event/photo/single?eventId=${eventId}&userId=${userId}`)
-      return res.data.success;
+      return res.data.data ?? null;
   }
 
 };
