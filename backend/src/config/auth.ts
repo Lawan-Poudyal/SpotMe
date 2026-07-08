@@ -1,4 +1,4 @@
-import { betterAuth } from 'better-auth';
+import { betterAuth, BetterAuthOptions } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './prismaClientConfig.js';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
@@ -9,7 +9,8 @@ import {
 } from '../utils/formValidation.js';
 import type { passwordError } from '../utils/formValidation.js';
 import { sendEmail } from '../utils/sendEmail.js';
-export const auth = betterAuth({
+
+const baseConfig = {
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       try {
@@ -82,4 +83,7 @@ export const auth = betterAuth({
       accessType: 'offline',
     },
   },
-});
+} satisfies BetterAuthOptions;
+
+export const auth = betterAuth(baseConfig);
+export { baseConfig };
