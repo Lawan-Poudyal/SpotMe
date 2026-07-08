@@ -69,6 +69,14 @@ describe("POST /api/invite-links/:token/join", () => {
     expect(res.status).toBe(404);
   });
 
+  it("rejects an empty token", async () => {
+    const res = await request(app)
+      .post("/api/invite-links/ /join")
+      .set("Cookie", cookie);
+
+    expect(res.status).toBe(400);
+  });
+
   it("does not error on joining twice (idempotent upsert)", async () => {
     await request(app)
       .post(`/api/invite-links/${validToken}/join`)
