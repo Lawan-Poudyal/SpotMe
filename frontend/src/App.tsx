@@ -31,7 +31,7 @@ function App() {
       <Route path="/join/:code" element={<JoinEventRedirect />} />
 
       <Route element={<PublicOnlyRoute />}>
-        <Route path="/login" element={<LoginPage loggedIn={false} />} />
+        <Route path="/login" element={<LoginPage loggedIn={true} />} />
         <Route path="/signup" element={<LoginPage loggedIn={false} />} />
       </Route>
 
