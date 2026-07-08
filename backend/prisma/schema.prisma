@@ -156,6 +156,8 @@ model ReferenceFace {
 
   eventId     String
   userId       String
+  width       Int?
+  height      Int?
 
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
