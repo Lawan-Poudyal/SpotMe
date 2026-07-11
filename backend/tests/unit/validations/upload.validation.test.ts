@@ -3,7 +3,6 @@ import { saveUploadSchema } from "../../../src/validations/upload.validation"; /
 
 describe("saveUploadSchema", () => {
   const validPayload = {
-    eventId: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
     photos: [
       {
         url: "https://example.com/photo1.jpg",
@@ -17,24 +16,6 @@ describe("saveUploadSchema", () => {
   it("accepts a completely valid payload", () => {
     const result = saveUploadSchema.safeParse(validPayload);
     expect(result.success).toBe(true);
-  });
-
-  describe("eventId validation", () => {
-    it("rejects an empty or whitespace-only eventId", () => {
-      const result = saveUploadSchema.safeParse({
-        ...validPayload,
-        eventId: "   ",
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it("rejects a missing or null eventId", () => {
-      const result = saveUploadSchema.safeParse({
-        ...validPayload,
-        eventId: undefined,
-      });
-      expect(result.success).toBe(false);
-    });
   });
 
   describe("photos array boundaries", () => {

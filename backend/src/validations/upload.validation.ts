@@ -5,8 +5,6 @@ export const eventSchema = z.object({
 });
 
 export const saveUploadSchema = z.object({
-  eventId: z.string().trim().uuid('Invalid eventId format'),
-
   photos: z
     .array(
       z.object({
@@ -21,7 +19,7 @@ export const saveUploadSchema = z.object({
 });
 
 export const deletePhotoSchema = z.object({
-  photoId: z.string().trim().min(1, 'Missing or invalid photoId in the request '),
+  photoId: z.string().trim().uuid('Missing or invalid photoId in the request '),
 });
 
 export type SignUploadRequestPayload = z.infer<typeof eventSchema>;

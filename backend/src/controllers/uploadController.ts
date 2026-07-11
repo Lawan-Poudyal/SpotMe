@@ -9,7 +9,7 @@ import { validateSchema } from '../utils/validateSchema';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
-  const { eventId } = validateSchema(eventSchema, req.body);
+  const eventId = req.eventId;
   const folderName = `SpotMe/events/${eventId}/photos`;
   const params = { timestamp, folder: folderName };
   const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);
@@ -28,7 +28,8 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
-  const { eventId, photos } = validateSchema(saveUploadSchema, req.body);
+  const { photos } = validateSchema(saveUploadSchema, req.body);
+  const eventId = req.eventId as string;
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
