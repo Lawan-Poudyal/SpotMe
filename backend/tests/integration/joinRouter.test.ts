@@ -43,7 +43,7 @@ describe("POST /api/invite-links/:token/join", () => {
 
   it("lets an authenticated user join with a valid token", async () => {
     const res = await request(app)
-      .post(`/api/invite-links/${validToken}/join`)
+      .post(`/api/invite-links/{validToken}/join`)
       .set("Cookie", cookie);
 
     expect(res.status).toBe(201);
