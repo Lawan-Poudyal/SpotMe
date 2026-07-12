@@ -57,7 +57,7 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const {validatedUserId} = req
-  const { userId , eventId, photo } = validateSchema(saveUploadSingularSchema, req.body);
+  const { userId , eventId, photo , existingPhotoId} = validateSchema(saveUploadSingularSchema, req.body);
   if(userId !== validatedUserId) throw new ForbiddenError('You are forbidden')
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
@@ -82,6 +82,10 @@ const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Respons
 	userId : userId,
       }
   });
+
+  if(!existingPhotoId){
+      cloudinary.uploader.destroy(existingPhotoId).catch((err)=> { console.error("Problem deleting the image")})
+  }
 
   res.status(201).json({ success: true, data: saved });
 });
