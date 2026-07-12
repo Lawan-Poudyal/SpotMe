@@ -29,7 +29,6 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
   const { eventId ,photos } = validateSchema(saveUploadSchema, req.body);
-
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
@@ -69,6 +68,8 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const {validatedUserId} = req
+  console.log("FROM The DEPTH OF HELL")
+  console.log(req.body.existingPhotoId)
   const { userId , eventId, photo , existingPhotoId} = validateSchema(saveUploadSingularSchema, req.body);
   if(userId !== validatedUserId) throw new ForbiddenError('You are forbidden')
   const event = await prisma.event.findUnique({ where: { id: eventId } });

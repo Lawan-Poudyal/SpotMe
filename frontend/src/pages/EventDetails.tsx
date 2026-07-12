@@ -51,7 +51,7 @@ export interface UploadFile {
 // Shape returned by photo.getReferencePhoto — adjust to match the real
 // backend payload if it differs.
 export interface ReferencePhoto {
-  photo_id: string;
+  id: string;
   photo_url: string;
 }
 
@@ -441,7 +441,7 @@ export default function EventDetails() {
     // The id of whatever reference photo is currently on file for this
     // user/event, if any — passed along so the backend can replace it
     // instead of just inserting a second row.
-    const existingPhotoId = existingReferencePhoto?.photo_id;
+    const existingPhotoId = existingReferencePhoto?.id;
 
     if (referenceFile.source === 'local') {
       try {
@@ -461,13 +461,14 @@ export default function EventDetails() {
         setReferenceFile((prev) => (prev ? { ...prev, progress: 70 } : prev));
 
         // NEW route (different table than the gallery's saveUpload)
+	console.log("Here from the frontend section")
+	console.log(existingPhotoId)
         await fileUploads.saveSingleUpload(id!, String(userId), {
           url: res.secure_url,
           publicId: res.public_id,
           width: res.width,
           height: res.height,
-          existingPhotoId,
-        });
+        },existingPhotoId as string);
 
         setReferenceFile((prev) => (prev ? { ...prev, status: 'done', progress: 100 } : prev));
         queryClient.invalidateQueries({ queryKey: ['referencePhoto', id, userId] });

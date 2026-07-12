@@ -9,7 +9,6 @@ export const checkParticipant = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { eventId } = validateSchema(eventSchema, req.query);
     console.log(eventId, req.validatedUserId);
-
     const participant = await prisma.participant.findUnique({
       where: {
         eventId_userId: {
