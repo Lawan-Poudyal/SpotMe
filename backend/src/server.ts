@@ -21,7 +21,7 @@ export const initSocket = async (server: any) => {
     console.log("connected:", socket.id);
   });
 
-  await redisPubSubClient.subscribe("image_news",  "find_me_image" , "embedding_news")
+  await redisPubSubClient.subscribe("image_news",  "find_me_image" , "embedding_news" , "reference_embedding_news")
   redisPubSubClient.on("message", (channel, message) => {
   try {
       console.log("Find me image is being called once again")
@@ -38,6 +38,13 @@ export const initSocket = async (server: any) => {
 	const {success , photoId , eventId} = data;
 	console.log("From the socket listener we have")
 	console.log({success , photoId , eventId})
+    }
+    else if(channel === "reference_embedding_news"){
+	const data = JSON.parse(message);
+	const {success , photoId , eventId , ownerId} = data;
+	console.log("From the socket listener we have")
+	console.log({success , photoId , eventId , ownerId})
+
     }
   } catch (err) {
     if (err instanceof Error) console.log(err.stack);

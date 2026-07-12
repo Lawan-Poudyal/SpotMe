@@ -8,6 +8,7 @@ import axios from 'axios';
 import { cloudinary } from '../..//lib/cloudinary';
 import type { toInjectType } from '../../types/inject.types';
 import { redis } from '../../config/redisConfig';
+import { referenceEmbeddingQueue } from '../../queues/generate_reference_embeddings.queue';
 export async function processPhotoJob(job: Job<requestPayloadSingular>) {
   try {
     console.log('processing reference photo');
@@ -35,7 +36,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
         .end(driveResponse.data);
     })) as toInjectType;
     try {
-      await prisma.referenceFace.upsert({
+      let upsertData = await prisma.referenceFace.upsert({
 	  where : {
 	      eventId_userId : {
 		  eventId : eventId,
@@ -54,6 +55,16 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
 	    height : Number(uploadResult.height),
 	    width : Number(uploadResult.width)
 	  }
+      })
+
+
+      await referenceEmbeddingQueue.add('generate_reference_embeddings' , {
+	  photoId : upsertData.id,
+	  photoURL : upsertData.photo_url,
+	  eventId : upsertData.eventId,
+	  ownerId : upsertData.userId
+      }).catch((err)=>{
+	  console.error(`The error is ${err}`)
       })
       if(existingPhotoId){
 	cloudinary.uploader.destroy(existingPhotoId)
