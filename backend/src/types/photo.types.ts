@@ -11,4 +11,5 @@ export type requestPayloadSingular = {
     ownerId : string;
     accessToken : string;
     driveFileId : string;
+    existingPhotoId : string;
 }

@@ -48,6 +48,13 @@ export interface UploadFile {
   driveFileId?: string;
 }
 
+// Shape returned by photo.getReferencePhoto — adjust to match the real
+// backend payload if it differs.
+export interface ReferencePhoto {
+  photo_id: string;
+  photo_url: string;
+}
+
 type dataType = {
   success: boolean;
   driveFileId: string;
@@ -91,6 +98,17 @@ export default function EventDetails() {
   const [referenceFile, setReferenceFile] = useState<UploadFile | null>(null);
   const [isReferenceUploading, setIsReferenceUploading] = useState(false);
   const [referenceAccessToken, setReferenceAccessToken] = useState<string>('');
+
+  // ── Existing reference photo — lifted up from FindMeTab so its photo_id
+  // is available here, where the upload calls actually happen ──
+  const {
+    data: existingReferencePhoto,
+    isLoading: isExistingReferenceLoading,
+  } = useQuery<ReferencePhoto | undefined>({
+    queryKey: ['referencePhoto', id, userId],
+    queryFn: () => photo.getReferencePhoto(id!, String(userId)),
+    enabled: !!id && !!userId,
+  });
 
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const pendingDriveSocketRef = useRef<Set<string>>(new Set());
@@ -420,6 +438,11 @@ export default function EventDetails() {
     setIsReferenceUploading(true);
     setReferenceFile((prev) => (prev ? { ...prev, status: 'uploading', progress: 0 } : prev));
 
+    // The id of whatever reference photo is currently on file for this
+    // user/event, if any — passed along so the backend can replace it
+    // instead of just inserting a second row.
+    const existingPhotoId = existingReferencePhoto?.photo_id;
+
     if (referenceFile.source === 'local') {
       try {
         // Same signed-upload flow as the gallery (same Cloudinary sign
@@ -443,6 +466,7 @@ export default function EventDetails() {
           publicId: res.public_id,
           width: res.width,
           height: res.height,
+          existingPhotoId,
         });
 
         setReferenceFile((prev) => (prev ? { ...prev, status: 'done', progress: 100 } : prev));
@@ -472,6 +496,7 @@ export default function EventDetails() {
       ownerId: String(userId),
       accessToken: referenceAccessToken,
       driveFileId,
+      existingPhotoId : String(existingPhotoId),
       setIsUploading: () => { },
       setErrorTitle,
       setSubErrorTitle,
@@ -612,6 +637,8 @@ export default function EventDetails() {
         {activeTab === 'findme' && (
           <FindMeTab
             event={event}
+            existingReferencePhoto={existingReferencePhoto}
+            isExistingReferenceLoading={isExistingReferenceLoading}
             referenceFile={referenceFile}
             isReferenceUploading={isReferenceUploading}
             referenceAccessToken={referenceAccessToken}

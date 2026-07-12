@@ -17,6 +17,7 @@ export interface UploadEventReferenceImagePayload {
   ownerId: string;
   accessToken : string;
   driveFileId: string;
+  existingPhotoId : string;
   setIsUploading: Dispatch<SetStateAction<boolean>>;
   setErrorTitle: Dispatch<SetStateAction<string>>;
   setSubErrorTitle: Dispatch<SetStateAction<string>>;
@@ -74,6 +75,7 @@ export async function uploadEventReferencePhoto(
     ownerId,
     accessToken,
     driveFileId,
+    existingPhotoId,
     setIsUploading,
     setErrorTitle,
     setSubErrorTitle,
@@ -87,13 +89,15 @@ export async function uploadEventReferencePhoto(
       eventId,
       ownerId,
       driveFileId,
+      existingPhotoId
     });
 
     await api.post("/api/driveUploadAPI/referencePhoto", {
 	eventId ,
 	ownerId,
 	accessToken,
-	driveFileId
+	driveFileId,
+	existingPhotoId
     })
 
     return true;

@@ -11,7 +11,7 @@ import { redis } from '../../config/redisConfig';
 export async function processPhotoJob(job: Job<requestPayloadSingular>) {
   try {
     console.log('processing reference photo');
-    const { eventId, ownerId, accessToken, driveFileId } = job.data;
+    const { eventId, ownerId, accessToken, driveFileId , existingPhotoId} = job.data;
     const driveResponse = await axios.get(
       `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
       {
@@ -55,6 +55,14 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
 	    width : Number(uploadResult.width)
 	  }
       })
+      if(existingPhotoId){
+	cloudinary.uploader.destroy(existingPhotoId)
+	.catch((err) => {
+	console.error(`Failed to delete Cloudinary asset ${existingPhotoId}:`, err);
+      });
+      }
+
+      
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
         const dbErrorCode = dbError.code;

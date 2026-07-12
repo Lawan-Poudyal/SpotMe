@@ -9,18 +9,20 @@ import {
   ScanFace,
   Camera,
 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { eventType } from "../types/eventType";
 import { getAccessToken } from "../api/googleDriveRequestApi";
 import type { zuContextType } from "../context/zuContext";
 import { useProfile } from "../context/zuContext";
 import { requestDriveScope } from "../api/linkSocialMedia";
 import { useParams } from "react-router-dom";
-import type { UploadFile } from "./EventDetails";
-import { photo } from "../api/photoApi";
+import type { UploadFile, ReferencePhoto } from "./EventDetails";
 
 interface FindMeTabProps {
   event: eventType;
+  // Lifted up to EventDetails so its photo_id is available where the
+  // upload calls actually happen — this tab just displays it now.
+  existingReferencePhoto: ReferencePhoto | undefined;
+  isExistingReferenceLoading: boolean;
   referenceFile: UploadFile | null;
   isReferenceUploading: boolean;
   referenceAccessToken: string;
@@ -92,6 +94,8 @@ async function openGoogleDrivePickerSingle(
 
 export default function FindMeTab({
   event,
+  existingReferencePhoto,
+  isExistingReferenceLoading,
   referenceFile,
   isReferenceUploading,
   referenceAccessToken,
@@ -116,29 +120,6 @@ export default function FindMeTab({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  // "Previously uploaded" reference photo — real endpoint (photo.getReferencePhoto),
-  // just used here as a stand-in fetch so the UI has something to show;
-  // swap in whatever shape the real payload ends up being.
-  const {
-    data: existingReferencePhoto,
-    isLoading: isExistingLoading,
-  } = useQuery({
-    queryKey: ["referencePhoto", event.id, userId],
-    queryFn: () => photo.getReferencePhoto(event.id, String(userId)),
-    enabled: !!event.id && !!userId,
-  });
-
-  // Re-fetch the "existing reference photo" card once a new upload finishes,
-  // so it reflects the freshly uploaded photo instead of the stale one.
-  const queryClient = useQueryClient();
-  const prevUploadingRef = useRef(isReferenceUploading);
-  useEffect(() => {
-    if (prevUploadingRef.current && !isReferenceUploading && referenceFile?.status === "done") {
-      queryClient.invalidateQueries({ queryKey: ["referencePhoto", event.id, userId] });
-    }
-    prevUploadingRef.current = isReferenceUploading;
-  }, [isReferenceUploading, referenceFile?.status, queryClient, event.id, userId]);
 
   // ── Drag & drop ───────────────────────────────────────
 
@@ -261,7 +242,7 @@ export default function FindMeTab({
           </p>
         </div>
 
-        {isExistingLoading ? (
+        {isExistingReferenceLoading ? (
           <div className="flex items-center gap-2 text-white/35 text-sm">
             <Loader2 size={14} className="animate-spin" />
             Checking for an existing photo…
