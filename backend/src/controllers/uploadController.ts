@@ -4,6 +4,7 @@ import { cloudinary } from '../lib/cloudinary';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../validations/upload.validation';
+import { embeddingQueue } from '../queues/generate_embeddings.queue';
 import { validateSchema } from '../utils/validateSchema';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
@@ -27,12 +28,12 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
-  const { eventId , userId,photos } = validateSchema(saveUploadSchema, req.body);
+  const { eventId ,photos } = validateSchema(saveUploadSchema, req.body);
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
-  const saved = await prisma.photo.createMany({
+  const saved = await prisma.photo.createManyAndReturn({
     data: photos.map((p) => ({
       event_id: eventId,
       uploaded_by: validatedUserId,
@@ -53,6 +54,17 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
     .catch((err) => {
       console.error('Error in post-update cleanup:', err);
     });
+
+     await Promise.all(
+    saved.map((photo) =>
+      embeddingQueue.add('generate_embedding', {
+        photoId: photo.id, 
+        photoURL: photo.photo_url,
+      })
+    )
+  ).catch((err) => {
+    console.error('Error queuing embedding jobs:', err);
+  });
 });
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {

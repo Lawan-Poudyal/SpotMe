@@ -118,6 +118,7 @@ model Photo {
   uploaded_by String
   event_id    String
   embedding   Unsupported("vector(512)")?
+  retry_count Int @default(0)
   status      ProcessingStatus @default(PENDING)
 
   event       Event  @relation("EventPhotos", fields: [event_id], references: [id], onDelete: Cascade)
@@ -125,6 +126,7 @@ model Photo {
   thumbnailOf Event? @relation("EventThumbnail")
 
   @@index([event_id])
+  @@index([id, status])
   @@map("photo")
 }
 
@@ -168,12 +170,13 @@ model ReferenceFace {
   height      Int?
   embedding   Unsupported("vector(512)")?
   status      ProcessingStatus @default(PENDING)
-
+  retry_count Int @default(0)
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now())
 
   @@unique(name : "eventId_userId" , [eventId, userId])
+  @@index([id , status])
   @@map("reference_face")
 }
