@@ -106,6 +106,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
       .add('generate_embeddings', {
         photoURL: photoURL,
         photoId: photoId,
+	eventId : eventId,
       })
       .catch((err) => {
         console.error('Error queuing embedding jobs:', err);
