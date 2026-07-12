@@ -120,6 +120,7 @@ model Photo {
   embedding   Unsupported("vector(512)")?
   retry_count Int @default(0)
   status      ProcessingStatus @default(PENDING)
+  statusUpdatedAt DateTime?
 
   event       Event  @relation("EventPhotos", fields: [event_id], references: [id], onDelete: Cascade)
   user        User   @relation(fields: [uploaded_by], references: [id], onDelete: Cascade)
@@ -175,6 +176,7 @@ model ReferenceFace {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt    DateTime @default(now())
+  statusUpdatedAt     DateTime? 
 
   @@unique(name : "eventId_userId" , [eventId, userId])
   @@index([id , status])
