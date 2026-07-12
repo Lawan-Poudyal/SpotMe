@@ -4,7 +4,6 @@ import type { SetStateAction, Dispatch } from 'react';
 export async function handleLogIn(
   email: string,
   password: string,
-  rememberMe: boolean,
   setOpenError: Dispatch<SetStateAction<boolean>>,
   setErrMsg: Dispatch<SetStateAction<string>>,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
@@ -12,17 +11,17 @@ export async function handleLogIn(
 ) {
   await authClient.signIn.email(
     {
-      email, // user email address
-      password, // user password -> min 8 characters by default
-      callbackURL: redirectTo, // A URL to redirect to after the user verifies their email (optional)
+      email,
+      password,
+      callbackURL: redirectTo,
       rememberMe: true,
     },
     {
-      onRequest: (ctx) => {
+      onRequest: () => {
         console.log('the user has request login');
         setIsLoading(true);
       },
-      onSuccess: (ctx) => {
+      onSuccess: () => {
         setIsLoading(false);
       },
       onError: (ctx) => {

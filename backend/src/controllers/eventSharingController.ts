@@ -9,7 +9,7 @@ import { redis } from '../config/redisConfig';
 import { inviteLinkSchema } from '../validations/inviteLink.validation';
 
 const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
-    const {validatedUserId} = req
+  const { validatedUserId } = req;
   const { eventId } = validateSchema(eventSchema, req.params);
   const event = await prisma.event.findUnique({
     where: {
@@ -19,9 +19,9 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!event) throw new NotFoundError('Event');
-  if(validatedUserId !== event.userId){
-      throw new ForbiddenError()
-}
+  if (validatedUserId !== event.userId) {
+    throw new ForbiddenError();
+  }
 
   let token = await redis.get(`invitelink:${eventId}`);
   const oneWeekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -43,7 +43,7 @@ const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const joinEventHandler = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId}  = req
+  const { validatedUserId } = req;
   const { token } = validateSchema(inviteLinkSchema, req.params);
 
   const inviteLink = await prisma.inviteLink.findUnique({ where: { token } });
@@ -52,13 +52,13 @@ const joinEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const returnVal =await prisma.participant.upsert({
     where: {
       eventId_userId: {
-        userId: validatedUserId , 
+        userId: validatedUserId,
         eventId: inviteLink.eventId,
       },
     },
     update: {},
     create: {
-      userId: validatedUserId , 
+      userId: validatedUserId,
       eventId: inviteLink.eventId,
     },
   });
