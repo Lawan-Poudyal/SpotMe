@@ -29,10 +29,15 @@ describe("GET /api/event/photo", () => {
         emailVerified: true,
       },
     });
+
     const event = await prisma.event.create({
       data: { eventName: "Test Event", userId: organizer.id },
     });
+
     eventId = event.id;
+    await prisma.participant.create({
+      data: { eventId, userId },
+    });
   });
 
   it("lets an authenticated user with valid authorization", async () => {
@@ -74,7 +79,9 @@ describe("GET /api/event/photo", () => {
   });
 
   it("rejects empty query parameter", async () => {
-    const res = await request(app).get(`/api/event/photo?eventid=${eventId}`);
+    const res = await request(app)
+      .get('/api/event/photo?eventId="  "')
+      .set("cookie", cookie);
     expect(res.status).toBe(400);
   });
 
