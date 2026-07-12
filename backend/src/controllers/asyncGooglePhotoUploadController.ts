@@ -80,7 +80,7 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 const createReferencePhotoHandler = async(req : Request , res : Response)=>{
     try {
 
-	let {eventId , ownerId , accessToken , driveFileId} = req.body as requestPayloadSingular
+	let {eventId , ownerId , accessToken , driveFileId, existingPhotoId} = req.body as requestPayloadSingular
 	const {validatedUserId} = req
 	if(validatedUserId !== ownerId){
 	    return res.status(403).json({
@@ -123,6 +123,7 @@ const createReferencePhotoHandler = async(req : Request , res : Response)=>{
 	    ownerId : ownerId,
 	    accessToken : accessToken,
 	    driveFileId : driveFileId,
+	    existingPhotoId : existingPhotoId
 	}
 	)
 	return res.status(200).json({
