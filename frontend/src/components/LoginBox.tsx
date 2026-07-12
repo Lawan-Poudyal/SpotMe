@@ -66,7 +66,6 @@ export function LoginBox({
     await logInApi(
       String(email),
       String(password),
-      true,
       setOpenErrorPopUp,
       setErrorMsg,
       setIsLogInLoading,
