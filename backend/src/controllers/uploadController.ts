@@ -27,8 +27,7 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
-  const { photos } = validateSchema(saveUploadSchema, req.body);
-  const eventId = req.eventId as string;
+  const { eventId , userId,photos } = validateSchema(saveUploadSchema, req.body);
 
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);

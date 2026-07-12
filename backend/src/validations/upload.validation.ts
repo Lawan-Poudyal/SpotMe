@@ -10,6 +10,8 @@ export const referencePhotoSchema = z.object({
 });
 
 export const saveUploadSchema = z.object({
+  eventId: z.string().min(1, 'Missing or invalid eventId in the request '),
+  userId : z.string().min(1, 'Missing or invalid userId in the request '),
   photos: z
     .array(
       z.object({
