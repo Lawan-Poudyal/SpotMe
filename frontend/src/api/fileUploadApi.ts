@@ -18,7 +18,7 @@ export const fileUploads = {
     eventId: string,
     photos: { url: string; publicId: string; height: number; width: number }[],
   ) => {
-    const res = await api.post(`/api/upload/photo/save`, {eventId, photos });
+    const res = await api.post(`/api/upload/photo/save?eventId=${eventId}`, {eventId, photos });
     return res.data;
   },
   saveSingleUpload: async (
@@ -28,7 +28,7 @@ export const fileUploads = {
     existingPhotoId : string
   ) => {
       console.log("We are saving the singular one ")
-    const res = await api.post(`/api/upload/photo/save/singular`, { eventId, photo , userId , existingPhotoId});
+    const res = await api.post(`/api/upload/photo/save/singular?eventId=${eventId}`, { eventId, photo , userId , existingPhotoId});
     return res.data;
   },
 };
