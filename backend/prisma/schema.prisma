@@ -22,6 +22,7 @@ model User {
   events           Event[]
   photos           Photo[]
   participant      Participant[]
+  referenceFaces    ReferenceFace[] 	
 
   @@map("user")
 }
@@ -93,6 +94,7 @@ model Event {
 
   photoCount  Int           @default(0)
   participant Participant[]
+  referenceFaces    ReferenceFace[] 	
   invitelink  InviteLink?
 
   @@unique([eventName, userId])
@@ -128,7 +130,7 @@ model Participant {
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([eventId, userId])
+  @@unique(name : "eventId_userId" , [eventId, userId])
   @@map("participant")
 }
 
@@ -144,4 +146,24 @@ model InviteLink {
 
   @@unique([eventId])
   @@map("invitelink")
+}
+
+model ReferenceFace {
+  id          String   @id @default(uuid())
+
+  photo_url   String
+  public_id   String   @unique
+
+  eventId     String
+  userId       String
+  width       Int?
+  height      Int?
+
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@unique(name : "eventId_userId" , [eventId, userId])
+  @@map("reference_face")
 }

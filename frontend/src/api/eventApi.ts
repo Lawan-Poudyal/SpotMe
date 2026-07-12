@@ -21,8 +21,8 @@ const addEvent = async (
       throw new ApiError('Failed', {
         payload: {
           success: false,
-          name: err.response?.data.name,
-          message: err.response?.data.message,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
         },
       });
     }
@@ -50,8 +50,8 @@ const updateEvent = async (
       throw new ApiError('Failed', {
         payload: {
           success: false,
-          name: err.response?.data.name,
-          message: err.response?.data.message,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
         },
       });
     }
@@ -63,6 +63,7 @@ const updateEvent = async (
 const deleteEvent = async (
   eventName: string,
   userId: string,
+  eventId : string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
   try {
@@ -71,6 +72,7 @@ const deleteEvent = async (
       data: {
         eventName: eventName,
         ownerId: userId,
+	eventId : eventId
       },
     });
     return { success: true };
@@ -101,8 +103,8 @@ const getEvent = async (userId: string) => {
       throw new ApiError('Failed', {
         payload: {
           success: false,
-          name: err.response?.data.name,
-          message: err.response?.data.message,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
         },
       });
     }
@@ -119,8 +121,8 @@ const getEventById = async (eventId: string) => {
       throw new ApiError('Failed', {
         payload: {
           success: false,
-          name: err.response?.data.name,
-          message: err.response?.data.message,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
         },
       });
     }

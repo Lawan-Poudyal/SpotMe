@@ -49,7 +49,7 @@ const joinEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const inviteLink = await prisma.inviteLink.findUnique({ where: { token } });
   if (!inviteLink) throw new NotFoundError('Event');
 
-  await prisma.participant.upsert({
+  const returnVal =await prisma.participant.upsert({
     where: {
       eventId_userId: {
         userId: validatedUserId,
@@ -62,6 +62,8 @@ const joinEventHandler = asyncHandler(async (req: Request, res: Response) => {
       eventId: inviteLink.eventId,
     },
   });
+  const cacheKey = `participation-${validatedUserId}-${returnVal.eventId}`
+  await redis.set( cacheKey, "1"   , 'EX' ,  600 )    
 
   res.status(201).json({
     success: true,
