@@ -1,15 +1,14 @@
 import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
-import { UnauthorizedError, NotFoundError, ForbiddenError } from '../errors/Error';
+import { NotFoundError, ForbiddenError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { cloudinary } from '../lib/cloudinary';
-import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
 import { deletePhotoSchema, eventSchema , referencePhotoSchema} from '../validations/upload.validation';
 import { isThumbnail } from '../utils/isThumbnail';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { eventId } = validateSchema(eventSchema, req.query);
+  const eventId = req.eventId as string;
 
   const photos = await prisma.photo.findMany({
     where: {
@@ -82,8 +81,8 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
 
   if (!dbPhoto) throw new NotFoundError('Photo');
 
-  const isUploader = dbPhoto.uploaded_by === validatedUserId
-  const isEventOwner = dbPhoto.event?.userId === validatedUserId 
+  const isUploader = dbPhoto.uploaded_by === validatedUserId;
+  const isEventOwner = dbPhoto.event?.userId === validatedUserId;
   if (!isUploader && !isEventOwner) {
     throw new ForbiddenError('User does not have permission to delete this photo');
   }

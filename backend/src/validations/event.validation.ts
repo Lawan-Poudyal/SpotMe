@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const updateEventSchema = z.object({
-  eventId: z.string().min(1, 'eventId is required'),
-  eventName: z.string().min(1, 'eventName cannot be empty').optional(),
-  thumbNailId: z.string().min(1, 'thumbNailId cannot be empty').optional(),
+  eventId: z.string().trim().uuid('Invalid eventId format'),
+  eventName: z.string().trim().min(1, 'Invalid eventName format').optional(),
+  thumbNailId: z.string().trim().uuid('Invalid thumbNailId format').optional(),
 });
 
 export type UpdateRequestPayload = z.infer<typeof updateEventSchema>;

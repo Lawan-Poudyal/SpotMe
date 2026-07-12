@@ -7,13 +7,13 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     headers: fromNodeHeaders(req.headers),
   });
   if (!session) {
-  return res.status(401).json({
-    success: false,
-    err: {
-      name: 'Unauthorized access',
-      message: 'Unauthorized access attempted',
-    },
-  });
+    return res.status(401).json({
+      success: false,
+      err: {
+        name: 'Unauthorized access',
+        message: 'Unauthorized access attempted',
+      },
+    });
   }
   req.validatedUserId = session.user.id;
   next();
