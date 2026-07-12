@@ -36,7 +36,8 @@ export const saveUploadSingularSchema = z.object({
         publicId: z.string().min(1).max(255),
         width: z.number().int().positive(),
         height: z.number().int().positive(),
-      })
+      }),
+existingPhotoId: z.string().min(1, "Missing existingPhotoId in the request")
 });
 export const deletePhotoSchema = z.object({
   photoId: z.string().trim().uuid('Missing or invalid photoId in the request '),
