@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { auth } from './config/auth';
 import "./jobs/cron/schedule_embeddings";
+import "./jobs/cron/schedule_reference_embeddings";
 import { toNodeHandler } from 'better-auth/node';
 import { router as uniqueEmailController } from './routers/uniqueEmailRoute';
 import { router as googleAPIController } from './routers/googleAPIRoute';

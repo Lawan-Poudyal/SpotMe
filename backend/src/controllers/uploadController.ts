@@ -6,6 +6,7 @@ import { prisma } from '../config/prismaClientConfig';
 import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../validations/upload.validation';
 import { embeddingQueue } from '../queues/generate_embeddings.queue';
 import { validateSchema } from '../utils/validateSchema';
+import { referenceEmbeddingQueue } from '../queues/generate_reference_embeddings.queue';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -97,9 +98,19 @@ const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Respons
       }
   });
 
+
   if(!existingPhotoId){
       cloudinary.uploader.destroy(existingPhotoId).catch((err)=> { console.error("Problem deleting the image")})
   }
+
+  await referenceEmbeddingQueue.add('generate_reference_embeddings' , {
+      photoId : saved.id,
+      photoURL : saved.photo_url,
+      eventId : saved.eventId,
+      ownerId : saved.userId
+  }).catch((err)=>{
+      console.error(`The error is ${err}`)
+  })
 
   res.status(201).json({ success: true, data: saved });
 });
