@@ -2,15 +2,18 @@ import { prisma } from '../../config/prismaClientConfig';
 import { embeddingQueue } from '../../queues/generate_embeddings.queue';
 import cron  from 'node-cron' 
 
-cron.schedule('*/5 * * * * ' , async()=>{
+cron.schedule('*/1 * * * * ' , async()=>{
     console.log("CRON JOB INITIATED <=========================>")
+    const staleDate = new Date(Date.now() - 1 * 60 * 1000)
     const failed_photos = await prisma.photo.findMany({
 	where : {
-	    status : "FAILED",
-	    retry_count : {
-		lt : 6
-	    }
+	    OR : [
+		{ status : "PROCESSING" , statusUpdatedAt : {lt : staleDate} },
+		{status : "FAILED"}
+	    ],
+	    retry_count : {lt : 6}
 	},
+	take : 10,
 	include: {
 	    event : true
 	}

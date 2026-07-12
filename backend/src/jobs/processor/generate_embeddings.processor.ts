@@ -12,7 +12,9 @@ export async function generatedEmbedding(job: Job<embeddingPaylod>) {
       let claimPhoto = await prisma.photo.update({
 	  where : {id : photoId},
 	  data : {
-	      status : "PROCESSING"
+	      status : "PROCESSING",
+	      statusUpdatedAt : new Date(),
+	      retry_count : {increment : 1}
 	  }
       })
       const generatedEmbeddings = await generateEmbeddings(photoId , photoURL)
@@ -31,7 +33,7 @@ export async function generatedEmbedding(job: Job<embeddingPaylod>) {
 	where : {id : photoId},
 	data : {
 	    status : "FAILED",
-	    retry_count : {increment : 1}
+	    statusUpdatedAt : new Date()
 	}
     })
   await redis.publish(
