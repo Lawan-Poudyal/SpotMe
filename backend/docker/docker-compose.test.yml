@@ -1,0 +1,8 @@
+services:
+  postgres-test:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: spotme_test
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5433:5432"
