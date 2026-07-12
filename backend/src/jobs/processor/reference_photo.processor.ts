@@ -10,7 +10,7 @@ import type { toInjectType } from '../../types/inject.types';
 import { redis } from '../../config/redisConfig';
 export async function processPhotoJob(job: Job<requestPayloadSingular>) {
   try {
-    console.log('processing');
+    console.log('processing reference photo');
     const { eventId, ownerId, accessToken, driveFileId } = job.data;
     const driveResponse = await axios.get(
       `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
@@ -35,23 +35,25 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
         .end(driveResponse.data);
     })) as toInjectType;
     try {
-      await prisma.$transaction(async(tx)=>{
-	    await tx.photo.create({
-        data: {
-          uploaded_by: ownerId,
-          event_id: eventId,
-          photo_url: uploadResult.secure_url,
-          public_id: uploadResult.public_id,
-          height: Number(uploadResult.height),
-          width: Number(uploadResult.width),
-        },
-      })
-	    await tx.event.update({
-		where : {id : eventId},
-		data : {
-		    photoCount : {increment : 1}
-		}
-	    })
+      await prisma.referenceFace.upsert({
+	  where : {
+	      eventId_userId : {
+		  eventId : eventId,
+		  userId : ownerId
+	      }
+	  },
+	  update : {
+	      photo_url : uploadResult.secure_url,
+	      public_id : uploadResult.public_id
+	  },
+	  create : {
+	    eventId : eventId,
+	    photo_url : uploadResult.secure_url,
+	    public_id : uploadResult.public_id,
+	    userId : ownerId,
+	    height : Number(uploadResult.height),
+	    width : Number(uploadResult.width)
+	  }
       })
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
@@ -62,32 +64,32 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
             'The account or the event has been either deleted by the user or as per community guideline',
           );
           await redis.publish(
-            'image_news',
+            'find_me_image',
             JSON.stringify({ success: false, driveFileId: driveFileId }),
           );
         } else if (dbErrorName === 'UniqueConstraintViolation') {
           console.log("Try using a different name which doesn't already exist in your events");
           await redis.publish(
-            'image_news',
+            'find_me_image',
             JSON.stringify({ userId: ownerId, success: false, driveFileId: driveFileId }),
           );
         } else {
           await redis.publish(
-            'image_news',
+            'find_me_image',
             JSON.stringify({ userId: ownerId, success: false, driveFileId: driveFileId }),
           );
           throw dbError;
         }
       } else {
         await redis.publish(
-          'image_news',
+          'find_me_image',
           JSON.stringify({ userId: ownerId, success: false, driveFileId: driveFileId }),
         );
         throw dbError;
       }
     }
     await redis.publish(
-      'image_news',
+      'find_me_image',
       JSON.stringify({ userId: ownerId, success: true, driveFileId: driveFileId }),
     );
     console.log(`The processing is completed for ${driveFileId}`); 
@@ -100,3 +102,4 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
     }
   }
 }
+

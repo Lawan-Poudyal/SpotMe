@@ -8,8 +8,8 @@ type FolderCardProps = {
   numberOfImages?: number;
   thumbNailUrl?: string;
 
-  onEdit: () => void;
-  onRemove: () => void;
+  onEdit?: () => void;
+  onRemove?: () => void;
   onClick?: () => void;
 };
 
@@ -76,7 +76,14 @@ const FolderCard: React.FC<FolderCardProps> = ({
 
       <div className="flex flex-col justify-between flex-1 p-5 gap-3 bg-[#111111]">
         <div>
-          <h3 className="text-white font-semibold text-lg truncate">{name}</h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-white font-semibold text-lg truncate">{name}</h3>
+            {(!onEdit || !onRemove) && (
+              <span className="text-[10px] font-semibold bg-white/5 text-white/60 border border-white/10 px-2 py-0.5 rounded-full shrink-0">
+                Joined
+              </span>
+            )}
+          </div>
 
           <p className="text-[#888888] text-sm mt-1">
             {formatDate(createdAt)} • {numberOfImages.toLocaleString()} photos
@@ -84,39 +91,43 @@ const FolderCard: React.FC<FolderCardProps> = ({
         </div>
 
         <div className="flex gap-2 mt-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            className="
-              flex items-center gap-1.5
-              px-3 py-1.5 rounded-lg text-sm
-              text-[#555555] font-medium
-              hover:text-white hover:bg-[#2a2a2a]
-              transition-colors duration-200
-            "
-          >
-            <Pencil size={14} />
-            Edit
-          </button>
+          {onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="
+                flex items-center gap-1.5
+                px-3 py-1.5 rounded-lg text-sm
+                text-[#555555] font-medium
+                hover:text-white hover:bg-[#2a2a2a]
+                transition-colors duration-200
+              "
+            >
+              <Pencil size={14} />
+              Edit
+            </button>
+          )}
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            className="
-              flex items-center gap-1.5
-              px-3 py-1.5 rounded-lg text-sm
-              text-[#555555] font-medium
-              hover:text-red-400 hover:bg-red-500/10
-              transition-colors duration-200
-            "
-          >
-            <Trash2 size={14} />
-            Delete
-          </button>
+          {onRemove && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
+              className="
+                flex items-center gap-1.5
+                px-3 py-1.5 rounded-lg text-sm
+                text-[#555555] font-medium
+                hover:text-red-400 hover:bg-red-500/10
+                transition-colors duration-200
+              "
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          )}
         </div>
       </div>
     </div>

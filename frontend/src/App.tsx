@@ -15,13 +15,14 @@ import { PublicOnlyRoute } from './routes/PublicRoute';
 
 function App() {
   const loggedIn = useProfile((s: zuContextType) => s.loggedIn);
+  const userId = useProfile((s: zuContextType) => s.id);
   return (
     <Routes>
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Navigate to="home" replace />} />
           <Route path="home" element={<HomePage />} />
-          <Route path="myevents" element={<MyEvents userId="current-user-id" />} />
+          <Route path="myevents" element={<MyEvents userId={userId} />} />
           <Route path="joinevent" element={<JoinEvent />} />
           <Route path="event/:eventId" element={<EventDetails />} />
         </Route>
@@ -30,7 +31,7 @@ function App() {
       <Route path="/join/:code" element={<JoinEventRedirect />} />
 
       <Route element={<PublicOnlyRoute />}>
-        <Route path="/login" element={<LoginPage loggedIn={false} />} />
+        <Route path="/login" element={<LoginPage loggedIn={true} />} />
         <Route path="/signup" element={<LoginPage loggedIn={false} />} />
       </Route>
 

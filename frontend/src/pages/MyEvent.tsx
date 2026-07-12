@@ -8,9 +8,12 @@ import {
   Clock,
   ChevronRight,
   Search,
+  Plus,
 } from 'lucide-react';
-import AddEvent from '../components/AddEvent';
+import AddEvent from '../components/Addfolder';
 import type { eventType } from '../types/eventType';
+import { useEvents } from '../hooks/eventHooks';
+import { useNavigate } from 'react-router-dom';
 
 type MyEventsProps = {
   userId: string;
@@ -18,37 +21,10 @@ type MyEventsProps = {
 
 type EventTab = 'all' | 'created' | 'joined';
 
-// Mock joined events shape (events the user did not create)
-type JoinedEvent = {
-  id: string;
-  eventName: string;
-  createdAt: string;
-  numberOfImages: number;
-  organizer: string;
-  coverColor: string; // placeholder gradient color
-};
-
-const MOCK_JOINED: JoinedEvent[] = [
-  {
-    id: 'j1',
-    eventName: 'KU Annual Fest 2026',
-    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-    numberOfImages: 142,
-    organizer: 'Priya S.',
-    coverColor: '#7C3AED',
-  },
-  {
-    id: 'j2',
-    eventName: 'Holi Night 2026',
-    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-    numberOfImages: 87,
-    organizer: 'Rajan M.',
-    coverColor: '#DB2777',
-  },
-];
-
 export default function MyEvents({ userId }: MyEventsProps) {
-  const [events, setEvents] = useState<eventType[]>([]);
+  const navigate = useNavigate();
+  const { data: events = [] } = useEvents(userId) as { data: eventType[] };
+
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<EventTab>('all');
   const [search, setSearch] = useState('');
@@ -57,16 +33,20 @@ export default function MyEvents({ userId }: MyEventsProps) {
   const [subTitleError, setSubTitleError] = useState('');
   const [isErrorOpen, setIsErrorOpen] = useState(false);
 
+  // Split real events into created vs joined based on ownership
+  const createdEvents = events.filter((e) => e.userId === userId);
+  const joinedEvents = events.filter((e) => e.userId !== userId);
+
   const tabs: { key: EventTab; label: string }[] = [
     { key: 'all', label: 'All events' },
     { key: 'created', label: 'Created' },
     { key: 'joined', label: 'Joined' },
   ];
 
-  const filteredCreated = events.filter((e) =>
+  const filteredCreated = createdEvents.filter((e) =>
     e.eventName.toLowerCase().includes(search.toLowerCase()),
   );
-  const filteredJoined = MOCK_JOINED.filter((e) =>
+  const filteredJoined = joinedEvents.filter((e) =>
     e.eventName.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -74,7 +54,9 @@ export default function MyEvents({ userId }: MyEventsProps) {
   const showJoined = activeTab === 'all' || activeTab === 'joined';
 
   const isEmpty =
-    (showCreated ? filteredCreated.length : 0) + (showJoined ? filteredJoined.length : 0) === 0;
+    (showCreated ? filteredCreated.length : 0) +
+      (showJoined ? filteredJoined.length : 0) ===
+    0;
 
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto bg-[#1C1C1E]">
@@ -88,9 +70,10 @@ export default function MyEvents({ userId }: MyEventsProps) {
             </div>
             <button
               onClick={() => setOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F97316] hover:bg-[#EA6C0A] text-white font-semibold text-sm transition-all shadow-lg shadow-[#F97316]/20"
             >
-              + Create Event
+              <Plus size={15} />
+              Create Event
             </button>
           </div>
 
@@ -109,6 +92,16 @@ export default function MyEvents({ userId }: MyEventsProps) {
                   }`}
                 >
                   {tab.label}
+                  {tab.key === 'created' && createdEvents.length > 0 && (
+                    <span className="ml-1.5 text-[10px] bg-[#F97316]/20 text-[#F97316] px-1.5 py-0.5 rounded-full">
+                      {createdEvents.length}
+                    </span>
+                  )}
+                  {tab.key === 'joined' && joinedEvents.length > 0 && (
+                    <span className="ml-1.5 text-[10px] bg-sky-500/20 text-sky-400 px-1.5 py-0.5 rounded-full">
+                      {joinedEvents.length}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -124,7 +117,7 @@ export default function MyEvents({ userId }: MyEventsProps) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search events…"
-                className="w-full bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 rounded-xl pl-8 pr-4 py-2 focus:outline-none focus:border-orange-500/50 transition"
+                className="w-full bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 rounded-xl pl-8 pr-4 py-2 focus:outline-none focus:border-[#F97316]/50 transition"
               />
             </div>
           </div>
@@ -143,8 +136,9 @@ export default function MyEvents({ userId }: MyEventsProps) {
             {activeTab !== 'joined' && (
               <button
                 onClick={() => setOpen(true)}
-                className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm transition"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F97316] hover:bg-[#EA6C0A] text-white font-semibold text-sm transition shadow-lg shadow-[#F97316]/20"
               >
+                <Plus size={15} />
                 Create First Event
               </button>
             )}
@@ -170,11 +164,12 @@ export default function MyEvents({ userId }: MyEventsProps) {
                   key={event.id}
                   id={event.id}
                   name={event.eventName}
-                  createdAt={event.createdAt}
-                  imageCount={event.numberOfImages}
+                  createdAt={String(event.createdAt)}
+                  imageCount={Math.max(0, event.photoCount ?? 0)}
                   badge="Created"
                   badgeColor="orange"
                   accentColor="#F97316"
+                  onClick={() => navigate(`/dashboard/event/${event.id}`, { state: event })}
                 />
               ))}
             </div>
@@ -200,12 +195,12 @@ export default function MyEvents({ userId }: MyEventsProps) {
                   key={event.id}
                   id={event.id}
                   name={event.eventName}
-                  createdAt={event.createdAt}
-                  imageCount={event.numberOfImages}
+                  createdAt={String(event.createdAt)}
+                  imageCount={Math.max(0, event.photoCount ?? 0)}
                   badge="Joined"
                   badgeColor="sky"
-                  accentColor={event.coverColor}
-                  organizer={event.organizer}
+                  accentColor="#0EA5E9"
+                  onClick={() => navigate(`/dashboard/event/${event.id}`, { state: event })}
                 />
               ))}
             </div>
@@ -218,7 +213,6 @@ export default function MyEvents({ userId }: MyEventsProps) {
         open={open}
         onClose={() => setOpen(false)}
         events={events}
-        setEvents={setEvents}
         setTitleError={setTitleError}
         setSubTitleError={setSubTitleError}
         setIsErrorOpen={setIsErrorOpen}
@@ -257,6 +251,7 @@ type EventCardProps = {
   badgeColor: 'orange' | 'sky';
   accentColor: string;
   organizer?: string;
+  onClick?: () => void;
 };
 
 function EventCard({
@@ -267,6 +262,7 @@ function EventCard({
   badgeColor,
   accentColor,
   organizer,
+  onClick,
 }: EventCardProps) {
   const badgeClasses =
     badgeColor === 'orange'
@@ -277,7 +273,10 @@ function EventCard({
   const timeLabel = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
 
   return (
-    <div className="group bg-[#2C2C2E] border border-white/8 rounded-2xl p-4 hover:border-white/20 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-4">
+    <div
+      onClick={onClick}
+      className="group bg-[#2C2C2E] border border-white/8 rounded-2xl p-4 hover:border-white/20 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-4"
+    >
       {/* Color swatch / avatar */}
       <div
         className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-lg font-bold"

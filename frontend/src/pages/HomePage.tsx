@@ -48,7 +48,7 @@ export default function HomePage() {
     setIsChangeEventModalOpen(true);
   };
 
-  const totalPhotos = events.reduce((sum, item) => sum + (item._count?.photos ?? 0), 0);
+  const totalPhotos = events.reduce((sum, item) => sum + Math.max(0, item.photoCount ?? 0), 0);
 
   const statsCards = [
     { label: 'Events', value: events.length, icon: <CalendarDays size={18} /> },
@@ -159,15 +159,15 @@ export default function HomePage() {
                 key={item.id}
                 name={item.eventName}
                 createdAt={String(item.createdAt)}
-                numberOfImages={item.photoCount ?? 0}
+                numberOfImages={Math.max(0, item.photoCount ?? 0)}
                 thumbNailUrl={item.thumbnail?.photo_url ?? ''}
                 onClick={() =>
                   navigate(`/dashboard/event/${item.id}`, {
                     state: item,
-                  })
+                  } )
                 }
-                onEdit={() => handleChangeEventButtonPressed(item.id, item.eventName)}
-                onRemove={() => handleRemoveButtonPressed(item.id, item.eventName)}
+                onEdit={item.userId === userId ? () => handleChangeEventButtonPressed(item.id, item.eventName) : undefined}
+                onRemove={item.userId === userId ? () => handleRemoveButtonPressed(item.id, item.eventName) : undefined}
               />
             ))}
           </div>
