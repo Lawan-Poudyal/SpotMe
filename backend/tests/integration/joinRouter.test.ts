@@ -43,14 +43,19 @@ describe("POST /api/invite-links/:token/join", () => {
 
   it("lets an authenticated user join with a valid token", async () => {
     const res = await request(app)
-      .post(`/api/invite-links/{validToken}/join`)
+      .post(`/api/invite-links/${validToken}/join`)
       .set("Cookie", cookie);
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual({ success: true, data: { eventId } });
 
-    const participant = await prisma.participant.findFirst({
-      where: { eventId, userId },
+    const participant = await prisma.participant.findUnique({
+      where: {
+        eventId_userId: {
+          userId,
+          eventId,
+        },
+      },
     });
     expect(participant).not.toBeNull();
   });
