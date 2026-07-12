@@ -26,14 +26,19 @@ export const initSocket = async (server: any) => {
   redisPubSubClient.on("message", (channel, message) => {
   try {
       console.log("Find me image is being called once again")
-    const data = JSON.parse(message);
-    const { userId, driveFileId, success } = data;
-
-    const socketId = idMap.get(userId);
-    if (!socketId) return; // user not connected on this instance
 
     if (channel === "image_news" || channel === "find_me_image") {
+      const data = JSON.parse(message);
+      const { userId, driveFileId, success } = data;
+      const socketId = idMap.get(userId);
+      if (!socketId) return; // user not connected on this instance
       io.to(socketId).emit(channel, { success, driveFileId });
+    }
+    else if (channel === "embedding_news"){
+	const data = JSON.parse(message);
+	const {success , photoId , eventId} = data;
+	console.log("From the socket listener we have")
+	console.log({success , photoId , eventId})
     }
   } catch (err) {
     if (err instanceof Error) console.log(err.stack);

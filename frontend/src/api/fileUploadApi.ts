@@ -18,7 +18,7 @@ export const fileUploads = {
     eventId: string,
     photos: { url: string; publicId: string; height: number; width: number }[],
   ) => {
-    const res = await api.post(`/api/upload/photo/save?eventId=${eventId}`, { photos });
+    const res = await api.post(`/api/upload/photo/save`, {eventId, photos });
     return res.data;
   },
   saveSingleUpload: async (
