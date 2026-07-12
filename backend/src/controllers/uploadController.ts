@@ -59,6 +59,7 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       embeddingQueue.add('generate_embedding', {
         photoId: photo.id, 
         photoURL: photo.photo_url,
+	eventId : eventId
       })
     )
   ).catch((err) => {

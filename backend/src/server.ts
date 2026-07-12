@@ -2,7 +2,6 @@
 import 'dotenv/config';
 import { Server } from 'socket.io';
 import { corsOptions } from './config/corsOptions';
-import { redis } from './config/redisConfig';
 import { redisPubSubClient } from './config/redisPubSub';
 
 let io : Server; 
@@ -22,7 +21,7 @@ export const initSocket = async (server: any) => {
     console.log("connected:", socket.id);
   });
 
-  await redisPubSubClient.subscribe("image_news",  "find_me_image")
+  await redisPubSubClient.subscribe("image_news",  "find_me_image" , "embedding_news")
   redisPubSubClient.on("message", (channel, message) => {
   try {
       console.log("Find me image is being called once again")
