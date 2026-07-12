@@ -7,6 +7,8 @@ import { UnauthorizedError } from '../errors/Error';
 
 export const checkParticipant = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+      console.log("from fucking this shit")
+      console.log(req.query)
     const { eventId } = validateSchema(eventSchema, req.query);
     console.log(eventId, req.validatedUserId);
 

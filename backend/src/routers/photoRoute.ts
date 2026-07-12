@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { deletePhotoHandler, getPhotoHandler } from '../controllers/photoController';
 import { checkParticipant } from '../middlewares/participantHandler';
 import { deletePhotoHandler, getPhotoHandler , getSingularPhotoHandler} from '../controllers/photoController';
 const photoRouter = Router();

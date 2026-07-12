@@ -10,6 +10,8 @@ export const globalErrorHandler = (
 ): void => {
   const isDevelopment = process.env.NODE_ENV === 'development';
 
+  console.log(err.stack)
+
   if (err instanceof AppError) {
     const response: ErrorResponse = {
       status: err.status,
