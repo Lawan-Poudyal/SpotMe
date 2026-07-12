@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { auth } from './config/auth';
+import "./jobs/cron/schedule_embeddings";
 import { toNodeHandler } from 'better-auth/node';
 import { router as uniqueEmailController } from './routers/uniqueEmailRoute';
 import { router as googleAPIController } from './routers/googleAPIRoute';
