@@ -126,6 +126,8 @@ model Photo {
   user        User   @relation(fields: [uploaded_by], references: [id], onDelete: Cascade)
   thumbnailOf Event? @relation("EventThumbnail")
 
+  faces PhotoFace[]
+
   @@index([event_id])
   @@index([id, status])
   @@map("photo")
@@ -181,4 +183,19 @@ model ReferenceFace {
   @@unique(name : "eventId_userId" , [eventId, userId])
   @@index([id , status])
   @@map("reference_face")
+}
+
+model PhotoFace {
+  id          String   @id @default(uuid())
+  photo_id    String
+  face_index  Int
+  embedding   Unsupported("vector(512)")
+  bbox        Json?
+  det_score   Float?
+  createdAt   DateTime @default(now())
+
+  photo       Photo    @relation(fields: [photo_id], references: [id], onDelete: Cascade)
+
+  @@index([photo_id])
+  @@map("photo_face")
 }
