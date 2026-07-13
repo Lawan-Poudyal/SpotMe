@@ -32,7 +32,7 @@ class SelfieRequest(BaseModel):
     url: str
 
 class SelfieResponse(BaseModel):
-    participant_di: str
+    participant_id: str
     status: str
     embedding: Optional[List[float]] = None
     error: Optional[str] = None
