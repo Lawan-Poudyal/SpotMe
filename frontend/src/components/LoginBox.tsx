@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { LoginOrSignupBox } from '../types/LoginOrSignUpType';
 import { Eye, EyeOff } from 'lucide-react';
@@ -12,8 +12,6 @@ import { handleLogIn as logInApi } from '../api/log-in';
 import { handleSignUp as signUpApi } from '../api/sign-up';
 import { googleSignIn } from '../api/google-sign-in';
 import { handleEmailUniqueness } from '../api/checkEmailUniquness.js';
-import { useProfile } from '../context/zuContext.js';
-import type { zuContextType } from '../context/zuContext.js';
 
 export function LoginBox({
   loggedIn,
@@ -37,18 +35,11 @@ export function LoginBox({
   const [isLogInLoading, setIsLogInLoading] = useState<boolean>(false);
   const [isSignUpLoading, setIsSignUpLoading] = useState<boolean>(false);
   const [isEmailUniqueError, setIsEmailUniqueError] = useState<boolean>(true);
-  const zuContextLoggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawRedirect = searchParams.get('redirect');
   const redirectTo =
     rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard';
-
-  useEffect(() => {
-    if (zuContextLoggedIn) {
-      navigate('/dashboard');
-    }
-  }, []);
 
   const debouncerFunction = async (email: string) => {
     setIsEmailUniqueError(true);

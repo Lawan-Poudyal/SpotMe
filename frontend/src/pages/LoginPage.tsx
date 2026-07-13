@@ -81,4 +81,3 @@ export function LoginPage({ loggedIn }: LoginOrSignUp): React.ReactNode {
     </div>
   );
 }
-
