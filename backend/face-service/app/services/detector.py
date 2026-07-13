@@ -16,3 +16,6 @@ async def download_image(url: str ) -> np.ndarray:
 
     return img
 
+def detect_face(img : np.ndarray):
+    app = insightface_client.get_app()
+    return app.get(img)
