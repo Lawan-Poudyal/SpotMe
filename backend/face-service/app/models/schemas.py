@@ -26,4 +26,13 @@ class PhotoBatchResponse(BaseModel):
     event_id:str
     results: List[PhotoResult]
 
+class SelfieRequest(BaseModel):
+    participant_id: str
+    event_id: str 
+    url: str
 
+class SelfieResponse(BaseModel):
+    participant_di: str
+    status: str
+    embedding: Optional[List[float]] = None
+    error: Optional[str] = None
