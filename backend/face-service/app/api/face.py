@@ -1,5 +1,6 @@
 import asyncio
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from app.core.auth import verify_internal_key
 from concurrent.futures import ThreadPoolExecutor
 from app.models.schemas import (
     PhotoBatchRequest, PhotoBatchResponse, PhotoResult, 
@@ -8,7 +9,8 @@ from app.models.schemas import (
 from app.services.detector import download_image, detect_face
 from app.services.embedding import extract_embeddings
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(verify_internal_key)])
+
 # Thread pool for CPU-bound face detection 
 executor = ThreadPoolExecutor(max_workers=4)
 
