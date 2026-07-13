@@ -3,15 +3,9 @@ import { prisma } from "../config/prismaClientConfig";
 import dbErrorHash from "../utils/dbErrorHash";
 import { cloudinary } from "../lib/cloudinary";
 import axios from 'axios'
+import type { requestPayloadMultiple } from "../types/photo.types";
 import type { dbErrorType } from "../utils/dbErrorHash";
 import type {Request, Response} from 'express' 
-
-type requestPayload = {
-    eventId : string;
-    ownerId : string;
-    accessToken : string;
-    driveFileIds : string[];
-}
 
 type toInjectType = {
     secure_url : string;
@@ -22,8 +16,8 @@ type toInjectType = {
 
 const createPhotoHandler = async(req : Request , res : Response)=>{
     try {
-
-	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayload
+	const {validatedUserId} = req
+	let {eventId , ownerId , accessToken , driveFileIds} = req.body as requestPayloadMultiple
 	
 	if(!eventId || eventId.trim()===""){
 	    return res.status(400).json({
@@ -43,6 +37,16 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 		}
 	    })
 	}
+	if(validatedUserId !== ownerId){
+	    return res.status(403).json({
+		success : false,
+		err: {
+		    name : 'Unauthorized action intended',
+		    message :  "You can't get someone elses events"
+		}
+	    })
+	}
+
 	if(!accessToken || accessToken.trim()=== "") {
 	    return res.status(400).json({
 		success : false,
@@ -81,9 +85,15 @@ const createPhotoHandler = async(req : Request , res : Response)=>{
 	}) 
 
 	try{
-	    await prisma.photo.createMany({
-		data : toInjectOnce
-	    })
+	    await prisma.$transaction([
+		prisma.photo.createMany({
+		    data : toInjectOnce
+		}),
+		prisma.event.update({
+		    where: { id: eventId },
+		    data: { photoCount: { increment: toInjectOnce.length } }
+		})
+	    ]);
 	}
 	catch(dbError : unknown){
 	    if(dbError instanceof PrismaClientKnownRequestError){
