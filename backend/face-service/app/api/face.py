@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from app.core.auth import verify_internal_key
 from concurrent.futures import ThreadPoolExecutor
 from app.models.schemas import (
-    PhotoBatchRequest, PhotoBatchResponse, PhotoResult, 
+    PhotoBatchRequest, PhotoBatchResponse, PhotoResult, PhotoInput,
     SelfieRequest, SelfieResponse
 )
 from app.services.detector import download_image, detect_face
@@ -68,3 +68,7 @@ async def process_selfie(request: SelfieRequest):
         status="success",
         embeddings= embedding.embedding
     )    
+
+@router.post("/embeddings/photo", response_model = PhotoResult)
+async def process_photo(photo: PhotoInput , event_id:str =""):
+    return await process_single_photo(photo, event_id)
