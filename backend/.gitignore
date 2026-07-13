@@ -11,3 +11,11 @@ env
 __pycache__/
 *.py[cod]
 *$py.class
+
+generated/
+/src/generated/prisma
+
+env
+
+.venv
+__pycache__

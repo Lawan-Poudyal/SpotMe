@@ -8,166 +8,208 @@ import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
 import { handleLogOut } from '../api/sign-out';
-const pages: string[] = [];
-// let's refrain from using pages right now
+import { SwitchCamera } from 'lucide-react';
+import type { zuContextType } from '../context/zuContext';
+import { useProfile } from '../context/zuContext';
+
 const settings = ['Profile', 'Account', 'Logout'];
-
-function ResponsiveAppBar() {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+export function ResponsiveAppBar({ onMenuClick }: NavbarProps) {
+  const setProfile = useProfile((s: zuContextType) => s.setProfile);
+  const profilePicLink = useProfile((s: zuContextType) => s.profilePicLink);
+  const fullName = useProfile((s: zuContextType) => s.userName);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-  const userContext = useContext(UserContext)
-  const navigation = useNavigate()
+  const navigation = useNavigate();
 
-  const fullName = userContext?.contextState?.userName as string
-  const profilePicLink = userContext?.contextState?.profilePicLink as string
-  const twoInitials = fullName.split(' ').map(item => item[0].toUpperCase()).join("")
+  const twoInitials = fullName
+    ?.split(' ')
+    .map((item) => item[0].toUpperCase())
+    .join('');
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const handleCloseUserMenu = () => setAnchorElUser(null);
 
   return (
-    <AppBar position="static"
-      sx={
-        {
-          background: "#585289",
-        }
-      }
+    <AppBar
+      position="static"
+      elevation={0}
+      sx={{
+        background: '#181819',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}
     >
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            sx={{
-              mr: 2,
-              display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            SpotMe
-          </Typography>
+      <Container maxWidth={false}>
+        <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 60 } }}>
+          {/* Desktop logo */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1.5, mr: 0 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: '10px',
+                background: '#F97316',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <SwitchCamera size={16} color="#fff" />
+            </Box>
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              href="/"
+              sx={{
+                fontWeight: 700,
+                fontSize: '1rem',
+                letterSpacing: '.05rem',
+                color: '#EAEAF5',
+                textDecoration: 'none',
+              }}
+            >
+              SpotMe
+            </Typography>
+          </Box>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          {/* Mobile hamburger — now calls onMenuClick */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}>
             <IconButton
               size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
+              aria-label="open navigation menu"
+              onClick={onMenuClick}
+              sx={{ color: 'rgba(255,255,255,0.4)' }}
             >
               <MenuIcon />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
+
+          {/* Mobile logo */}
+          <Box
+            sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, flexGrow: 1 }}
           >
-            LOGO
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {page}
-              </Button>
-            ))}
+            <Box
+              sx={{
+                width: 28,
+                height: 28,
+                borderRadius: '8px',
+                background: '#F97316',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <SwitchCamera size={14} color="#fff" />
+            </Box>
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              href="/"
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                letterSpacing: '.05rem',
+                color: '#EAEAF5',
+                textDecoration: 'none',
+              }}
+            >
+              SpotMe
+            </Typography>
           </Box>
+
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }} />
+
+          {/* Avatar / user menu */}
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                {
-                  (!profilePicLink) ? <div className="rounded-[100%] bg-white text-[#585289] p-2  text-sm"> {twoInitials}</div> :
-                    <Avatar alt={twoInitials} />
-                }
+                {!profilePicLink ? (
+                  <Box
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(249,115,22,0.15)',
+                      border: '1.5px solid rgba(249,115,22,0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#F97316',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {twoInitials}
+                  </Box>
+                ) : (
+                  <Avatar
+                    alt={twoInitials}
+                    src={profilePicLink}
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      border: '1.5px solid rgba(249,115,22,0.35)',
+                    }}
+                  />
+                )}
               </IconButton>
             </Tooltip>
+
             <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
+              id="menu-appbar-user"
               anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
               keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
+              sx={{
+                mt: '48px',
+                '& .MuiPaper-root': {
+                  background: '#1A1A2E',
+                  border: '0.5px solid rgba(255,255,255,0.08)',
+                  borderRadius: '12px',
+                  minWidth: 160,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                },
+                '& .MuiMenuItem-root': {
+                  color: 'rgba(255,255,255,0.55)',
+                  fontSize: '0.875rem',
+                  padding: '10px 16px',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.04)',
+                    color: '#EAEAF5',
+                  },
+                  '&:last-child': {
+                    color: 'rgba(239,68,68,0.7)',
+                    '&:hover': {
+                      background: 'rgba(239,68,68,0.08)',
+                      color: '#ef4444',
+                    },
+                  },
+                },
+              }}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={() => {
-                  if (setting === "Logout") {
-                    handleLogOut(navigation, userContext?.setContextState)
-                  }
-                  handleCloseUserMenu()
-                }}>
+                <MenuItem
+                  key={setting}
+                  onClick={() => {
+                    if (setting === 'Logout') {
+                      handleLogOut(navigation, setProfile);
+                    }
+                    handleCloseUserMenu();
+                  }}
+                >
                   <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                 </MenuItem>
               ))}
@@ -178,5 +220,6 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
+
 export default ResponsiveAppBar;
 

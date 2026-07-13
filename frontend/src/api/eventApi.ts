@@ -1,63 +1,133 @@
-import axios from 'axios'
-import type { Dispatch , SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react';
+import { api } from '../config/axios';
+import axios from 'axios';
+import { ApiError } from '../error/requestPayloadError';
+import type { eventType } from '../types/eventType';
 
+const addEvent = async (
+  eventName: string,
+  userId: string,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+) => {
+  try {
+    setIsLoading(true);
+    const response = await api.post('/api/event', {
+      eventName: eventName,
+      ownerId: userId,
+    });
+    return response.data.data as eventType;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new ApiError('Failed', {
+        payload: {
+          success: false,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
+        },
+      });
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-const addEvent = async(eventName : string , userId : string , setIsLoading : Dispatch<SetStateAction<boolean>>)=>{
-    try{
+const updateEvent = async (
+  eventName: string,
+  eventId: string,
+  thumbNailId: string,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+) => {
+  try {
+    setIsLoading(true);
+    const response = await api.put('/api/event', {
+      eventName,
+      eventId,
+      thumbNailId,
+    });
+    return response.data.data as eventType;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new ApiError('Failed', {
+        payload: {
+          success: false,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
+        },
+      });
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-	setIsLoading(true)
-	const response = await axios.post(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    eventName : eventName,
-	    ownerId : userId
-	})
-	return {success  :true  , ...response.data.data}
+const deleteEvent = async (
+  eventName: string,
+  userId: string,
+  eventId : string,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+) => {
+  try {
+    setIsLoading(true);
+    await api.delete('/api/event', {
+      data: {
+        eventName: eventName,
+        ownerId: userId,
+	eventId : eventId
+      },
+    });
+    return { success: true };
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new ApiError('Failed', {
+        payload: {
+          success: false,
+          name: null,
+          message: null,
+        },
+      });
     }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false , ...err.response?.data}
-	}
+  } finally {
+    setIsLoading(false);
+  }
+};
+const getEvent = async (userId: string) => {
+  try {
+    const response = await api.get('/api/event', {
+      params: {
+        ownerId: userId,
+      },
+    });
+    return response.data.data as eventType[];
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new ApiError('Failed', {
+        payload: {
+          success: false,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
+        },
+      });
     }
-    finally{
-	setIsLoading(false)
-    }
-}
-const updateEvent = async(eventName : string , userId : string , currentName : string, setIsLoading : Dispatch<SetStateAction<boolean>>)=>{
-    try{
+    throw err;
+  }
+};
 
-	setIsLoading(true)
-	const response = await axios.post(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    eventName : eventName,
-	    ownerId : userId,
-	    currentName : currentName
-	})
-	return {success  :true  , ...response.data.data}
+const getEventById = async (eventId: string) => {
+  try {
+    const response = await api.get(`/api/event/${eventId}`);
+    return response.data.data as eventType[];
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      throw new ApiError('Failed', {
+        payload: {
+          success: false,
+          name: err.response?.data.err?.name,
+          message: err.response?.data.err?.message,
+        },
+      });
     }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false , ...err.response?.data}
-	}
-    }
-    finally{
-	setIsLoading(false)
-    }
-}
-const getEvent = async(userId : string)=>{
-    try{
+    throw err;
+  }
+};
 
-	const response = await axios.get(`${import.meta.env.VITE_SERVER_BASE_URL}/event`, {
-	    params : {
-		ownerId : userId
-	    }
-	})
-	return {success  :true  , data : response.data.data}
-    }
-    catch(err : unknown){
-	if(axios.isAxiosError(err)){
-	    return {success : false , ...err.response?.data}
-	}
-    }
-}
-
-
-export {addEvent, getEvent ,updateEvent}
-
+export { addEvent, getEvent, updateEvent, deleteEvent, getEventById };
