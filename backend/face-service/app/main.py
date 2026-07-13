@@ -1,15 +1,21 @@
 from fastapi import FastAPI
 from app.api.face import router as face_router
 
+from app.core.insightface_client import insightface_client
+
 app = FastAPI(
-    title="SpotMe Face Service",
-    version="1.0.0"
+    title="SpotMe Face Service"
 )
 
-app.include_router(face_router)
+# forcing model to load on startup, not on first request
+@app.on_event("startup")
+async def startup_event():
+    insightface_client.get_app()
 
-@app.get("/")
-def root():
+app.include_router(face_router, prefix="/api", tags=["face"])
+
+@app.get("/health")
+async def health():
     return {
-        "message": "SpotMe Face Service Running"
+        "status" : "ok"
     }
