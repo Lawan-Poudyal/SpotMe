@@ -1,39 +1,53 @@
-import React, { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import { UserContext } from "../context/UserContext";
-//import Navbar from "../components/Navbar";
-import { Box } from "@mui/material";
-import ResponsiveAppBar from "../components/Navbar";
+import React, { useEffect, useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import ResponsiveAppBar from '../components/Navbar';
+import type { SidebarSection } from '../components/Sidebar';
+import type { zuContextType } from '../context/zuContext';
+import { useProfile } from '../context/zuContext';
 
 const Dashboard: React.FC = () => {
-  const userInfo = useContext(UserContext);
+  const loggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const getSectionFromPath = (): SidebarSection => {
+    if (location.pathname.includes('myevents')) return 'myevents';
+    if (location.pathname.includes('joinevent')) return 'joinevent';
+    return 'home';
+  };
+
+  const [activeSection, setActiveSection] = useState<SidebarSection>(getSectionFromPath());
 
   useEffect(() => {
-    if (!userInfo?.contextState?.loggedIn) {
-      navigate("/signup", { replace: true });
+    setActiveSection(getSectionFromPath());
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!loggedIn) {
+      navigate('/signup', { replace: true });
     }
-  }, [userInfo?.contextState?.loggedIn, navigate]);
-
-  // Prevent flash of child content while redirecting
-  if (!userInfo?.contextState?.loggedIn) return null;
-
+  }, [loggedIn, navigate]);
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-	justifyContent : "center",
-        backgroundColor: "#F5F5F5",
-      }}
-    >
-      <ResponsiveAppBar/>
-    <div className="flex-1 flex row">
-	<Outlet/>	
+    <div className="flex flex-col h-screen bg-[#1C1C1E]">
+      <ResponsiveAppBar onMenuClick={() => setMobileOpen((o) => !o)} />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+          activeSection={activeSection}
+          setActiveSection={(section) => {
+            setActiveSection(section);
+            setMobileOpen(false);
+            navigate(`/dashboard/${section}`);
+          }}
+        />
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
-    </Box>
   );
 };
 
