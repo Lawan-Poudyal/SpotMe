@@ -1,8 +1,18 @@
 import cv2
-from app.core.insightface_client import app
+import numpy as np
+import httpx
+from app.core.insightface_client import insightface_client
 
-async def detect_faces(image):
+async def download_image(url: str ) -> np.ndarray:
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.get(url)
+        resp.raise_for_status()
+    
+    img_array = np.frombuffer(resp.content, dtype=np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
-    faces = app.get(image)
+    if img is None:
+        raise ValueError("Could not decode image")
 
-    return faces
+    return img
+
