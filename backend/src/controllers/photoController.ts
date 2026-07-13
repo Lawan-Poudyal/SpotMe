@@ -103,4 +103,44 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { getPhotoHandler, deletePhotoHandler , getSingularPhotoHandler};
+const getMyPhotosHandler = asyncHandler(async (req: Request, res: Response) => {
+  const { validatedUserId } = req;
+  const { eventId, userId } = validateSchema(referencePhotoSchema, req.query);
+
+  if (validatedUserId !== userId) throw new ForbiddenError(`You can't access it`);
+
+  const referenceFace = await prisma.referenceFace.findUnique({
+    where: { eventId_userId: { eventId, userId } },
+    select: { id: true, status: true },
+  });
+
+  if (!referenceFace) throw new NotFoundError('Reference face');
+  if (referenceFace.status !== 'DONE') {
+    return res.status(202).json({
+      success: true,
+      message: 'Your reference photo is still processing, please check back shortly',
+      data: [],
+    });
+  }
+
+  const SIMILARITY_THRESHOLD = 0.5;
+
+  const matchedPhotos = await prisma.$queryRaw`
+    SELECT DISTINCT p.id, p.photo_url, p.public_id, p.width, p.height, p.uploaded_at
+    FROM photo_face pf
+    JOIN photo p ON p.id = pf.photo_id
+    JOIN reference_face rf ON rf."eventId" = p.event_id
+    WHERE rf."eventId" = ${eventId}
+      AND rf."userId" = ${userId}
+      AND p.event_id = ${eventId}
+      AND (1 - (pf.embedding <=> rf.embedding)) > ${SIMILARITY_THRESHOLD}
+    ORDER BY p.uploaded_at DESC
+  `;
+
+  res.status(200).json({
+    success: true,
+    data: matchedPhotos,
+  });
+});
+
+export { getPhotoHandler, deletePhotoHandler , getSingularPhotoHandler, getMyPhotosHandler};
