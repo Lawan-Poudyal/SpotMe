@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Home, CalendarDays, Link2, X } from 'lucide-react';
 
 export type SidebarSection = 'home' | 'myevents' | 'joinevent';
@@ -21,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen,
   setMobileOpen,
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = false;
 
   const menuItems: { label: string; key: SidebarSection; icon: React.ReactNode }[] = [
     { label: 'Home', key: 'home', icon: <Home size={18} /> },

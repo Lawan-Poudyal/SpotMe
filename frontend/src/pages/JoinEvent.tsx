@@ -1,29 +1,52 @@
-import { useState } from "react";
-import { Link2, ArrowRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Link2, ArrowRight, Loader2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { inviteLink } from '../api/inviteLinkApi';
 
 export default function JoinEvent() {
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const handleJoin = async () => {
-    if (!code.trim()) {
-      setError("Please enter an invite code or link.");
-      return;
+  const [code, setCode] = useState(() => {
+    return searchParams.get('code') || '';
+  });
+
+  const {
+    mutate: joinEvent,
+    isPending,
+    isError,
+    error,
+    reset: resetMutation,
+  } = useMutation({
+    mutationFn: (inviteCode: string) => inviteLink.join(inviteCode),
+    onSuccess: (data) => {
+      // Invalidate events cache so HomePage & MyEvent instantly show the joined event
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      navigate(`/dashboard/event/${data.eventId}`, { replace: true });
+    },
+  });
+
+  useEffect(() => {
+    const urlCode = searchParams.get('code');
+    if (urlCode) {
+      joinEvent(urlCode);
     }
-    setError("");
-    setLoading(true);
+  }, []);
 
-    // TODO: replace with real API call
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setError("Event not found. Check the code and try again.");
+  const handleJoin = () => {
+    if (!code.trim() || isPending) return;
+    joinEvent(code.trim());
   };
+
+  const errorMessage = isError
+    ? error?.response?.data?.message || error.message || 'Failed to join event'
+    : null;
 
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto bg-[#1C1C1E]">
       <div className="flex-1 px-6 lg:px-10 py-8 max-w-2xl w-full mx-auto">
-
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-white">Join an event</h1>
@@ -40,9 +63,6 @@ export default function JoinEvent() {
             </div>
             <div>
               <p className="text-white font-semibold text-sm">Invite code</p>
-              <p className="text-white/35 text-xs">
-                e.g. KU-FEST-2026 or a full invite URL
-              </p>
             </div>
           </div>
 
@@ -51,28 +71,26 @@ export default function JoinEvent() {
             value={code}
             onChange={(e) => {
               setCode(e.target.value);
-              if (error) setError("");
+              if (isError) resetMutation();
             }}
-            onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
             placeholder="Paste code or link here…"
             className={`w-full bg-[#1C1C1E] border rounded-xl px-4 py-3 text-white text-sm
               placeholder-white/25 focus:outline-none transition
-              ${error ? "border-red-500/60 focus:border-red-500" : "border-white/10 focus:border-orange-500/50"}`}
+              ${errorMessage ? 'border-red-500/60 focus:border-red-500' : 'border-white/10 focus:border-orange-500/50'}`}
           />
 
-          {error && (
-            <p className="text-red-400 text-xs mt-2">{error}</p>
-          )}
+          {errorMessage && <p className="text-red-400 text-xs mt-2">{errorMessage}</p>}
 
           <button
             onClick={handleJoin}
-            disabled={loading}
+            disabled={isPending || !code.trim()}
             className="mt-5 w-full flex items-center justify-center gap-2
               px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600
               disabled:opacity-60 disabled:cursor-not-allowed
-              text-white font-semibold text-sm transition-all"
+              text-white font-semibold text-sm transition-all cursor-pointer"
           >
-            {loading ? (
+            {isPending ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <>

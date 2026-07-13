@@ -3,15 +3,27 @@ import { prisma } from '../config/prismaClientConfig';
 import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
 import type { dbErrorType } from '../utils/dbErrorHash';
+import { asyncHandler } from '../utils/asyncHandler';
+import { AppError, ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
+import { updateEventSchema } from '../validations/event.validation';
+import { getSession } from '../utils/getSessions';
+import { validateSchema } from '../utils/validateSchema';
+import { validateData } from '../utils/validateSyncSchema';
+import { createEventSchema , deleteEventSchema , getEventSchema } from '../validations/eventSync.validation';
+import type { CreateEventPayload , DeleteEventPayload , GetEventPayload } from '../validations/eventSync.validation';
+import { eventSchema } from '../validations/upload.validation';
+import { isParticipant} from '../utils/isParticipant';
+import { redis } from '../config/redisConfig';
+import { mapPrismaError, ZodValidationError } from '../errors/dbError';
 
 type postRequestPayloadType = {
   eventName: string;
   ownerId: string;
 };
 type updateRequestPayloadType = {
-  eventName: string;
-  ownerId: string;
-  currentName: string;
+  eventId: string;
+  eventName?: string;
+  thumbNailId?: string;
 };
 
 type getRequestPaylaodType = {
@@ -21,6 +33,7 @@ type getRequestPaylaodType = {
 type deleteRequestPayloadType = {
   ownerId: string;
   eventName: string;
+  eventId : string;
 };
 
 type eventType = {
@@ -30,60 +43,34 @@ type eventType = {
   createdAt: Date;
   updatedAt: Date;
 };
+
 const createEventHandler = async (req: Request, res: Response) => {
+    
   try {
-    let { eventName, ownerId } = req.body as postRequestPayloadType;
-    if (!eventName || eventName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing event name in the request payload',
-        },
-      });
-    }
-    if (!ownerId || ownerId.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
-    }
+    let { eventName, ownerId } = validateData(createEventSchema , req.body , res) as CreateEventPayload 
 
     let event: eventType | null = null;
 
     try {
-      event = await prisma.event.create({
-        data: {
-          userId: ownerId,
-          eventName: eventName,
-        },
+      event = await prisma.$transaction(async (tx) => {
+        const newEvent = await tx.event.create({
+          data: { userId: ownerId, eventName },
+        });
+
+        await tx.participant.create({
+          data: { eventId: newEvent.id, userId: ownerId },
+        });
+
+        return newEvent;
       });
+    const cacheKey = `participation-${ownerId}-${event.id}`
+    await redis.set( cacheKey, "1"   , 'EX' ,  600 )    
+      
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
-        const dbErrorCode = dbError.code;
-        const dbErrorName: dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType;
-        if (dbErrorName === 'ForeignKeyConstraintViolation') {
-          return res.status(401).json({
-            success: false,
-            err: {
-              name: "Owner doesn't exist",
-              message:
-                'The account has been either deleted by the user or as per community guideline',
-            },
-          });
-        } else if (dbErrorName === 'UniqueConstraintViolation') {
-          return res.status(409).json({
-            success: false,
-            err: {
-              name: 'Conflicting names exist',
-              message: "Try using a different name which doesn't already exist in your events",
-            },
-          });
-        } else throw dbError;
-      } else throw dbError;
+	  throw mapPrismaError(dbError) 
+      }
+      else throw new AppError("Error")
     }
 
     return res.status(200).json({
@@ -92,6 +79,9 @@ const createEventHandler = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
+	if(err instanceof ZodValidationError){
+	    return res.status(err.status).json(err.options)
+	}
       return res.status(500).json({
         success: false,
         err: {
@@ -102,24 +92,36 @@ const createEventHandler = async (req: Request, res: Response) => {
     }
   }
 };
+
 const getEventHandler = async (req: Request, res: Response) => {
   try {
-    let { ownerId } = req.query as getRequestPaylaodType;
-    if (!ownerId || ownerId.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
+      // let's make it so that other users can't see someone else's events 
+    let { ownerId} = validateData(getEventSchema , req.query  , res) as GetEventPayload 
+    const {validatedUserId} = req
+    if(validatedUserId !== ownerId){
+	return res.status(403).json({
+	    success : false,
+	    err: {
+		name : 'Unauthorized action intended',
+		message :  "You can't get someone elses events"
+	    }
+	})
     }
 
     let events: eventType[] = [];
     try {
       events = await prisma.event.findMany({
         where: {
-          userId: ownerId,
+          OR: [
+            { userId: ownerId },
+            {
+              participant: {
+                some: {
+                  userId: ownerId,
+                },
+              },
+            },
+          ],
         },
         select: {
           id: true,
@@ -127,6 +129,15 @@ const getEventHandler = async (req: Request, res: Response) => {
           eventName: true,
           createdAt: true,
           updatedAt: true,
+          photoCount: true,
+          thumbnail: {
+            select: {
+              id: true,
+              photo_url: true,
+              width: true,
+              height: true,
+            },
+          },
         },
       });
     } catch (dbError: unknown) {
@@ -152,6 +163,9 @@ const getEventHandler = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
+	if(err instanceof ZodValidationError){
+	    return res.status(err.status).json(err.options)
+	}
       return res.status(500).json({
         success: false,
         err: {
@@ -162,108 +176,106 @@ const getEventHandler = async (req: Request, res: Response) => {
     }
   }
 };
-const updateEventHandler = async (req: Request, res: Response) => {
+const getEventById = asyncHandler(async (req: Request, res: Response) => {
+  const session = await getSession(req.headers as HeadersInit);
+  if (!session) throw new UnauthorizedError();
+  const {validatedUserId} = req
+  const { eventId } = validateSchema(eventSchema, req.params);
+  const hasParticipated = await isParticipant(eventId , validatedUserId)
+  
+  if(!hasParticipated) {
+      throw new ForbiddenError("Event")
+  }
+  const event = await prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      eventName: true,
+      createdAt: true,
+      photoCount: true,
+      thumbnail: {
+        select: {
+          id: true,
+          photo_url: true,
+          width: true,
+          height: true,
+        },
+      },
+      participant : {
+	  select:{
+	      userId: true
+	  }
+      }
+    },
+  });
+  res.status(200).json({
+    success: true,
+    data: event,
+  });
+});
+
+const updateEventHandler = asyncHandler(async(req : Request , res : Response) => {
+    const {validatedUserId} = req
+  const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
+
   try {
-    let { ownerId, eventName, currentName } = req.body as updateRequestPayloadType;
-    if (!ownerId || ownerId.trim() === '') {
-      // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
+      const participated = await isParticipant(eventId , validatedUserId)
+      if(!participated) throw new ForbiddenError("Forbidden")
+    const data = await prisma.event.update({
+      where: { id: eventId, userId: validatedUserId },
+      data: {
+        ...(eventName !== undefined && { eventName }),
+        ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
+      },
+      select :{
+	 id : true,
+	 userId : true,
+	 eventName : true,
+	 createdAt  :true,
+	 updatedAt : true,
+	 photoCount : true,
+	 thumbnail : {
+	     select : {
+		id : true,
+		photo_url : true,
+		width : true,
+		height : true
+	     }
+	 }
+      }
+    });
+    if(!!thumbNailId){
+	console.log("Setting up the thumbnail Cache")
+	const cacheKey = `thumbnail-${eventId}`
+	await redis.set(cacheKey , thumbNailId as string , 'EX' , 600)
     }
-    if (!eventName || eventName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing event name in the request payload',
-        },
-      });
+    res.status(200).json({ success: true, data });
+  } catch (err) {
+    if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
+      throw new NotFoundError(`Event with id ${eventId} not found`);
     }
-    if (!currentName || currentName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing current Name in the request payload',
-        },
-      });
-    }
-
-    try {
-      const data = await prisma.event.update({
-        where: {
-          eventName_userId: {
-            userId: ownerId,
-            eventName: currentName,
-          },
-        },
-        data: {
-          eventName: eventName,
-        },
-      });
-
-      return res.status(200).json({
-        success: true,
-        data: data,
-      });
-    } catch (dbError: unknown) {
-      if (dbError instanceof PrismaClientKnownRequestError) {
-        const dbErrorCode = dbError.code;
-        const dbErrorName: dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType;
-        if (dbErrorName === 'CompositeKeyViolation') {
-          return res.status(404).json({
-            success: false,
-            err: {
-              name: `Couldn't find ${eventName}`,
-              message: `You have never created a event named ${eventName}`,
-            },
-          });
-        } else throw dbError;
-      } else throw dbError;
-    }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      console.log(err.name);
-      console.log(err.stack);
-      console.log(err.message);
-      return res.status(500).json({
-        success: false,
-        err: {
-          name: err.name,
-          message: err.message,
-        },
-      });
-    }
+    throw err;
   }
-};
+
+});
+
+
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
-    let { ownerId, eventName } = req.body as deleteRequestPayloadType;
-    if (!ownerId || ownerId.trim() === '') {
-      // although !ownerId is enough for === "" and !ownerId both but did it to show what i intended.
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing owner id in the request payload',
-        },
-      });
+    const {validatedUserId} = req
+    let { ownerId, eventName , eventId} = validateData(deleteEventSchema , req.body , res) as DeleteEventPayload
+    if(validatedUserId !== ownerId){
+	return res.status(403).json({
+	    success : false,
+	    err: {
+		name : 'Unauthorized action intended',
+		message :  "You can't get someone elses events"
+	    }
+	})
     }
-    if (!eventName || eventName.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        err: {
-          name: 'Bad request payload',
-          message: 'Missing event name in the request payload',
-        },
-      });
-    }
-
     try {
       await prisma.event.delete({
         where: {
@@ -281,7 +293,7 @@ const deleteEventHandler = async (req: Request, res: Response) => {
       if (dbError instanceof PrismaClientKnownRequestError) {
         const dbErrorCode = dbError.code;
         const dbErrorName: dbErrorType = dbErrorHash[dbErrorCode] as dbErrorType;
-        if (dbErrorName === 'CompositeKeyViolation') {
+        if (dbErrorName === 'KeyNotFoundError') {
           return res.status(404).json({
             success: false,
             err: {
@@ -294,6 +306,9 @@ const deleteEventHandler = async (req: Request, res: Response) => {
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
+	if(err instanceof ZodValidationError){
+	    return res.status(err.status).json(err.options)
+	}
       console.log(err.name);
       console.log(err.stack);
       console.log(err.message);
@@ -308,4 +323,10 @@ const deleteEventHandler = async (req: Request, res: Response) => {
   }
 };
 
-export { createEventHandler, getEventHandler, updateEventHandler, deleteEventHandler };
+export {
+  createEventHandler,
+  getEventById,
+  getEventHandler,
+  updateEventHandler,
+  deleteEventHandler,
+};
