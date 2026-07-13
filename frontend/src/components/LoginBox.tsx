@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { LoginOrSignupBox } from '../types/LoginOrSignUpType';
 import { Eye, EyeOff } from 'lucide-react';
@@ -12,8 +12,6 @@ import { handleLogIn as logInApi } from '../api/log-in';
 import { handleSignUp as signUpApi } from '../api/sign-up';
 import { googleSignIn } from '../api/google-sign-in';
 import { handleEmailUniqueness } from '../api/checkEmailUniquness.js';
-import { useProfile } from '../context/zuContext.js';
-import type { zuContextType } from '../context/zuContext.js';
 
 export function LoginBox({
   loggedIn,
@@ -37,18 +35,11 @@ export function LoginBox({
   const [isLogInLoading, setIsLogInLoading] = useState<boolean>(false);
   const [isSignUpLoading, setIsSignUpLoading] = useState<boolean>(false);
   const [isEmailUniqueError, setIsEmailUniqueError] = useState<boolean>(true);
-  const zuContextLoggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawRedirect = searchParams.get('redirect');
   const redirectTo =
     rawRedirect?.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/dashboard';
-
-  useEffect(() => {
-    if (zuContextLoggedIn) {
-      navigate('/dashboard');
-    }
-  }, []);
 
   const debouncerFunction = async (email: string) => {
     setIsEmailUniqueError(true);
@@ -131,7 +122,7 @@ export function LoginBox({
     'w-full h-11 bg-[#111111] border border-[#2a2a2a] rounded-lg px-3 text-sm text-white placeholder-[#555555] outline-none transition-colors hover:border-[#3a3a3a] focus:border-[#E8572A]';
 
   return (
-    <div className="w-full max-w-sm flex flex-col gap-8">
+    <main className="w-full max-w-sm flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col gap-1.5">
         <h1 className="text-white text-3xl font-bold tracking-tight">
@@ -206,7 +197,7 @@ export function LoginBox({
             </label>
             <div className="relative">
               <input
-                className={`${inputCls} pr-10`}
+                className={`${inputCls} pr-12`}
                 placeholder="••••••••"
                 type={isPassword ? 'password' : 'text'}
                 value={password}
@@ -215,29 +206,30 @@ export function LoginBox({
                   handleFormValidation('password', e.target.value);
                 }}
               />
-              {!seePassword ? (
-                <button
-                  type="button"
-                  className="absolute top-1/2 -translate-y-1/2 right-3 text-[#555555] hover:text-[#888888] cursor-pointer transition-colors bg-transparent border-none p-0 focus:outline-none"
-                  onClick={() => {
-                    setSeePassword(true);
-                    setIsPassword(false);
-                  }}
-                >
-                  <EyeOff size={16} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="absolute top-1/2 -translate-y-1/2 right-3 text-[#555555] hover:text-[#888888] cursor-pointer transition-colors bg-transparent border-none p-0 focus:outline-none"
-                  onClick={() => {
-                    setSeePassword(false);
-                    setIsPassword(true);
-                  }}
-                >
-                  <Eye size={16} />
-                </button>
-              )}
+
+              <button
+                type="button"
+                aria-label={isPassword ? 'Show password' : 'Hide password'}
+                aria-pressed={!isPassword}
+                className="absolute right-2 top-1/2 -translate-y-1/2
+               flex h-10 w-10 items-center justify-center
+               rounded-md
+               text-[#555555] hover:text-[#888888]
+               hover:bg-gray-100
+               cursor-pointer
+               transition-colors
+               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onClick={() => {
+                  setSeePassword((prev) => !prev);
+                  setIsPassword((prev) => !prev);
+                }}
+              >
+                {isPassword ? (
+                  <EyeOff size={16} aria-hidden="true" />
+                ) : (
+                  <Eye size={16} aria-hidden="true" />
+                )}
+              </button>
             </div>
             {(passwordErrorMessage.totalLength ||
               passwordErrorMessage.symbol ||
@@ -306,7 +298,7 @@ export function LoginBox({
 
           <div className="flex items-center gap-3 my-0.5">
             <div className="flex-1 h-px bg-[#2a2a2a]" />
-            <span className="text-xs text-neutral-500">or</span>
+            <span className="text-xs text-white">or</span>
             <div className="flex-1 h-px bg-[#2a2a2a]" />
           </div>
 
@@ -337,6 +329,6 @@ export function LoginBox({
           </button>
         </div>
       </form>
-    </div>
+    </main>
   );
 }
