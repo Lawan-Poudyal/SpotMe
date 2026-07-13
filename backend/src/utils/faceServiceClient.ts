@@ -18,6 +18,13 @@ export interface PhotoEmbeddingResponse{
 
 }
 
+export interface SelfieEmbeddingResponse {
+  participant_id: string;
+  status: 'success' | 'error';
+  embedding?: number[];
+  error?: string;
+}
+
 export function generateEmbeddings(
     photoId: string,
     photoURL: string
@@ -29,4 +36,17 @@ export function generateEmbeddings(
         {headers: {'X-Internal-Key': FACE_SERVICE_KEY}, timeout: 30000},
     );
     return response.data
+}
+
+export async function generateSelfieEmbedding(
+  participantId: string,
+  photoURL: string,
+  eventId: string,
+): Promise<SelfieEmbeddingResponse> {
+  const response = await axios.post(
+    `${FACE_SERVICE_URL}/api/embeddings/selfie`,
+    { participant_id: participantId, url: photoURL, event_id: eventId },
+    { headers: { 'X-Internal-Key': FACE_SERVICE_KEY }, timeout: 30000 },
+  );
+  return response.data;
 }
