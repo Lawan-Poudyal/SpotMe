@@ -1,130 +1,68 @@
-from fastapi import APIRouter, UploadFile, File
-from app.core.insightface_client import app
-from app.services.similarity import cosine_similarity
-import cv2
-import numpy as np
+import asyncio
+from fastapi import APIRouter
+from concurrent.futures import ThreadPoolExecutor
+from app.models.schemas import (
+    PhotoBatchRequest, PhotoBatchResponse, PhotoResult, 
+    SelfieRequest, SelfieResponse
+)
+from app.services.detector import download_image, detect_face
+from app.services.embedding import extract_embeddings
 
 router = APIRouter()
+# Thread pool for CPU-bound face detection 
+executor = ThreadPoolExecutor(max_workers=4)
 
-@router.get("/health")
-def health():
-    return {
-        "status": "healthy"
-    }
+async def process_single_photo(photo, event_id:str) -> PhotoResult:
+    try:
+        img = await download_image(photo.url)
+    except Exception as e:
+        return PhotoResult(photo_id = photo.photo_id, status="error", error=f"download_failed: {str(e)}")
+
+    try:
+        loop = asyncio.get_event_loop()
+        faces = await loop.run_in_executor(executor, detect_faces, img)
+    except Exception as e:
+        return PhotoResult(photo_id=photo.photo_id, status="error", error=f"detection_failed: {str(e)}")
+
+    if not faces:
+        return PhotoResult(photo_id = photo.photo_id, status = "no_faces")
+
+    embeddings = extract_embeddings(faces)
+
+    return PhotoResult(photo_id = photo.photo_id, status = "success", faces=embeddings)
 
 
-@router.post("/detect")
-async def detect_faces(
-    image: UploadFile = File(...)
-):
+@router.post("/embeddings/photo-batch", response_model=PhotoBatchResponse)
+async def process_photo_batch(request: PhotoBatchRequest):
+    # process all photos in the batch concurrently
+    tasks = [process_single_photo(photo, request.event_id) for photo in request.photos]
+    results =  await asyncio.gather(*tasks)
+    return PhotoBatchResponse(event_id= request.event_id, results = results)
 
-    # Read uploaded file
-    contents = await image.read()
+@router.post("/embeddings/selfie", response_model=SelfieResponse)
+async def process_selfie(request: SelfieRequest):
+    try:
+        img = await download_image(request.url)
+    except Exception as e:
+        return SelfieResponse(participant_id = request.participant_id, status="error", error = f"download_failed: {str(e)}")
+    
+    try: 
+        loop = asyncio.get_event_loop()
+        faces = await loop.run_in_executor(executor, detect_face, img)
+    except Exception as e:
+        return SelfieResponse(participant_id = request.participant_id, status="error", error=f"detection_failed: {str(e)}")
+    
+    if not faces:
+        return SelfieResponse(participant_id = request.participant_id, status="no_faces", error = "no_faces_detected")
+    
+    if len(faces) >1:
+        # choosing largest face rather than failing
+        faces = [max(faces, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]))]
 
-    # Convert bytes -> numpy array
-    nparr = np.frombuffer(contents, np.uint8)
+    embedding = extract_embeddings(faces)[0]
 
-    # Decode image
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    if img is None:
-        return {
-            "error": "Invalid image"
-        }
-
-    # Detect faces
-    faces = app.get(img)
-
-    results = []
-
-    for face in faces:
-        results.append({
-            "bbox": face.bbox.tolist()
-        })
-
-    return {
-        "filename": image.filename,
-        "faces_detected": len(faces),
-        "faces": results
-    }
-
-@router.post("/search")
-async def search_face(
-    selfie: UploadFile = File(...),
-    image: UploadFile = File(...)
-):
-    selfie_bytes = await selfie.read()
-
-    selfie_np = np.frombuffer(
-        selfie_bytes,
-        np.uint8
-    )
-
-    selfie_img = cv2.imdecode(
-        selfie_np,
-        cv2.IMREAD_COLOR
-    )
-
-    selfie_faces = app.get(
-        selfie_img
-    )
-
-    if len(selfie_faces) == 0:
-        return {
-            "error": "No face found in selfie"
-        }
-
-    if len(selfie_faces) > 1:
-        return {
-            "error": "Multiple faces found in selfie"
-        }
-
-    query_embedding = selfie_faces[0].embedding
-
-    image_bytes = await image.read()
-
-    image_np = np.frombuffer(
-        image_bytes,
-        np.uint8
-    )
-
-    target_img = cv2.imdecode(
-        image_np,
-        cv2.IMREAD_COLOR
-    )
-
-    faces = app.get(
-        target_img
-    )
-
-    if len(faces) == 0:
-        return {
-            "found": False,
-            "message": "No faces found in target image"
-        }
-
-    threshold = 0.6
-
-    max_similarity = -1
-    matched_face_index = None
-
-    for idx, face in enumerate(faces):
-
-        similarity = cosine_similarity(
-            query_embedding,
-            face.embedding
-        )
-
-        if similarity > max_similarity:
-            max_similarity = similarity
-            matched_bbox = face.bbox.tolist()
-
-    return {
-        "found": bool(max_similarity > threshold),
-        "max_similarity": round(
-            float(max_similarity),
-            4
-        ),
-        "matched_bbox": matched_bbox,
-        "faces_detected": len(faces)
-    }
+    return SelfieResponse(
+        participant_id = request.participant_id,
+        status="success",
+        embeddings= embedding.embedding
+    )    
