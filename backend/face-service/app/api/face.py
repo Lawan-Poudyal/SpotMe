@@ -6,7 +6,7 @@ from app.models.schemas import (
     PhotoBatchRequest, PhotoBatchResponse, PhotoResult, PhotoInput,
     SelfieRequest, SelfieResponse
 )
-from app.services.detector import download_image, detect_face
+from app.services.detector import download_image, detect_faces
 from app.services.embedding import extract_embeddings
 
 router = APIRouter(dependencies=[Depends(verify_internal_key)])
@@ -50,12 +50,12 @@ async def process_selfie(request: SelfieRequest):
     
     try: 
         loop = asyncio.get_event_loop()
-        faces = await loop.run_in_executor(executor, detect_face, img)
+        faces = await loop.run_in_executor(executor, detect_faces, img)
     except Exception as e:
         return SelfieResponse(participant_id = request.participant_id, status="error", error=f"detection_failed: {str(e)}")
     
     if not faces:
-        return SelfieResponse(participant_id = request.participant_id, status="no_faces", error = "no_faces_detected")
+        return SelfieResponse(participant_id = request.participant_id, status="error", error = "no_faces_detected")
     
     if len(faces) >1:
         # choosing largest face rather than failing
@@ -66,7 +66,7 @@ async def process_selfie(request: SelfieRequest):
     return SelfieResponse(
         participant_id = request.participant_id,
         status="success",
-        embeddings= embedding.embedding
+        embedding= embedding.embedding
     )    
 
 @router.post("/embeddings/photo", response_model = PhotoResult)
