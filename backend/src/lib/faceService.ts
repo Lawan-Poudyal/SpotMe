@@ -25,7 +25,7 @@ export interface SelfieEmbeddingResponse {
   error?: string;
 }
 
-export function generateEmbeddings(
+export async function generateEmbeddings(
     photoId: string,
     photoURL: string
 ): Promise<PhotoEmbeddingResponse> {
