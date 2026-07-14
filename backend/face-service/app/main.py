@@ -1,4 +1,9 @@
 from fastapi import FastAPI
+
+from dotenv import load_dotenv
+load_dotenv()   
+
+
 from app.api.face import router as face_router
 
 from app.core.insightface_client import insightface_client
