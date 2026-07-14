@@ -2,7 +2,7 @@ import { prisma } from '../../config/prismaClientConfig';
 import { Job } from 'bullmq';
 import type { embeddingPaylod } from '../../types/generateReferenceEmbeddingsType';
 import { redis } from '../../config/redisConfig';
-import  {generateSelfieEmbedding} from '../../lib/faceServiceClient' ;
+import  {generateSelfieEmbedding} from '../../lib/faceService' ;
 
 export async function generatedEmbedding(job: Job<embeddingPaylod>) {
   const {photoURL , photoId , eventId , ownerId} = job.data
@@ -20,10 +20,10 @@ export async function generatedEmbedding(job: Job<embeddingPaylod>) {
 
   const result = await generateSelfieEmbedding(photoId, photoURL, eventId);
   
-  if (result.status === 'error' || !result.embedding) {
-      throw new Error(result.error || 'face_service_error');
-    }
-
+ if (result.status === 'error' || !result.embedding) {
+  console.log('Face service returned error:', JSON.stringify(result));
+  throw new Error(result.error || 'face_service_error');
+}
    await prisma.$executeRaw`
       UPDATE "reference_face"
       SET "status" = 'DONE', "embedding" = ${JSON.stringify(result.embedding)}::vector
