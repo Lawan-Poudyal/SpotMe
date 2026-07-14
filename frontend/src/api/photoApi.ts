@@ -12,9 +12,13 @@ export const photo = {
     return res.data.success;
   },
 
-  getReferencePhoto : async(eventId : string , userId : string)=>{
-      const res =await api.get(`/api/event/photo/single?eventId=${eventId}&userId=${userId}`)
-      return res.data.data ?? null;
-  }
+  getReferencePhoto: async (eventId: string, userId: string) => {
+    const res = await api.get(`/api/event/photo/single?eventId=${eventId}&userId=${userId}`);
+    return res.data.data ?? null;
+  },
 
+  getMyPhoto: async (eventId: string, userId: string) => {
+    const res = await api.get(`/api/event/photo/mine?eventId=${eventId}&userId=${userId}`);
+    return res.data.data ?? null;
+  },
 };
