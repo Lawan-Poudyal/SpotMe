@@ -14,6 +14,7 @@ router
   .get(getEventHandler)
   .put(updateEventHandler)
   .delete(deleteEventHandler);
+
 router.route('/:eventId').get(getEventById);
 
 export { router };
