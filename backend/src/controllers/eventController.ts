@@ -9,10 +9,18 @@ import { updateEventSchema } from '../validations/event.validation';
 import { getSession } from '../utils/getSessions';
 import { validateSchema } from '../utils/validateSchema';
 import { validateData } from '../utils/validateSyncSchema';
-import { createEventSchema , deleteEventSchema , getEventSchema } from '../validations/eventSync.validation';
-import type { CreateEventPayload , DeleteEventPayload , GetEventPayload } from '../validations/eventSync.validation';
+import {
+  createEventSchema,
+  deleteEventSchema,
+  getEventSchema,
+} from '../validations/eventSync.validation';
+import type {
+  CreateEventPayload,
+  DeleteEventPayload,
+  GetEventPayload,
+} from '../validations/eventSync.validation';
 import { eventSchema } from '../validations/upload.validation';
-import { isParticipant} from '../utils/isParticipant';
+import { isParticipant } from '../utils/isParticipant';
 import { redis } from '../config/redisConfig';
 import { mapPrismaError, ZodValidationError } from '../errors/dbError';
 
@@ -33,7 +41,7 @@ type getRequestPaylaodType = {
 type deleteRequestPayloadType = {
   ownerId: string;
   eventName: string;
-  eventId : string;
+  eventId: string;
 };
 
 type eventType = {
@@ -45,9 +53,12 @@ type eventType = {
 };
 
 const createEventHandler = async (req: Request, res: Response) => {
-    
   try {
-    let { eventName, ownerId } = validateData(createEventSchema , req.body , res) as CreateEventPayload 
+    let { eventName, ownerId } = validateData(
+      createEventSchema,
+      req.body,
+      res,
+    ) as CreateEventPayload;
 
     let event: eventType | null = null;
 
@@ -63,14 +74,12 @@ const createEventHandler = async (req: Request, res: Response) => {
 
         return newEvent;
       });
-    const cacheKey = `participation-${ownerId}-${event.id}`
-    await redis.set( cacheKey, "1"   , 'EX' ,  600 )    
-      
+      const cacheKey = `participation-${ownerId}-${event.id}`;
+      await redis.set(cacheKey, '1', 'EX', 600);
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
-	  throw mapPrismaError(dbError) 
-      }
-      else throw new AppError("Error")
+        throw mapPrismaError(dbError);
+      } else throw new AppError('Error');
     }
 
     return res.status(200).json({
@@ -79,9 +88,9 @@ const createEventHandler = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-	if(err instanceof ZodValidationError){
-	    return res.status(err.status).json(err.options)
-	}
+      if (err instanceof ZodValidationError) {
+        return res.status(err.status).json(err.options);
+      }
       return res.status(500).json({
         success: false,
         err: {
@@ -95,17 +104,17 @@ const createEventHandler = async (req: Request, res: Response) => {
 
 const getEventHandler = async (req: Request, res: Response) => {
   try {
-      // let's make it so that other users can't see someone else's events 
-    let { ownerId} = validateData(getEventSchema , req.query  , res) as GetEventPayload 
-    const {validatedUserId} = req
-    if(validatedUserId !== ownerId){
-	return res.status(403).json({
-	    success : false,
-	    err: {
-		name : 'Unauthorized action intended',
-		message :  "You can't get someone elses events"
-	    }
-	})
+    // let's make it so that other users can't see someone else's events
+    let { ownerId } = validateData(getEventSchema, req.query, res) as GetEventPayload;
+    const { validatedUserId } = req;
+    if (validatedUserId !== ownerId) {
+      return res.status(403).json({
+        success: false,
+        err: {
+          name: 'Unauthorized action intended',
+          message: "You can't get someone elses events",
+        },
+      });
     }
 
     let events: eventType[] = [];
@@ -163,9 +172,9 @@ const getEventHandler = async (req: Request, res: Response) => {
     });
   } catch (err: unknown) {
     if (err instanceof Error) {
-	if(err instanceof ZodValidationError){
-	    return res.status(err.status).json(err.options)
-	}
+      if (err instanceof ZodValidationError) {
+        return res.status(err.status).json(err.options);
+      }
       return res.status(500).json({
         success: false,
         err: {
@@ -179,12 +188,12 @@ const getEventHandler = async (req: Request, res: Response) => {
 const getEventById = asyncHandler(async (req: Request, res: Response) => {
   const session = await getSession(req.headers as HeadersInit);
   if (!session) throw new UnauthorizedError();
-  const {validatedUserId} = req
+  const { validatedUserId } = req;
   const { eventId } = validateSchema(eventSchema, req.params);
-  const hasParticipated = await isParticipant(eventId , validatedUserId)
-  
-  if(!hasParticipated) {
-      throw new ForbiddenError("Event")
+  const hasParticipated = await isParticipant(eventId, validatedUserId);
+
+  if (!hasParticipated) {
+    throw new ForbiddenError('Event');
   }
   const event = await prisma.event.findUnique({
     where: {
@@ -204,11 +213,11 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
           height: true,
         },
       },
-      participant : {
-	  select:{
-	      userId: true
-	  }
-      }
+      participant: {
+        select: {
+          userId: true,
+        },
+      },
     },
   });
   res.status(200).json({
@@ -217,40 +226,40 @@ const getEventById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const updateEventHandler = asyncHandler(async(req : Request , res : Response) => {
-    const {validatedUserId} = req
+const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
+  const { validatedUserId } = req;
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
-      const participated = await isParticipant(eventId , validatedUserId)
-      if(!participated) throw new ForbiddenError("Forbidden")
+    const participated = await isParticipant(eventId, validatedUserId);
+    if (!participated) throw new ForbiddenError();
     const data = await prisma.event.update({
-      where: { id: eventId, userId: validatedUserId },
+      where: { id: eventId },
       data: {
         ...(eventName !== undefined && { eventName }),
         ...(thumbNailId !== undefined && { thumbnailId: thumbNailId }),
       },
-      select :{
-	 id : true,
-	 userId : true,
-	 eventName : true,
-	 createdAt  :true,
-	 updatedAt : true,
-	 photoCount : true,
-	 thumbnail : {
-	     select : {
-		id : true,
-		photo_url : true,
-		width : true,
-		height : true
-	     }
-	 }
-      }
+      select: {
+        id: true,
+        userId: true,
+        eventName: true,
+        createdAt: true,
+        updatedAt: true,
+        photoCount: true,
+        thumbnail: {
+          select: {
+            id: true,
+            photo_url: true,
+            width: true,
+            height: true,
+          },
+        },
+      },
     });
-    if(!!thumbNailId){
-	console.log("Setting up the thumbnail Cache")
-	const cacheKey = `thumbnail-${eventId}`
-	await redis.set(cacheKey , thumbNailId as string , 'EX' , 600)
+    if (!!thumbNailId) {
+      console.log('Setting up the thumbnail Cache');
+      const cacheKey = `thumbnail-${eventId}`;
+      await redis.set(cacheKey, thumbNailId as string, 'EX', 600);
     }
     res.status(200).json({ success: true, data });
   } catch (err) {
@@ -259,22 +268,24 @@ const updateEventHandler = asyncHandler(async(req : Request , res : Response) =>
     }
     throw err;
   }
-
 });
-
 
 const deleteEventHandler = async (req: Request, res: Response) => {
   try {
-    const {validatedUserId} = req
-    let { ownerId, eventName , eventId} = validateData(deleteEventSchema , req.body , res) as DeleteEventPayload
-    if(validatedUserId !== ownerId){
-	return res.status(403).json({
-	    success : false,
-	    err: {
-		name : 'Unauthorized action intended',
-		message :  "You can't get someone elses events"
-	    }
-	})
+    const { validatedUserId } = req;
+    let { ownerId, eventName, eventId } = validateData(
+      deleteEventSchema,
+      req.body,
+      res,
+    ) as DeleteEventPayload;
+    if (validatedUserId !== ownerId) {
+      return res.status(403).json({
+        success: false,
+        err: {
+          name: 'Unauthorized action intended',
+          message: "You can't get someone elses events",
+        },
+      });
     }
     try {
       await prisma.event.delete({
@@ -306,9 +317,9 @@ const deleteEventHandler = async (req: Request, res: Response) => {
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
-	if(err instanceof ZodValidationError){
-	    return res.status(err.status).json(err.options)
-	}
+      if (err instanceof ZodValidationError) {
+        return res.status(err.status).json(err.options);
+      }
       console.log(err.name);
       console.log(err.stack);
       console.log(err.message);
