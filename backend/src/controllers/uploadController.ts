@@ -3,7 +3,11 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { cloudinary } from '../lib/cloudinary';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
-import { eventSchema, saveUploadSchema ,saveUploadSingularSchema} from '../validations/upload.validation';
+import {
+  eventSchema,
+  saveUploadSchema,
+  saveUploadSingularSchema,
+} from '../validations/upload.validation';
 import { embeddingQueue } from '../queues/generate_embeddings.queue';
 import { validateSchema } from '../utils/validateSchema';
 import { referenceEmbeddingQueue } from '../queues/generate_reference_embeddings.queue';
@@ -29,7 +33,7 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
-  const { eventId ,photos } = validateSchema(saveUploadSchema, req.body);
+  const { eventId, photos } = validateSchema(saveUploadSchema, req.body);
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
@@ -55,63 +59,69 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       console.error('Error in post-update cleanup:', err);
     });
 
-     await Promise.all(
+  await Promise.all(
     saved.map((photo) =>
       embeddingQueue.add('generate_embedding', {
-        photoId: photo.id, 
+        photoId: photo.id,
         photoURL: photo.photo_url,
-	eventId : eventId
-      })
-    )
+        eventId: eventId,
+      }),
+    ),
   ).catch((err) => {
     console.error('Error queuing embedding jobs:', err);
   });
 });
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId} = req
-  console.log("FROM The DEPTH OF HELL")
-  console.log(req.body.existingPhotoId)
-  const { userId , eventId, photo , existingPhotoId} = validateSchema(saveUploadSingularSchema, req.body);
-  if(userId !== validatedUserId) throw new ForbiddenError('You are forbidden')
+  const { validatedUserId } = req;
+  console.log('FROM The DEPTH OF HELL');
+  console.log(req.body.existingPhotoId);
+  const { userId, eventId, photo, existingPhotoId } = validateSchema(
+    saveUploadSingularSchema,
+    req.body,
+  );
+  if (userId !== validatedUserId) throw new ForbiddenError('You are forbidden');
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
   const saved = await prisma.referenceFace.upsert({
-      where : {
-	  eventId_userId : {
-	      eventId : eventId,
-	      userId : userId
-	  }
+    where: {
+      eventId_userId: {
+        eventId: eventId,
+        userId: userId,
       },
-      update : {
-	  photo_url : photo.url,
-	  public_id : photo.publicId
-      },
-      create : {
-	photo_url : photo.url,
-	eventId : eventId,
-	public_id : photo.publicId,
-	width : photo.width,
-	height : photo.height,
-	userId : userId,
-      }
+    },
+    update: {
+      photo_url: photo.url,
+      public_id: photo.publicId,
+    },
+    create: {
+      photo_url: photo.url,
+      eventId: eventId,
+      public_id: photo.publicId,
+      width: photo.width,
+      height: photo.height,
+      userId: userId,
+    },
   });
 
-
-  if(!existingPhotoId){
-      cloudinary.uploader.destroy(existingPhotoId).catch((err)=> { console.error("Problem deleting the image")})
+  if (!existingPhotoId) {
+    cloudinary.uploader.destroy(existingPhotoId).catch((err) => {
+      console.error('Problem deleting the image');
+    });
   }
 
-  await referenceEmbeddingQueue.add('generate_reference_embeddings' , {
-      photoId : saved.id,
-      photoURL : saved.photo_url,
-      eventId : saved.eventId,
-      ownerId : saved.userId
-  }).catch((err)=>{
-      console.error(`The error is ${err}`)
-  })
+  await referenceEmbeddingQueue
+    .add('generate_reference_embeddings', {
+      photoId: saved.id,
+      photoURL: saved.photo_url,
+      eventId: saved.eventId,
+      ownerId: saved.userId,
+    })
+    .catch((err) => {
+      console.error(`The error is ${err}`);
+    });
 
   res.status(201).json({ success: true, data: saved });
 });
-export { signedUploadRequest, saveUploadRequest , saveUploadRequestSingular};
+export { signedUploadRequest, saveUploadRequest, saveUploadRequestSingular };
