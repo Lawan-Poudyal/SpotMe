@@ -441,7 +441,7 @@ export default function EventDetails() {
     // The id of whatever reference photo is currently on file for this
     // user/event, if any — passed along so the backend can replace it
     // instead of just inserting a second row.
-    const existingPhotoId = existingReferencePhoto?.id;
+    const existingPhotoId = existingReferencePhoto?.id || "29";
 
     if (referenceFile.source === 'local') {
       try {
