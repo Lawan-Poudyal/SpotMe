@@ -49,7 +49,8 @@ const getSingularPhotoHandler = asyncHandler(async (req: Request, res: Response)
 	photo_url : true,
 	public_id : true,
 	width : true,
-	height : true
+	height : true,
+  status: true,
     },
   });
   res.status(200).json({
