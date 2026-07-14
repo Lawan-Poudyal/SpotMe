@@ -21,7 +21,7 @@ export const saveUploadSchema = z.object({
       }),
     )
     .min(1)
-    .max(20),
+    .max(30),
 });
 
 export const saveUploadSingularSchema = z.object({
