@@ -2,9 +2,8 @@ import { prisma } from '../../config/prismaClientConfig';
 import { Job } from 'bullmq';
 import type { embeddingPaylod } from '../../types/generateEmbeddingsType';
 import { redis } from '../../config/redisConfig';
-import  {generateEmbeddings} from '../../lib/faceServiceClient';
+import  {generateEmbeddings} from "../../lib/faceService";
 import {randomUUID} from 'crypto';
-import { stringify } from 'querystring';
 
 export async function generatedEmbedding(job: Job<embeddingPaylod>) {
   const {photoURL , photoId , eventId} = job.data
@@ -36,14 +35,14 @@ export async function generatedEmbedding(job: Job<embeddingPaylod>) {
             ${photoId},
             ${face.face_index},
             ${JSON.stringify(face.embedding)}::vector,
-            ${JSON,stringify(face.bbox)}::jsonb,
+            ${JSON.stringify(face.bbox)}::jsonb,
             ${face.det_score}
             )
         `;
       }
 
       await tx.photo.update({
-        where: ( id: photoId),
+        where: { id: photoId},
         data: {status: 'DONE', statusUpdatedAt: new Date()},
       });
     });

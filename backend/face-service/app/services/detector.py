@@ -18,7 +18,7 @@ async def download_image(url: str ) -> np.ndarray:
     
     return img
 
-def detect_face(img : np.ndarray, min_score: float = MIN_DET_SCORE):
+def detect_faces(img : np.ndarray, min_score: float = MIN_DET_SCORE):
     app = insightface_client.get_app()
     faces = app.get(img)
 
