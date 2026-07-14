@@ -11,10 +11,14 @@ import {
 import { embeddingQueue } from '../queues/generate_embeddings.queue';
 import { validateSchema } from '../utils/validateSchema';
 import { referenceEmbeddingQueue } from '../queues/generate_reference_embeddings.queue';
+import { isParticipant } from '../utils/isParticipant';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
+  const { eventId } = validateSchema(eventSchema, req.query);
+
+  if (!isParticipant(eventId, req.validatedUserId)) throw new ForbiddenError();
+
   const timestamp = Math.floor(Date.now() / 1000);
-  const eventId = req.eventId;
   const folderName = `SpotMe/events/${eventId}/photos`;
   const params = { timestamp, folder: folderName };
   const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);
@@ -34,6 +38,9 @@ const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => 
 const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
   const { eventId, photos } = validateSchema(saveUploadSchema, req.body);
+
+  if (!isParticipant(eventId, validatedUserId)) throw new ForbiddenError();
+
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
@@ -74,13 +81,14 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
-  console.log('FROM The DEPTH OF HELL');
   console.log(req.body.existingPhotoId);
   const { userId, eventId, photo, existingPhotoId } = validateSchema(
     saveUploadSingularSchema,
     req.body,
   );
-  if (userId !== validatedUserId) throw new ForbiddenError('You are forbidden');
+
+  if (!isParticipant(eventId, validatedUserId)) throw new ForbiddenError();
+
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event) throw new NotFoundError(`Event with id "${eventId}" not found`);
 
