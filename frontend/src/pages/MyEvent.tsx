@@ -50,13 +50,13 @@ export default function MyEvents({ userId }: MyEventsProps) {
     e.eventName.toLowerCase().includes(search.toLowerCase()),
   );
 
+  console.log(filteredCreated);
+  console.log(filteredJoined);
   const showCreated = activeTab === 'all' || activeTab === 'created';
   const showJoined = activeTab === 'all' || activeTab === 'joined';
 
   const isEmpty =
-    (showCreated ? filteredCreated.length : 0) +
-      (showJoined ? filteredJoined.length : 0) ===
-    0;
+    (showCreated ? filteredCreated.length : 0) + (showJoined ? filteredJoined.length : 0) === 0;
 
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto bg-[#1C1C1E]">
@@ -162,13 +162,13 @@ export default function MyEvents({ userId }: MyEventsProps) {
               {filteredCreated.map((event) => (
                 <EventCard
                   key={event.id}
-                  id={event.id}
                   name={event.eventName}
                   createdAt={String(event.createdAt)}
                   imageCount={Math.max(0, event.photoCount ?? 0)}
                   badge="Created"
                   badgeColor="orange"
                   accentColor="#F97316"
+                  thumbnail={event.thumbnail?.photo_url}
                   onClick={() => navigate(`/dashboard/event/${event.id}`, { state: event })}
                 />
               ))}
@@ -193,12 +193,12 @@ export default function MyEvents({ userId }: MyEventsProps) {
               {filteredJoined.map((event) => (
                 <EventCard
                   key={event.id}
-                  id={event.id}
                   name={event.eventName}
                   createdAt={String(event.createdAt)}
                   imageCount={Math.max(0, event.photoCount ?? 0)}
                   badge="Joined"
-                  badgeColor="sky"
+                  badgeColor="blue"
+                  thumbnail={event.thumbnail?.photo_url}
                   accentColor="#0EA5E9"
                   onClick={() => navigate(`/dashboard/event/${event.id}`, { state: event })}
                 />
@@ -242,17 +242,17 @@ export default function MyEvents({ userId }: MyEventsProps) {
 }
 
 /* ─── Event Card ─── */
-type EventCardProps = {
-  id: string;
+interface EventCardProps {
   name: string;
   createdAt: string;
   imageCount: number;
-  badge: 'Created' | 'Joined';
-  badgeColor: 'orange' | 'sky';
+  badge: string;
+  badgeColor: 'orange' | 'blue';
   accentColor: string;
   organizer?: string;
-  onClick?: () => void;
-};
+  thumbnail?: string;
+  onClick: () => void;
+}
 
 function EventCard({
   name,
@@ -262,6 +262,7 @@ function EventCard({
   badgeColor,
   accentColor,
   organizer,
+  thumbnail,
   onClick,
 }: EventCardProps) {
   const badgeClasses =
@@ -278,12 +279,20 @@ function EventCard({
       className="group bg-[#2C2C2E] border border-white/8 rounded-2xl p-4 hover:border-white/20 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-4"
     >
       {/* Color swatch / avatar */}
-      <div
-        className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-lg font-bold"
-        style={{ background: accentColor }}
-      >
-        {name.charAt(0).toUpperCase()}
-      </div>
+      {thumbnail ? (
+        <img
+          src={thumbnail}
+          alt={name}
+          className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+        />
+      ) : (
+        <div
+          className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center text-white text-lg font-bold"
+          style={{ background: accentColor }}
+        >
+          {name.charAt(0).toUpperCase()}
+        </div>
+      )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">

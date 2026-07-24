@@ -1,19 +1,20 @@
 import React from 'react';
-import { Modal, Box, Typography, Button, Fade, Backdrop } from '@mui/material';
+import { Modal, Box, Typography, Button, Fade, Backdrop, CircularProgress } from '@mui/material';
 import type { Dispatch, SetStateAction } from 'react';
 import type { eventType } from '../types/eventType';
-import { useState } from 'react';
 import { useDeleteEvent } from '../hooks/eventHooks';
 
-const style = {
+// Unified modal container styling
+const modalContainerStyle = {
   position: 'absolute' as const,
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: '#FFFFFF', // Hard-coded white background
-  borderRadius: 4,
-  boxShadow: '0px 10px 40px rgba(0,0,0,0.12)',
+  width: { xs: '90%', sm: 400 }, // Responsive width (accounts for mobile screens!)
+  backgroundColor: '#0a0a0a',
+  border: '1px solid #2a2a2a',
+  borderRadius: '12px',
+  boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.5)',
   outline: 'none',
   overflow: 'hidden',
 };
@@ -39,9 +40,14 @@ const DeleteEventModal: React.FC<Props> = ({
   setIsErrorOpen,
   eventId,
   eventName,
-  userId
+  userId,
 }) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // 1. If useDeleteEvent returns a TanStack/React Query mutation, we can get isLoading directly from it:
+  // const deleteEventMutation = useDeleteEvent(...)
+  // const isLoading = deleteEventMutation.isLoading // or isPending depending on your version
+
+  // Sticking to local state since your custom hook uses setIsLoading internally:
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const deleteEvent = useDeleteEvent(
     eventName,
@@ -55,95 +61,141 @@ const DeleteEventModal: React.FC<Props> = ({
   );
 
   const handleDelete = async () => {
-    deleteEvent.mutate();
     onClose();
+
+    deleteEvent.mutate();
   };
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={isLoading ? undefined : onClose} // Prevent accidental close while deleting
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
       slotProps={{
         backdrop: {
           timeout: 500,
-          sx: { backgroundColor: 'rgba(0, 0, 0, 0.6)' },
+          sx: { backgroundColor: 'rgba(0, 0, 0, 0.75)' },
         },
       }}
+      aria-labelledby="delete-event-title"
+      aria-describedby="delete-event-description"
     >
       <Fade in={open}>
-        <Box sx={style}>
-          {/* Header Section */}
-          <Box
-            sx={{
-              backgroundColor: '#585289',
-              px: 3,
-              py: 2.5,
-              textAlign: 'center',
-            }}
-          >
-            <Typography variant="h5" sx={{ color: '#FFFFFF', fontWeight: '700' }}>
+        <Box sx={modalContainerStyle}>
+          {/* Header Panel */}
+          <Box sx={{ px: 4, pt: 4, pb: 2 }}>
+            <Typography
+              id="delete-event-title"
+              variant="h2"
+              sx={{
+                color: '#FFFFFF',
+                fontWeight: 600,
+                fontSize: '1.25rem',
+                fontFamily: 'Inter, system-ui, sans-serif',
+              }}
+            >
               Delete Event
             </Typography>
           </Box>
 
           {/* Content Section */}
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="body1" sx={{ mb: 1, color: '#5f6368', fontWeight: 500 }}>
+          <Box id="delete-event-description" sx={{ px: 4, pb: 4, pt: 1 }}>
+            {/* Main warning question label */}
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 1,
+                color: '#888888',
+                fontSize: '0.875rem',
+                fontFamily: 'Inter, system-ui, sans-serif',
+              }}
+            >
               Are you sure you want to delete
             </Typography>
 
-            <Typography variant="h6" sx={{ mb: 3, color: '#1a1a1a', fontWeight: '700' }}>
+            {/* Highlighted Event Name String */}
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 1.5,
+                color: '#FFFFFF',
+                fontWeight: 600,
+                fontSize: '1.1rem',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                wordBreak: 'break-word',
+              }}
+            >
               "{eventName || 'this event'}"?
             </Typography>
 
+            {/* Warning Subtext */}
             <Typography
               variant="caption"
-              sx={{ display: 'block', mb: 4, color: '#d32f2f', fontWeight: 600 }}
+              sx={{
+                display: 'block',
+                mb: 4,
+                color: '#E8572A',
+                fontWeight: 500,
+                fontSize: '0.75rem',
+                fontFamily: 'Inter, system-ui, sans-serif',
+              }}
             >
               This action cannot be undone.
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 1.5 }}>
+            {/* Actions Footer Layout */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 variant="outlined"
                 onClick={onClose}
+                disabled={isLoading}
                 sx={{
                   flex: 1,
-                  py: 1.2,
-                  borderRadius: 2,
+                  height: '38px',
+                  borderRadius: '8px',
                   textTransform: 'none',
                   fontWeight: 600,
-                  borderColor: '#585289',
-                  color: '#585289',
+                  fontSize: '0.875rem',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  borderColor: '#2a2a2a',
+                  color: '#888888',
                   '&:hover': {
-                    backgroundColor: '#f3f2f8',
-                    borderColor: '#585289',
+                    borderColor: '#3a3a3a',
+                    backgroundColor: '#1a1a1a',
+                    color: '#ffffff',
                   },
                 }}
               >
                 Keep it
               </Button>
+
               <Button
                 variant="contained"
                 onClick={handleDelete}
                 disabled={isLoading}
                 disableElevation
+                startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : null}
                 sx={{
                   flex: 1,
-                  py: 1.2,
-                  borderRadius: 2,
+                  height: '38px',
+                  borderRadius: '8px',
                   textTransform: 'none',
                   fontWeight: 600,
-                  backgroundColor: '#d32f2f', // Red for danger
+                  fontSize: '0.875rem',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  backgroundColor: '#E8572A',
                   color: '#FFFFFF',
                   '&:hover': {
-                    backgroundColor: '#b71c1c',
+                    backgroundColor: '#d14e25',
+                  },
+                  '&.Mui-disabled': {
+                    backgroundColor: '#d14e25',
+                    color: 'rgba(255, 255, 255, 0.6)',
                   },
                 }}
               >
-                Delete
+                {isLoading ? 'Deleting...' : 'Delete'}
               </Button>
             </Box>
           </Box>

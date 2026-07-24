@@ -18,9 +18,8 @@ import {
 } from '@mui/material';
 import { downloadPhoto } from '../utility/downloadImages';
 import type { Photo } from '../types/photoType';
-import { updateEvent } from '../api/eventApi';
 import { queryClient } from '../config/tanstack';
-import { useUpdateEvent, useUpdateThumbnail } from '../hooks/eventHooks';
+import { useUpdateThumbnail } from '../hooks/eventHooks';
 import type { zuContextType } from '../context/zuContext';
 import { useProfile } from '../context/zuContext';
 import { useEvents } from '../hooks/eventHooks';

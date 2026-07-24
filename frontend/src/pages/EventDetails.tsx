@@ -22,6 +22,7 @@ import { fileUploads } from '../api/fileUploadApi';
 import { useProfile } from '../context/zuContext';
 import type { zuContextType } from '../context/zuContext';
 import { io } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
 import { Users } from 'lucide-react'; // new icon for the button
@@ -101,16 +102,18 @@ export default function EventDetails() {
 
   // ── Existing reference photo — lifted up from FindMeTab so its photo_id
   // is available here, where the upload calls actually happen ──
-  const {
-    data: existingReferencePhoto,
-    isLoading: isExistingReferenceLoading,
-  } = useQuery<ReferencePhoto | undefined>({
+  const { data: existingReferencePhoto, isLoading: isExistingReferenceLoading } = useQuery<
+    ReferencePhoto | undefined
+  >({
     queryKey: ['referencePhoto', id, userId],
     queryFn: () => photo.getReferencePhoto(id!, String(userId)),
     enabled: !!id && !!userId,
   });
 
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  // Socket instance is kept in state (not just a ref) so that passing it
+  // down as a prop actually reaches children once the connection exists —
+  // a ref's `.current` mutation doesn't trigger a re-render/re-prop-pass.
+  const [socket, setSocket] = useState<Socket | null>(null);
   const pendingDriveSocketRef = useRef<Set<string>>(new Set());
   const anyDriveSuccessRef = useRef<boolean>(false);
   const pendingReferenceSocketRef = useRef<Set<string>>(new Set());
@@ -121,13 +124,13 @@ export default function EventDetails() {
   const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SERVER_BASE_URL, {
+    const socketInstance = io(import.meta.env.VITE_SERVER_BASE_URL, {
       auth: { userId },
     });
-    socketRef.current = socket;
+    setSocket(socketInstance);
 
     // Gallery drive-upload completion events
-    socket.on('image_news', (data: dataType) => {
+    socketInstance.on('image_news', (data: dataType) => {
       const { success, driveFileId } = data;
 
       setFiles((prev) =>
@@ -156,13 +159,17 @@ export default function EventDetails() {
 
     // Reference-photo (selfie) drive-upload completion events — separate
     // channel so it never gets mixed up with gallery upload progress
-    socket.on('find_me_image', (data: dataType) => {
-	console.log("The image from this side has been processed")
+    socketInstance.on('find_me_image', (data: dataType) => {
+      console.log('The image from this side has been processed');
       const { success, driveFileId } = data;
 
       setReferenceFile((prev) => {
         if (!prev || prev.driveFileId !== driveFileId) return prev;
-        return { ...prev, status: success ? 'done' : 'error', progress: success ? 100 : prev.progress };
+        return {
+          ...prev,
+          status: success ? 'done' : 'error',
+          progress: success ? 100 : prev.progress,
+        };
       });
 
       pendingReferenceSocketRef.current.delete(driveFileId);
@@ -178,9 +185,10 @@ export default function EventDetails() {
     });
 
     return () => {
-      socket.off('image_news');
-      socket.off('find_me_image');
-      socket.disconnect();
+      socketInstance.off('image_news');
+      socketInstance.off('find_me_image');
+      socketInstance.disconnect();
+      setSocket(null);
     };
   }, [userId]);
 
@@ -350,7 +358,7 @@ export default function EventDetails() {
         ownerId: String(userId),
         accessToken,
         driveFileIds,
-        setIsUploading: () => { },
+        setIsUploading: () => {},
         setErrorTitle,
         setSubErrorTitle,
         setIsErrorOpen,
@@ -441,7 +449,7 @@ export default function EventDetails() {
     // The id of whatever reference photo is currently on file for this
     // user/event, if any — passed along so the backend can replace it
     // instead of just inserting a second row.
-    const existingPhotoId = existingReferencePhoto?.id;
+    const existingPhotoId = existingReferencePhoto?.id || '29';
 
     if (referenceFile.source === 'local') {
       try {
@@ -461,14 +469,19 @@ export default function EventDetails() {
         setReferenceFile((prev) => (prev ? { ...prev, progress: 70 } : prev));
 
         // NEW route (different table than the gallery's saveUpload)
-	console.log("Here from the frontend section")
-	console.log(existingPhotoId)
-        await fileUploads.saveSingleUpload(id!, String(userId), {
-          url: res.secure_url,
-          publicId: res.public_id,
-          width: res.width,
-          height: res.height,
-        },existingPhotoId as string);
+        console.log('Here from the frontend section');
+        console.log(existingPhotoId);
+        await fileUploads.saveSingleUpload(
+          id!,
+          String(userId),
+          {
+            url: res.secure_url,
+            publicId: res.public_id,
+            width: res.width,
+            height: res.height,
+          },
+          existingPhotoId as string,
+        );
 
         setReferenceFile((prev) => (prev ? { ...prev, status: 'done', progress: 100 } : prev));
         queryClient.invalidateQueries({ queryKey: ['referencePhoto', id, userId] });
@@ -497,8 +510,8 @@ export default function EventDetails() {
       ownerId: String(userId),
       accessToken: referenceAccessToken,
       driveFileId,
-      existingPhotoId : String(existingPhotoId),
-      setIsUploading: () => { },
+      existingPhotoId: String(existingPhotoId),
+      setIsUploading: () => {},
       setErrorTitle,
       setSubErrorTitle,
       setIsErrorOpen,
@@ -520,7 +533,7 @@ export default function EventDetails() {
     onSuccess: (data) => {
       queryClient.setQueryData(['inviteLink', id], data.token ?? null);
       if (data.token) {
-        const inviteLinkUrl = `${data.token}`;
+        const inviteLinkUrl = `${window.location.origin}/join/${data.token}`;
         navigator.clipboard.writeText(inviteLinkUrl);
       }
       setIsCopied(true);
@@ -620,9 +633,10 @@ export default function EventDetails() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-4 px-4 text-sm font-medium border-b-2 transition
-                  ${activeTab === tab.id
-                    ? 'border-[#F97316] text-[#F97316]'
-                    : 'border-transparent text-white/50 hover:text-white/80'
+                  ${
+                    activeTab === tab.id
+                      ? 'border-[#F97316] text-[#F97316]'
+                      : 'border-transparent text-white/50 hover:text-white/80'
                   }`}
               >
                 {tab.icon}
@@ -638,6 +652,7 @@ export default function EventDetails() {
         {activeTab === 'findme' && (
           <FindMeTab
             event={event}
+            socket={socket}
             existingReferencePhoto={existingReferencePhoto}
             isExistingReferenceLoading={isExistingReferenceLoading}
             referenceFile={referenceFile}
@@ -696,10 +711,11 @@ function ActionButton({
 }) {
   return (
     <button
-      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all focus:outline-none ${primary
-        ? 'bg-white text-black font-medium hover:bg-white/90'
-        : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/5'
-        }`}
+      className={`flex items-center cursor-pointer gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all focus:outline-none ${
+        primary
+          ? 'bg-white text-black font-medium hover:bg-white/90'
+          : 'border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-white/5'
+      }`}
       onClick={onClick}
     >
       {icon}

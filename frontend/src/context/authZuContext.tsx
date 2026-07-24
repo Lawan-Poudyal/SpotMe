@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { TailSpin } from 'react-loader-spinner';
 import type { zuContextType } from './zuContext';
 import { useProfile } from './zuContext';
 import type { UserContextPayloadType } from '../types/userContextType';
 import { authClient } from '../utility/auth-client';
+import { SwitchCamera } from 'lucide-react';
 
 type propType = {
   children: ReactNode;
@@ -36,7 +36,6 @@ export default function AuthContext({ children }: propType) {
         if (data.data !== null) {
           toSetPayload.loggedIn = true;
         }
-        console.log(toSetPayload);
         setProfile(toSetPayload);
         setIsLoading(false);
       })
@@ -46,5 +45,12 @@ export default function AuthContext({ children }: propType) {
       });
   }, []);
 
-  return <>{isLoading ? <TailSpin /> : children}</>;
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-black">
+        <SwitchCamera className="h-12 w-12 text-white animate-pulse" />
+      </div>
+    );
+  }
+  return <>{children}</>;
 }

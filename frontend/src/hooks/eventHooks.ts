@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { addEvent, updateEvent, getEvent, deleteEvent } from '../api/eventApi';
 import { ApiError } from '../error/requestPayloadError';
 import type { eventType } from '../types/eventType';
+
 export function useEvents(userId: string) {
   return useQuery<eventType[]>({
     queryKey: ['events'],
@@ -14,11 +15,11 @@ export function useEvents(userId: string) {
 }
 
 type updateThumbnailType = {
-    thumbnailId : string;
-    photo_url : string;
-    width : number | null;
-    height : number | null ;
-}
+  thumbnailId: string;
+  photo_url: string;
+  width: number | null;
+  height: number | null;
+};
 
 export function useUpdateEvent(
   currentName: string,
@@ -33,32 +34,34 @@ export function useUpdateEvent(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (eventName: string) => updateEvent(eventName, eventId, undefined , setIsLoading),
-    onMutate : async(eventName : string)=>{
-	await queryClient.cancelQueries({queryKey : ['events']})
-	const previous = queryClient.getQueryData(['events'])
-	
-	queryClient.setQueryData(['events'] , (old :eventType[])=>
-	    old ? old.map((item)=> {
-		if (item.id !== eventId) return item;
-		else{
-		    return {...item , eventName :eventName }
-		}
-	    }) : []
-	)
+    mutationFn: (eventName: string) => updateEvent(eventName, eventId, undefined, setIsLoading),
+    onMutate: async (eventName: string) => {
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+      const previous = queryClient.getQueryData<eventType[]>(['events']);
 
-	return {previous}
+      queryClient.setQueryData<eventType[]>(['events'], (old) =>
+        old
+          ? old.map((item) => {
+              if (item.id !== eventId) return item;
+              return { ...item, eventName: eventName };
+            })
+          : [],
+      );
+
+      return { previous };
     },
-    onError: (err: unknown , eventName : string , context) => {
+    onError: (err: unknown, eventName: string, context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
-      queryClient.setQueryData(['events'] , context?.previous)
+      if (context?.previous) {
+        queryClient.setQueryData(['events'], context.previous);
+      }
     },
     onSettled: () => {
-	queryClient.invalidateQueries({queryKey : ['events']})
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 }
@@ -75,34 +78,46 @@ export function useUpdateThumbnail(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({thumbnailId , photo_url , width , height} : updateThumbnailType) => updateEvent(currentName, eventId, thumbnailId , setIsLoading),
-    onMutate : async({thumbnailId , photo_url , width , height} : updateThumbnailType) =>{
-	await queryClient.cancelQueries({queryKey : ['events']})
-	const previous = queryClient.getQueryData(['events'])
+    mutationFn: ({ thumbnailId, photo_url, width, height }: updateThumbnailType) =>
+      updateEvent(currentName, eventId, thumbnailId, setIsLoading),
+    onMutate: async ({ thumbnailId, photo_url, width, height }: updateThumbnailType) => {
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+      const previous = queryClient.getQueryData<eventType[]>(['events']);
 
-	queryClient.setQueryData(['events'], (old : eventType[])=>
-	    old ? old.map(item =>{ 
-		if (item.id !== eventId) return item;
-		else{
-		    return {...item , thumbnail : {id : thumbnailId , photo_url : photo_url , width : width , height : height}}
-		}
-	    }) : []
-	)
-	return {previous}
+      queryClient.setQueryData<eventType[]>(['events'], (old) =>
+        old
+          ? old.map((item) => {
+              if (item.id !== eventId) return item;
+              return {
+                ...item,
+                thumbnail: {
+                  id: thumbnailId,
+                  photo_url: photo_url,
+                  width: width,
+                  height: height,
+                },
+              };
+            })
+          : [],
+      );
+      return { previous };
     },
-    onError: (err: unknown , unusable , context) => {
+    onError: (err: unknown, _variables: updateThumbnailType, context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
-      queryClient.setQueryData(['events'] , context?.previous)
+      if (context?.previous) {
+        queryClient.setQueryData(['events'], context.previous);
+      }
     },
-    onSettled : ()=>{
-	queryClient.invalidateQueries({queryKey : ['events']})
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
   });
 }
+
 export function useCreateEvent(
   eventName: string,
   events: eventType[],
@@ -114,17 +129,58 @@ export function useCreateEvent(
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<eventType | undefined, unknown, void, { previous?: eventType[] }>({
     mutationFn: () => addEvent(eventName, userId, setIsLoading),
-    onSuccess: (newEventsList: eventType[]) => {
-      queryClient.setQueryData(['events'], [...events, newEventsList]);
+
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+      const previous = queryClient.getQueryData<eventType[]>(['events']);
+
+      const tempId = `temp-${Date.now()}`;
+      const optimisticEvent: eventType = {
+        id: tempId,
+        eventName: eventName,
+        userId: userId,
+        thumbnail: null,
+        photoCount: 0,
+      };
+
+      queryClient.setQueryData<eventType[]>(['events'], (old) => {
+        const currentList = old || events;
+        return [...currentList, optimisticEvent];
+      });
+
+      return { previous };
     },
-    onError: (err: unknown) => {
+
+    onSuccess: (newAddedEvent: eventType | undefined) => {
+      if (!newAddedEvent) {
+        queryClient.setQueryData<eventType[]>(['events'], (old) =>
+          (old || []).filter((item) => !item.id.toString().startsWith('temp-')),
+        );
+        return;
+      }
+
+      queryClient.setQueryData<eventType[]>(['events'], (old) => {
+        const currentList = (old || []).filter((item) => !item.id.toString().startsWith('temp-'));
+        return [...currentList, newAddedEvent];
+      });
+    },
+
+    onError: (err: unknown, _variables: void, context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
+
+      if (context?.previous) {
+        queryClient.setQueryData(['events'], context.previous);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 }
@@ -133,7 +189,7 @@ export function useDeleteEvent(
   eventName: string,
   events: eventType[],
   userId: string,
-  eventId : string,
+  eventId: string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
   setTitleError: Dispatch<SetStateAction<string>>,
   setSubTitleError: Dispatch<SetStateAction<string>>,
@@ -142,25 +198,30 @@ export function useDeleteEvent(
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => deleteEvent(eventName, userId , eventId, setIsLoading),
-    onMutate:async()=>{
-	await queryClient.cancelQueries({queryKey : ['events']})
-	const previous = queryClient.getQueryData(['events'])
-	queryClient.setQueryData(['events'] , (old : eventType[])=>
-				 old ? old.filter(item => item.eventName !== eventName) : []
-				)
-	return {previous}
-    } ,
-    onError: (err: unknown , arg : undefined  , context) => {
+    mutationFn: () => deleteEvent(eventName, userId, eventId, setIsLoading),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+      const previous = queryClient.getQueryData<eventType[]>(['events']);
+
+      // Filter out deleted event using either ID (preferred) or name
+      queryClient.setQueryData<eventType[]>(['events'], (old) =>
+        old ? old.filter((item) => item.id !== eventId && item.eventName !== eventName) : [],
+      );
+
+      return { previous };
+    },
+    onError: (err: unknown, _variables: void, context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
-      queryClient.setQueryData(['events'] , context?.previous)
+      if (context?.previous) {
+        queryClient.setQueryData(['events'], context.previous);
+      }
     },
-    onSettled : ()=>{
-	queryClient.invalidateQueries({queryKey : ['events']})
-    }
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
   });
 }
