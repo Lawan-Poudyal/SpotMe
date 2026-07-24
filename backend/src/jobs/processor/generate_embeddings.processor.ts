@@ -17,7 +17,7 @@ export async function generatedEmbedding(job: Job<embeddingPaylod>) {
 	      retry_count : {increment : 1}
 	  }
       })
-      const generatedEmbeddings = await generateEmbeddings(photoId , photoURL)
+      const generatedEmbeddings = await generateEmbeddings(photoId , photoURL) //fastapi , embeddgin
       await prisma.$executeRaw` UPDATE "photo"
 	  SET "status" = 'DONE', "embedding" = ${generatedEmbeddings}::vector
 	  WHERE "id" = ${photoId}`
