@@ -4,7 +4,7 @@ node_modules
 
 src/src/generated/prisma
 
-env
+.env.test
 .venv
 
 # Python
