@@ -169,7 +169,7 @@ def plot_roc(genuine, impostor, out_path):
     order = np.argsort(fpr_list)
     fpr_sorted = np.array(fpr_list)[order]
     tpr_sorted = np.array(tpr_list)[order]
-    auc = np.trapz(tpr_sorted, fpr_sorted)
+    auc = np.trapezoid(tpr_sorted, fpr_sorted)
  
     plt.figure(figsize=(5.5, 5.5))
     plt.plot(fpr_sorted, tpr_sorted, label=f"ROC (AUC = {auc:.4f})", color="#1f77b4")
