@@ -182,4 +182,36 @@ def plot_roc(genuine, impostor, out_path):
     plt.savefig(out_path, dpi=150)
     print(f"Saved ROC curve to {out_path} (AUC = {auc:.4f})")
     return auc
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data", type=str, default="eval_dataset",
+                         help="Path to eval_dataset/ folder")
+    parser.add_argument("--threshold", type=float, default=0.5,
+                         help="Deployed app threshold to report accuracy at")
+    args = parser.parse_args()
  
+    data_dir = Path(args.data)
+    app = load_model()
+ 
+    genuine, impostor = build_score_lists(app, data_dir)
+ 
+    print(f"\nCollected {len(genuine)} genuine pairs and {len(impostor)} impostor pairs.")
+    if len(genuine) == 0 or len(impostor) == 0:
+        print("Not enough data to compute meaningful metrics. "
+              "Add more labeled photos/people and try again.")
+        return
+ 
+    deployed = metrics_at_threshold(genuine, impostor, args.threshold)
+    print_metrics(deployed, "At deployed app threshold")
+ 
+    best = find_best_threshold(genuine, impostor)
+    print_metrics(best, "At empirically best threshold")
+ 
+    plot_distribution(genuine, impostor, "similarity_distribution.png")
+    plot_roc(genuine, impostor, "roc_curve.png")
+ 
+ 
+if __name__ == "__main__":
+    main()
