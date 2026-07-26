@@ -35,3 +35,7 @@ def get_all_embeddings(app, img_path: str):
     faces = app.get(img)
     return [f.embedding for f in faces]
  
+def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    a, b = np.asarray(a), np.asarray(b)
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+ 
