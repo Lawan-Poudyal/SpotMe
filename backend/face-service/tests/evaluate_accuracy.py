@@ -139,4 +139,47 @@ def print_metrics(m, label):
     print(f"  FAR:       {m['far']*100:.2f}%  (impostor pairs wrongly accepted)")
     print(f"  FRR:       {m['frr']*100:.2f}%  (genuine pairs wrongly rejected)")
     print(f"  Confusion: TP={m['tp']} FN={m['fn']} TN={m['tn']} FP={m['fp']}")
+
+ 
+def plot_distribution(genuine, impostor, out_path):
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(7, 4.5))
+    plt.hist(genuine, bins=25, alpha=0.6, label="Genuine pairs", color="#2ca02c")
+    plt.hist(impostor, bins=25, alpha=0.6, label="Impostor pairs", color="#d62728")
+    plt.xlabel("Cosine similarity")
+    plt.ylabel("Count")
+    plt.title("Similarity score distribution: genuine vs. impostor pairs")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    print(f"\nSaved distribution plot to {out_path}")
+ 
+ 
+def plot_roc(genuine, impostor, out_path):
+    import matplotlib.pyplot as plt
+ 
+    thresholds = np.linspace(0.0, 1.0, 200)
+    tpr_list, fpr_list = [], []
+    for t in thresholds:
+        m = metrics_at_threshold(genuine, impostor, t)
+        tpr_list.append(m["recall"])          # true positive rate
+        fpr_list.append(m["far"])             # false positive rate
+ 
+    # AUC via trapezoidal rule (sort by fpr ascending)
+    order = np.argsort(fpr_list)
+    fpr_sorted = np.array(fpr_list)[order]
+    tpr_sorted = np.array(tpr_list)[order]
+    auc = np.trapz(tpr_sorted, fpr_sorted)
+ 
+    plt.figure(figsize=(5.5, 5.5))
+    plt.plot(fpr_sorted, tpr_sorted, label=f"ROC (AUC = {auc:.4f})", color="#1f77b4")
+    plt.plot([0, 1], [0, 1], linestyle="--", color="gray", label="Random guess")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150)
+    print(f"Saved ROC curve to {out_path} (AUC = {auc:.4f})")
+    return auc
  
