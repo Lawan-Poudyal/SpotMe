@@ -92,4 +92,51 @@ def build_score_lists(app, data_dir: Path):
               f"labeled present: {present_people}")
  
     return np.array(genuine_scores), np.array(impostor_scores)
+
+ 
+def metrics_at_threshold(genuine, impostor, threshold):
+    tp = np.sum(genuine >= threshold)
+    fn = np.sum(genuine < threshold)
+    tn = np.sum(impostor < threshold)
+    fp = np.sum(impostor >= threshold)
+ 
+    total = tp + fn + tn + fp
+    accuracy = (tp + tn) / total if total > 0 else 0.0
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    far = fp / (fp + tn) if (fp + tn) > 0 else 0.0  # false acceptance rate
+    frr = fn / (fn + tp) if (fn + tp) > 0 else 0.0  # false rejection rate
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+ 
+    return {
+        "threshold": threshold,
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "far": far,
+        "frr": frr,
+        "tp": int(tp), "fn": int(fn), "tn": int(tn), "fp": int(fp),
+    }
+
+
+ 
+def find_best_threshold(genuine, impostor, steps=200):
+    best = None
+    for t in np.linspace(0.0, 1.0, steps):
+        m = metrics_at_threshold(genuine, impostor, t)
+        if best is None or m["accuracy"] > best["accuracy"]:
+            best = m
+    return best
+ 
+ 
+def print_metrics(m, label):
+    print(f"\n--- {label} (threshold = {m['threshold']:.3f}) ---")
+    print(f"  Accuracy:  {m['accuracy']*100:.2f}%")
+    print(f"  Precision: {m['precision']*100:.2f}%")
+    print(f"  Recall:    {m['recall']*100:.2f}%")
+    print(f"  F1 score:  {m['f1']*100:.2f}%")
+    print(f"  FAR:       {m['far']*100:.2f}%  (impostor pairs wrongly accepted)")
+    print(f"  FRR:       {m['frr']*100:.2f}%  (genuine pairs wrongly rejected)")
+    print(f"  Confusion: TP={m['tp']} FN={m['fn']} TN={m['tn']} FP={m['fp']}")
  
