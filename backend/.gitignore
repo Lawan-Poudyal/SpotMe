@@ -19,3 +19,6 @@ env
 
 .venv
 __pycache__
+
+face-service/tests/eval_dataset/photos
+face-service/tests/eval_dataset/reference
