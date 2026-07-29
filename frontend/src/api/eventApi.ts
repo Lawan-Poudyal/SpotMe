@@ -10,6 +10,7 @@ const addEvent = async (
   setIsLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
   try {
+    console.log({ eventName });
     setIsLoading(true);
     const response = await api.post('/api/event', {
       eventName: eventName,
@@ -63,7 +64,7 @@ const updateEvent = async (
 const deleteEvent = async (
   eventName: string,
   userId: string,
-  eventId : string,
+  eventId: string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
   try {
@@ -72,7 +73,7 @@ const deleteEvent = async (
       data: {
         eventName: eventName,
         ownerId: userId,
-	eventId : eventId
+        eventId: eventId,
       },
     });
     return { success: true };

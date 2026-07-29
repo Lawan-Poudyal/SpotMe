@@ -122,7 +122,7 @@ export default function AddEvent({
         id: crypto.randomUUID(),
         eventName: trimmed,
         createdAt: new Date(),
-        numberOfImages: 0,
+        photoCount: 0,
       };
 
       setEvents([...events, newEvent]);
@@ -166,7 +166,10 @@ export default function AddEvent({
               <label className="text-white/70 text-sm font-medium">Event Name</label>
               <input
                 value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setEventName(e.target.value);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !isLoading) handleCreate();
                 }}

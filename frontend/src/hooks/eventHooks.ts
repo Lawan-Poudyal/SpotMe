@@ -119,7 +119,6 @@ export function useUpdateThumbnail(
 }
 
 export function useCreateEvent(
-  eventName: string,
   events: eventType[],
   userId: string,
   setIsLoading: Dispatch<SetStateAction<boolean>>,
@@ -128,31 +127,25 @@ export function useCreateEvent(
   setIsErrorOpen: Dispatch<SetStateAction<boolean>>,
 ) {
   const queryClient = useQueryClient();
-
-  return useMutation<eventType | undefined, unknown, void, { previous?: eventType[] }>({
-    mutationFn: () => addEvent(eventName, userId, setIsLoading),
-
-    onMutate: async () => {
+  return useMutation<eventType | undefined, unknown, string, { previous?: eventType[] }>({
+    mutationFn: (eventName: string) => addEvent(eventName, userId, setIsLoading),
+    onMutate: async (eventName) => {
       await queryClient.cancelQueries({ queryKey: ['events'] });
       const previous = queryClient.getQueryData<eventType[]>(['events']);
-
       const tempId = `temp-${Date.now()}`;
       const optimisticEvent: eventType = {
         id: tempId,
-        eventName: eventName,
-        userId: userId,
+        eventName,
+        userId,
         thumbnail: null,
         photoCount: 0,
       };
-
-      queryClient.setQueryData<eventType[]>(['events'], (old) => {
-        const currentList = old || events;
-        return [...currentList, optimisticEvent];
-      });
-
+      queryClient.setQueryData<eventType[]>(['events'], (old) => [
+        ...(old || events),
+        optimisticEvent,
+      ]);
       return { previous };
     },
-
     onSuccess: (newAddedEvent: eventType | undefined) => {
       if (!newAddedEvent) {
         queryClient.setQueryData<eventType[]>(['events'], (old) =>
@@ -166,14 +159,12 @@ export function useCreateEvent(
         return [...currentList, newAddedEvent];
       });
     },
-
-    onError: (err: unknown, _variables: void, context) => {
+    onError: (err: unknown, _variables: string, context) => {
       if (err instanceof ApiError) {
         setTitleError(err.payload?.name as string);
         setSubTitleError(err.payload?.message as string);
         setIsErrorOpen(true);
       }
-
       if (context?.previous) {
         queryClient.setQueryData(['events'], context.previous);
       }

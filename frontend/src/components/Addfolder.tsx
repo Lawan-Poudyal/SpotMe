@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { X, Loader2, CalendarPlus } from 'lucide-react';
 import type { eventType } from '../types/eventType';
 import { useCreateEvent } from '../hooks/eventHooks';
@@ -25,10 +25,8 @@ const AddEvent: React.FC<Props> = ({
 }) => {
   const [eventName, setEventName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const createEvent = useCreateEvent(
-    eventName,
     events,
     userId,
     setIsLoading,
@@ -37,27 +35,22 @@ const AddEvent: React.FC<Props> = ({
     setIsErrorOpen,
   );
 
-  // Focus input when opened
-  useEffect(() => {
-    if (open) {
-      setEventName('');
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [open]);
-
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
+
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
+
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [open, onClose]);
 
   if (!open) return null;
 
+  console.log({ eventName });
   const handleAdd = async () => {
+    console.log({ eventName });
     const conflictExists = handleNonUniqueEventNames(
       eventName,
       events,
@@ -67,17 +60,14 @@ const AddEvent: React.FC<Props> = ({
     );
     if (!conflictExists) return;
     if (!eventName.trim()) return;
-    createEvent.mutate();
+    createEvent.mutate(eventName);
     setEventName('');
     onClose();
   };
 
   return (
     /* Backdrop */
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       {/* Blur overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
@@ -112,7 +102,7 @@ const AddEvent: React.FC<Props> = ({
             Event Name
           </label>
           <input
-            ref={inputRef}
+            autoFocus
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
             onKeyDown={(e) => {
