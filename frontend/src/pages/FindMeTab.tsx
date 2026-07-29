@@ -165,11 +165,8 @@ export default function FindMeTab({
     enabled: hasReference && !!eventId && !!userId,
   });
 
-  const myPhotos: Photo[] = Array.isArray(myPhotosData)
-    ? myPhotosData
-    : myPhotosData
-      ? [myPhotosData]
-      : [];
+  const myPhotos: Photo[] = Array.isArray(myPhotosData) ? myPhotosData : [];
+  const myPhotosMessage: string | null = typeof myPhotosData === 'string' ? myPhotosData : null;
 
   // The backend computes the reference-photo embedding asynchronously
   // after upload. When it finishes, it publishes 'reference_embedding_news'
@@ -393,7 +390,8 @@ export default function FindMeTab({
             </>
           ) : (
             <p className="text-white/35 text-sm py-8 text-center">
-              We haven't matched any photos to you yet — check back once more photos are uploaded.
+              {myPhotosMessage ??
+                "We haven't matched any photos to you yet — check back once more photos are uploaded."}
             </p>
           )}
         </div>

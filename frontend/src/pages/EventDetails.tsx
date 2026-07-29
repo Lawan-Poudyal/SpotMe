@@ -604,7 +604,7 @@ export default function EventDetails() {
                 year: 'numeric',
               })}
             />
-            <MetaPill icon={<ImageIcon size={13} />} label={`${event.photoCount} photos`} />
+            <MetaPill icon={<ImageIcon size={13} />} label={`${event.potoCount} photos`} />
 
             <div className="w-px h-4 bg-white/10 mx-1" />
 

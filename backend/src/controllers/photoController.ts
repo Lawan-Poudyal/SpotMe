@@ -4,7 +4,11 @@ import { NotFoundError, ForbiddenError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { cloudinary } from '../lib/cloudinary';
 import { validateSchema } from '../utils/validateSchema';
-import { deletePhotoSchema, eventSchema , referencePhotoSchema} from '../validations/upload.validation';
+import {
+  deletePhotoSchema,
+  eventSchema,
+  referencePhotoSchema,
+} from '../validations/upload.validation';
 import { isThumbnail } from '../utils/isThumbnail';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
@@ -26,7 +30,6 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-
   res.status(200).json({
     success: true,
     data: photos,
@@ -34,23 +37,23 @@ const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getSingularPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId} = req
-  const { eventId  , userId} = validateSchema(referencePhotoSchema, req.query);
-  if(validatedUserId !== userId) throw new ForbiddenError(`You can't access it`)
+  const { validatedUserId } = req;
+  const { eventId, userId } = validateSchema(referencePhotoSchema, req.query);
+  if (validatedUserId !== userId) throw new ForbiddenError(`You can't access it`);
   const photo = await prisma.referenceFace.findUnique({
     where: {
-	eventId_userId : {
-	    eventId:eventId,
-	    userId : userId
-	}
+      eventId_userId: {
+        eventId: eventId,
+        userId: userId,
+      },
     },
     select: {
-	id  :true,
-	photo_url : true,
-	public_id : true,
-	width : true,
-	height : true,
-  status: true,
+      id: true,
+      photo_url: true,
+      public_id: true,
+      width: true,
+      height: true,
+      status: true,
     },
   });
   res.status(200).json({
@@ -59,13 +62,13 @@ const getSingularPhotoHandler = asyncHandler(async (req: Request, res: Response)
   });
 });
 const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
-  const {validatedUserId} = req
+  const { validatedUserId } = req;
 
-  const { photoId , eventId} = validateSchema(deletePhotoSchema, req.query);
+  const { photoId, eventId } = validateSchema(deletePhotoSchema, req.query);
 
-  const thumbnailed = await isThumbnail(eventId , photoId)
+  const thumbnailed = await isThumbnail(eventId, photoId);
 
-  if(thumbnailed) throw new ForbiddenError('User doesnot have permission to delete this photo')
+  if (thumbnailed) throw new ForbiddenError('User doesnot have permission to delete this photo');
 
   const dbPhoto = await prisma.photo.findUnique({
     where: { id: photoId },
@@ -144,4 +147,4 @@ const getMyPhotosHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { getPhotoHandler, deletePhotoHandler , getSingularPhotoHandler, getMyPhotosHandler};
+export { getPhotoHandler, deletePhotoHandler, getSingularPhotoHandler, getMyPhotosHandler };

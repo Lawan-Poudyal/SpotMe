@@ -19,6 +19,7 @@ export const photo = {
 
   getMyPhoto: async (eventId: string, userId: string) => {
     const res = await api.get(`/api/event/photo/mine?eventId=${eventId}&userId=${userId}`);
-    return res.data.data ?? null;
+    const data = res.data.data;
+    return Array.isArray(data) && data.length === 0 ? res.data.message : data;
   },
 };
