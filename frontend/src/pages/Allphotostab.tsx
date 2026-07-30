@@ -208,7 +208,13 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
             color="error"
             onClick={() => {
               const photoId = data[lightboxIndex]?.id;
-              if (photoId) deletePhoto.mutate(photoId);
+              if (photoId && event.thumbnail?.id !== photoId) {
+
+		deletePhoto.mutate(photoId);
+	      }
+	      else if(photoId && event.thumbnail?.id === photoId) {
+		  alert("can't delete the thumbnail")
+	      }
             }}
           >
             Delete

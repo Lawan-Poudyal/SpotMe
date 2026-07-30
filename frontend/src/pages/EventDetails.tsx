@@ -27,6 +27,7 @@ import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
 import { Users } from 'lucide-react'; // new icon for the button
 import ParticipantsDialog from '../components/ParticipantsDialog'; // adjust path
+import type { eventType } from '../types/eventType';
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -61,10 +62,12 @@ type dataType = {
   driveFileId: string;
 };
 
+
+
 export default function EventDetails() {
   const navigate = useNavigate();
   const { eventId: id } = useParams<{ eventId: string }>();
-  const { state: routerState } = useLocation();
+  const { state: routerState  } = useLocation() ;
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [isCopied, setIsCopied] = useState<boolean>(false);
@@ -83,8 +86,8 @@ export default function EventDetails() {
     enabled: !!id,
     staleTime: routerState ? 30_000 : 0,
   });
-
-  const { data: photos } = useQuery({
+    
+  useQuery({
     queryKey: ['photos', event?.id],
     queryFn: event?.id ? () => photo.getPhotos(event.id) : skipToken,
   });
