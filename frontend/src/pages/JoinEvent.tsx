@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link2, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -20,17 +20,26 @@ export default function JoinEvent() {
     error,
     reset: resetMutation,
   } = useMutation({
-    mutationFn: (inviteCode: string) => inviteLink.join(inviteCode),
+    mutationFn: (inviteCode: string) => {
+      console.log('[join] mutationFn called', inviteCode, Date.now());
+      return inviteLink.join(inviteCode);
+    },
+    onError: (err) => {
+      console.log('[join] onError', err);
+    },
     onSuccess: (data) => {
-      // Invalidate events cache so HomePage & MyEvent instantly show the joined event
+      console.log('[join] onSuccess', data);
       queryClient.invalidateQueries({ queryKey: ['events'] });
       navigate(`/dashboard/event/${data.eventId}`, { replace: true });
     },
   });
 
+  const hasAutoJoined = useRef(false);
+
   useEffect(() => {
     const urlCode = searchParams.get('code');
-    if (urlCode) {
+    if (urlCode && !hasAutoJoined.current) {
+      hasAutoJoined.current = true;
       joinEvent(urlCode);
     }
   }, []);

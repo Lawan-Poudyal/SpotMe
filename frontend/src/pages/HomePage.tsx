@@ -162,10 +162,18 @@ export default function HomePage() {
                 onClick={() =>
                   navigate(`/dashboard/event/${item.id}`, {
                     state: item,
-                  } )
+                  })
                 }
-                onEdit={item.userId === userId ? () => handleChangeEventButtonPressed(item.id, item.eventName) : undefined}
-                onRemove={item.userId === userId ? () => handleRemoveButtonPressed(item.id, item.eventName) : undefined}
+                onEdit={
+                  item.userId === userId
+                    ? () => handleChangeEventButtonPressed(item.id, item.eventName)
+                    : undefined
+                }
+                onRemove={
+                  item.userId === userId
+                    ? () => handleRemoveButtonPressed(item.id, item.eventName)
+                    : undefined
+                }
               />
             ))}
           </div>

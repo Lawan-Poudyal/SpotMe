@@ -14,30 +14,42 @@ const downloadPhoto = async (url: string, filename: string) => {
   URL.revokeObjectURL(blobURL);
 };
 
-const downloadBulk = async (activeTab : string , event: eventType , userId : string) => {
-  const zip = new JSZip();
-  let images: Photo[]
-  if(activeTab === "findme"){
-      images = queryClient.getQueryData(['myPhotos' , event.id , userId]) ?? []
-  }
-  else{
-      images = queryClient.getQueryData(['photos' , event.id ]) ?? []
-  }
+const getExtensionFromMime = (mimeType: string): string => {
+  const map: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/heic': 'heic',
+    'image/heif': 'heif',
+  };
+  return map[mimeType] ?? 'jpg';
+};
 
-  if(images.length ===0) return alert("There are not photos to download")
+const downloadBulk = async (activeTab: string, event: eventType, userId: string) => {
+  const zip = new JSZip();
+  let images: Photo[];
+  if (activeTab === 'findme') {
+    images = queryClient.getQueryData(['myPhotos', event.id, userId]) ?? [];
+  } else {
+    images = queryClient.getQueryData(['photos', event.id]) ?? [];
+  }
+  if (images.length === 0) return alert('There are not photos to download');
 
   await Promise.all(
     images.map(async (image: Photo) => {
       const res = await fetch(image.photo_url);
       const blob = await res.blob();
-      zip.file(image.id, blob);
+      const ext = getExtensionFromMime(blob.type);
+      zip.file(`${image.id}.${ext}`, blob);
     }),
   );
 
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(zipBlob);
-  a.download = (activeTab === "findme") ? `${event.eventName}-me.zip` : `${event.eventName}-all.zip`;
+  a.download = activeTab === 'findme' ? `${event.eventName}-me.zip` : `${event.eventName}-all.zip`;
   a.click();
 };
 

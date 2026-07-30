@@ -7,6 +7,7 @@ import {
   Upload,
   ScanFace,
   Download,
+  Loader2,
 } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query';
@@ -82,7 +83,7 @@ export default function EventDetails() {
   } = useQuery({
     queryKey: ['events', id],
     queryFn: () => getEventById(id!),
-    initialData: routerState,
+    initialData: routerState ?? undefined,
     enabled: !!id,
     staleTime: routerState ? 30_000 : 0,
   });
@@ -280,7 +281,7 @@ export default function EventDetails() {
           30,
         );
 
-        const uploads = localFiles.map((f) => {
+        const uploads = localFiles.map(async (f) => {
           const formData = new FormData();
           formData.append('file', f.file);
           formData.append('api_key', sig.apiKey);
@@ -544,18 +545,15 @@ export default function EventDetails() {
     },
   });
 
-  if (!id || eventLoading) {
+  if (eventLoading) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
-        <div className="text-center space-y-2">
-          <div className="w-6 h-6 border-2 border-t-transparent border-orange-500 rounded-full animate-spin mx-auto" />
-          <p className="text-white/40 text-sm">Loading event details...</p>
-        </div>
+        <Loader2 size={24} className="text-white/40" />
       </div>
     );
   }
 
-  if (isError || !event) {
+  if (isError || !event || !id) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
         <div className="text-center">
@@ -607,6 +605,7 @@ export default function EventDetails() {
                 year: 'numeric',
               })}
             />
+            <MetaPill icon={<ImageIcon size={13} />} label={`${event.photoCount} photos`} />
 
             <div className="w-px h-4 bg-white/10 mx-1" />
 
@@ -617,7 +616,7 @@ export default function EventDetails() {
             />
             <ActionButton
               icon={<Download size={14} />}
-              onClick={() => downloadBulk(activeTab , event, userId)}
+              onClick={() => downloadBulk(activeTab, event, userId)}
               label="Download"
             />
             <ActionButton
