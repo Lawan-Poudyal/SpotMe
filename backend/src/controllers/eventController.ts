@@ -2,6 +2,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { prisma } from '../config/prismaClientConfig';
 import type { Request, Response } from 'express';
 import dbErrorHash from '../utils/dbErrorHash';
+import { isOwner } from '../utils/isOwner';
 import type { dbErrorType } from '../utils/dbErrorHash';
 import { asyncHandler } from '../utils/asyncHandler';
 import { AppError, ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
@@ -231,7 +232,7 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
   const { eventId, eventName, thumbNailId } = validateSchema(updateEventSchema, req.body);
 
   try {
-    const participated = await isParticipant(eventId, validatedUserId);
+    const participated = await isOwner(eventId , eventName as string, validatedUserId);
     if (!participated) throw new ForbiddenError();
     const data = await prisma.event.update({
       where: { id: eventId },
