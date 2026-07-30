@@ -53,8 +53,6 @@ export default function HomePage() {
   const statsCards = [
     { label: 'Events', value: events.length, icon: <CalendarDays size={18} /> },
     { label: 'Photos', value: totalPhotos.toLocaleString(), icon: <ImageIcon size={18} /> },
-    { label: 'People', value: '2,085', icon: <Users size={18} /> },
-    { label: 'Searches', value: '847', icon: <SearchIcon size={18} /> },
   ];
 
   const filteredEvents = events.filter((event) =>
