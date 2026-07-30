@@ -233,6 +233,11 @@ const updateEventHandler = asyncHandler(async (req: Request, res: Response) => {
 
   try {
     const participated = await isOwner(eventId , eventName as string, validatedUserId);
+
+    console.log("FROM OWNER SECTION =====================")
+
+    console.log(participated)
+
     if (!participated) throw new ForbiddenError();
     const data = await prisma.event.update({
       where: { id: eventId },

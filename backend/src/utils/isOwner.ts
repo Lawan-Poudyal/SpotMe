@@ -14,19 +14,16 @@ export const isOwner: (eventId : string , eventName: string, userId: string) => 
   }
   let dbReadParticipation = (await prisma.event.findUnique({
     where: {
-	eventName_userId :{
-	    eventName : eventName,
-	    userId : userId
-	}
+	id : eventId
     },
     select: {
-      id: true,
+      userId : true
     },
-  })) as { id: string } | boolean;
+  })) as { id: string , userId : string } 
 
-  dbReadParticipation = !!dbReadParticipation;
-  await redis.set(cacheKey, dbReadParticipation ? '1' : '0', 'EX', dbReadParticipation ? 600 : 60);
+  let hasOwnership = dbReadParticipation?.userId
+  await redis.set(cacheKey, hasOwnership ? '1' : '0', 'EX', dbReadParticipation ? 600 : 60);
 
-  return dbReadParticipation;
+  return !!hasOwnership;
 };
 
