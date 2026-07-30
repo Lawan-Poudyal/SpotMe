@@ -11,6 +11,7 @@ import {
 import { embeddingQueue } from '../queues/generate_embeddings.queue';
 import { validateSchema } from '../utils/validateSchema';
 import { referenceEmbeddingQueue } from '../queues/generate_reference_embeddings.queue';
+import { getIO } from '../server';
 
 const signedUploadRequest = asyncHandler(async (req: Request, res: Response) => {
   const timestamp = Math.floor(Date.now() / 1000);
@@ -59,6 +60,10 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
       console.error('Error in post-update cleanup:', err);
     });
 
+  let {io , idMap} = getIO()
+
+  io.to(eventId).except(validatedUserId).emit("dynamic_image", saved);
+
   await Promise.all(
     saved.map((photo) =>
       embeddingQueue.add('generate_embedding', {
@@ -74,8 +79,6 @@ const saveUploadRequest = asyncHandler(async (req: Request, res: Response) => {
 
 const saveUploadRequestSingular = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
-  console.log('FROM The DEPTH OF HELL');
-  console.log(req.body.existingPhotoId);
   const { userId, eventId, photo, existingPhotoId } = validateSchema(
     saveUploadSingularSchema,
     req.body,

@@ -10,11 +10,22 @@ import type { toInjectType } from '../../types/inject.types';
 import { redis } from '../../config/redisConfig';
 import { embeddingQueue } from '../../queues/generate_embeddings.queue';
 
+type photoDataType = {
+    id : string,
+    uploaded_by : string,
+    event_id : string,
+    photo_url : string,
+    public_id : string,
+    height : number | null,
+    width : number | null 
+
+}
+
 export async function processPhotoJob(job: Job<requestPayloadSingular>) {
   try {
     console.log('processing');
     const { eventId, ownerId, accessToken, driveFileId } = job.data;
-    let photoURL: string;
+    let photoData : photoDataType;
     let photoId: string;
 
     const driveResponse = await axios.get(
@@ -42,7 +53,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
     })) as toInjectType;
 
     try {
-      [photoURL, photoId] = await prisma.$transaction(async (tx) => {
+       photoData = await prisma.$transaction(async (tx) => {
         let data = await tx.photo.create({
           data: {
             uploaded_by: ownerId,
@@ -52,6 +63,15 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
             height: Number(uploadResult.height),
             width: Number(uploadResult.width),
           },
+	  select : {
+	      uploaded_by : true,
+	      event_id : true,
+	      photo_url : true,
+	      public_id : true,
+	      height : true,
+	      width : true,
+	      id : true,
+	  }
         });
         await tx.event.update({
           where: { id: eventId },
@@ -59,7 +79,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
             photoCount: { increment: 1 },
           },
         });
-        return [data.photo_url, data.id];
+        return data; 
       });
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
@@ -99,13 +119,13 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
 
     await redis.publish(
       'image_news',
-      JSON.stringify({ userId: ownerId, success: true, driveFileId: driveFileId }),
+      JSON.stringify({ userId: ownerId, success: true, driveFileId: driveFileId  , photoData : photoData}),
     );
 
     await embeddingQueue
       .add('generate_embeddings', {
-        photoURL: photoURL,
-        photoId: photoId,
+        photoURL: photoData.photo_url,
+        photoId: photoData.public_id,
 	eventId : eventId,
       })
       .catch((err) => {

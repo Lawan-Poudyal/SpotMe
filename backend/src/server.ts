@@ -17,8 +17,9 @@ export const initSocket = async (server: any) => {
     const userId = socket.handshake.auth.userId;
     if (userId) {
       idMap.set(userId, socket.id);
+      socket.join(socket.handshake.auth.eventId)
     }
-    console.log('connected:', socket.id);
+    console.log('connected:', socket.id, "and joined: " , socket.handshake.auth.eventId );
   });
 
   await redisPubSubClient.subscribe(
@@ -29,8 +30,6 @@ export const initSocket = async (server: any) => {
   );
   redisPubSubClient.on('message', (channel, message) => {
     try {
-      console.log('Find me image is being called once again');
-
       if (channel === 'image_news' || channel === 'find_me_image') {
         const data = JSON.parse(message);
         const { userId, driveFileId, success } = data;
@@ -39,6 +38,14 @@ export const initSocket = async (server: any) => {
         if (!socketId) return; // user not connected on this instance
 
         io.to(socketId).emit(channel, { success, driveFileId });
+
+	if(channel === "image_news"){
+
+	    const {userId , driveFileId , success , photoData} = data;
+
+	    if(success) io.except(userId).to(photoData?.event_id).emit("dynamic_singular_image", photoData)
+
+	}
 
       } else if (channel === 'embedding_news') {
         const data = JSON.parse(message);
@@ -50,9 +57,6 @@ export const initSocket = async (server: any) => {
 
         const data = JSON.parse(message);
         const { success, photoId, eventId, ownerId } = data;
-	console.log("=============================================")
-        console.log('From the socket listener we have');
-        console.log({ success, photoId, eventId, ownerId });
 
 	const socketId = idMap.get(ownerId)
 

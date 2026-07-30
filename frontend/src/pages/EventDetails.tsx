@@ -29,6 +29,7 @@ import { photo } from '../api/photoApi';
 import { Users } from 'lucide-react'; // new icon for the button
 import ParticipantsDialog from '../components/ParticipantsDialog'; // adjst path
 import prepareForUpload from '../utility/imageCompression';
+import type { Photo } from '../types/photoType';
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -123,11 +124,11 @@ export default function EventDetails() {
 
   useEffect(() => {
     const socketInstance = io(import.meta.env.VITE_SERVER_BASE_URL, {
-      auth: { userId },
+      auth: { userId, eventId: event?.id },
     });
     setSocket(socketInstance);
 
-    // Gallery drive-upload completion events
+    // Gallery drive-upload completion events (uploader's own client only)
     socketInstance.on('image_news', (data: dataType) => {
       const { success, driveFileId } = data;
 
@@ -182,9 +183,65 @@ export default function EventDetails() {
       }
     });
 
+    // ── Live updates for OTHER participants in the event room ──────────
+    // Backend emits these to everyone in the event except the uploader,
+    // so every other connected client can patch its cache directly instead
+    // of waiting for a manual refetch.
+
+    // Local/Cloudinary batch uploads → saveUploadRequest → "dynamic_image"
+    // Payload is an array of freshly created Photo rows (has real ids).
+    socketInstance.on('dynamic_image', (newPhotos: Photo[]) => {
+      if (!Array.isArray(newPhotos) || newPhotos.length === 0) return;
+
+      queryClient.setQueryData(['photos', id], (old: Photo[] | undefined) => {
+        if (!old) return newPhotos;
+        const existingIds = new Set(old.map((p) => p.id));
+        const deduped = newPhotos.filter((p) => !existingIds.has(p.id));
+        return [...deduped, ...old];
+      });
+
+      queryClient.setQueryData(['events', id], (old: any) =>
+        old ? { ...old, photoCount: (old.photoCount ?? 0) + newPhotos.length } : old,
+      );
+
+      queryClient.setQueryData(['events'], (old: any[] | undefined) =>
+        old
+          ? old.map((e) =>
+              e.id === id ? { ...e, photoCount: (e.photoCount ?? 0) + newPhotos.length } : e,
+            )
+          : old,
+      );
+    });
+
+    // Google Drive worker uploads → processPhotoJob → "dynamic_singular_image"
+    // Backend select now includes a real `id`, so this is a straight
+    // cache patch — same shape as the "dynamic_image" handler above, just
+    // for a single photo instead of a batch.
+    socketInstance.on('dynamic_singular_image', (newPhoto: Photo) => {
+      if (!newPhoto) return;
+
+      queryClient.setQueryData(['photos', id], (old: Photo[] | undefined) => {
+        if (!old) return [newPhoto];
+        if (old.some((p) => p.id === newPhoto.id)) return old;
+        return [newPhoto, ...old];
+      });
+
+      queryClient.setQueryData(['events', id], (old: any) =>
+        old ? { ...old, photoCount: (old.photoCount ?? 0) + 1 } : old,
+      );
+
+      queryClient.setQueryData(['events'], (old: any[] | undefined) =>
+        old
+          ? old.map((e) => (e.id === id ? { ...e, photoCount: (e.photoCount ?? 0) + 1 } : e))
+          : old,
+      );
+    });
+
     return () => {
       socketInstance.off('image_news');
       socketInstance.off('find_me_image');
+      socketInstance.off('dynamic_image');
+      socketInstance.off('dynamic_singular_image');
       socketInstance.disconnect();
       setSocket(null);
     };
