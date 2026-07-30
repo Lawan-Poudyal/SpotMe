@@ -13,7 +13,6 @@ import AddEvent from '../components/Addfolder';
 import type { eventType } from '../types/eventType';
 import { useEvents } from '../hooks/eventHooks';
 import { useNavigate } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
 
 type MyEventsProps = {
   userId: string;

@@ -212,7 +212,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
                   height: data[lightboxIndex]?.height,
                 })
               }
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-[#E8572A] hover:bg-[#2a2a2a]/30 transition-all duration-200 disabled:opacity-40"
+              className={ (userId !== event.userId) ? `hidden` : `flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-[#E8572A] hover:bg-[#2a2a2a]/30 transition-all duration-200 disabled:opacity-40`}
               title="Set as Thumbnail"
             >
               <GalleryThumbnails size={18} strokeWidth={1.75} />
@@ -243,7 +243,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
                   setConfirmOpen(true);
                 }
               }}
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+              className={(userId !== event.userId && userId !== data[lightboxIndex]?.uploaded_by) ? "hidden" : "flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"}
               title="Delete photo"
             >
               <Trash2 size={18} strokeWidth={1.75} />
