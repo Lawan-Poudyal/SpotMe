@@ -39,17 +39,27 @@ export const initSocket = async (server: any) => {
         if (!socketId) return; // user not connected on this instance
 
         io.to(socketId).emit(channel, { success, driveFileId });
+
       } else if (channel === 'embedding_news') {
         const data = JSON.parse(message);
         const { success, photoId, eventId } = data;
-
         console.log('From the socket listener we have');
         console.log({ success, photoId, eventId });
+
       } else if (channel === 'reference_embedding_news') {
+
         const data = JSON.parse(message);
         const { success, photoId, eventId, ownerId } = data;
+	console.log("=============================================")
         console.log('From the socket listener we have');
         console.log({ success, photoId, eventId, ownerId });
+
+	const socketId = idMap.get(ownerId)
+
+	if(!socketId) return;
+
+	io.to(socketId).emit(channel , {success , photoId , eventId , ownerId})
+
       }
     } catch (err) {
       if (err instanceof Error) console.log(err.stack);

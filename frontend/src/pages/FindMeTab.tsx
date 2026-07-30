@@ -30,11 +30,7 @@ import { downloadPhoto } from '../utility/downloadImages';
 
 interface FindMeTabProps {
   event: eventType;
-  // Socket instance lives in EventDetails (it owns the connection); this
-  // tab just listens on it for reference-embedding completion events.
   socket: Socket | null;
-  // Lifted up to EventDetails so its photo_id is available where the
-  // upload calls actually happen — this tab just displays it now.
   existingReferencePhoto: ReferencePhoto | undefined;
   isExistingReferenceLoading: boolean;
   referenceFile: UploadFile | null;
@@ -57,8 +53,6 @@ interface FindMeTabProps {
   setIsErrorOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-// Payload shape the backend publishes on the 'reference_embedding_news'
-// pubsub channel (and relays over the socket under the same event name).
 interface ReferenceEmbeddingNews {
   success: boolean;
   photoId?: string;
