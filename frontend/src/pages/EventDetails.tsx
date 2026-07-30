@@ -7,6 +7,7 @@ import {
   Upload,
   ScanFace,
   Download,
+  Loader2,
 } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query';
@@ -79,11 +80,11 @@ export default function EventDetails() {
   } = useQuery({
     queryKey: ['events', id],
     queryFn: () => getEventById(id!),
-    initialData: routerState,
+    initialData: routerState ?? undefined,
     enabled: !!id,
     staleTime: routerState ? 30_000 : 0,
   });
-  console.log({ event });
+  console.log({ event, eventLoading, isError });
 
   const { data: photos } = useQuery({
     queryKey: ['photos', event?.id],
@@ -542,18 +543,15 @@ export default function EventDetails() {
     },
   });
 
-  if (!id || eventLoading) {
+  if (eventLoading) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
-        <div className="text-center space-y-2">
-          <div className="w-6 h-6 border-2 border-t-transparent border-orange-500 rounded-full animate-spin mx-auto" />
-          <p className="text-white/40 text-sm">Loading event details...</p>
-        </div>
+        <Loader2 size={24} className="text-white/40" />
       </div>
     );
   }
 
-  if (isError || !event) {
+  if (isError || !event || !id) {
     return (
       <div className="min-h-screen bg-[#1C1C1E] text-white flex items-center justify-center">
         <div className="text-center">
