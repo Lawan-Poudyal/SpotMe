@@ -2,7 +2,6 @@ import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { validateSchema } from '../utils/validateSchema';
 import { eventSchema } from '../validations/upload.validation';
-import { getSession } from '../utils/getSessions';
 import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { redis } from '../config/redisConfig';
@@ -11,17 +10,16 @@ import { inviteLinkSchema } from '../validations/inviteLink.validation';
 const inviteLinkHandler = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
   const { eventId } = validateSchema(eventSchema, req.params);
-  const event = await prisma.event.findUnique({
-    where: {
-      id: eventId,
-    },
-    select: { userId: true },
-  });
 
-  if (!event) throw new NotFoundError('Event');
-  if (validatedUserId !== event.userId) {
-    throw new ForbiddenError();
-  }
+  const participant = await prisma.participant.findUnique({
+    where: {
+      eventId_userId: {
+        eventId,
+        userId: validatedUserId,
+      },
+    },
+  });
+  if (!participant) throw new UnauthorizedError('You are not a participant of this event');
 
   let token = await redis.get(`invitelink:${eventId}`);
   const oneWeekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);

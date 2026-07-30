@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
 import type { Photo } from '../types/photoType';
+import { queryClient } from '../config/tanstack';
+import type { eventType } from '../types/eventType';
 
 const downloadPhoto = async (url: string, filename: string) => {
   const response = await fetch(url);
@@ -12,8 +14,17 @@ const downloadPhoto = async (url: string, filename: string) => {
   URL.revokeObjectURL(blobURL);
 };
 
-const downloadBulk = async (images: Photo[], eventName: string) => {
+const downloadBulk = async (activeTab : string , event: eventType , userId : string) => {
   const zip = new JSZip();
+  let images: Photo[]
+  if(activeTab === "findme"){
+      images = queryClient.getQueryData(['myPhotos' , event.id , userId]) ?? []
+  }
+  else{
+      images = queryClient.getQueryData(['photos' , event.id ]) ?? []
+  }
+
+  if(images.length ===0) return alert("There are not photos to download")
 
   await Promise.all(
     images.map(async (image: Photo) => {
@@ -26,7 +37,7 @@ const downloadBulk = async (images: Photo[], eventName: string) => {
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(zipBlob);
-  a.download = `${eventName}.zip`;
+  a.download = (activeTab === "findme") ? `${event.eventName}-me.zip` : `${event.eventName}-all.zip`;
   a.click();
 };
 

@@ -279,7 +279,7 @@ export default function EventDetails() {
           30,
         );
 
-        const uploads = localFiles.map((f) => {
+        const uploads = localFiles.map(async (f) => {
           const formData = new FormData();
           formData.append('file', f.file);
           formData.append('api_key', sig.apiKey);
@@ -614,7 +614,7 @@ export default function EventDetails() {
             />
             <ActionButton
               icon={<Download size={14} />}
-              onClick={() => downloadBulk(photos ?? [], event.eventName)}
+              onClick={() => downloadBulk(activeTab, event, userId)}
               label="Download"
             />
             <ActionButton
