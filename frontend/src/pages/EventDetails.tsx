@@ -10,7 +10,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { skipToken, useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import AllPhotosTab from './Allphotostab';
 import FindMeTab from './FindMeTab';
 import UploadTab from './Upload';
@@ -85,11 +85,6 @@ export default function EventDetails() {
     staleTime: routerState ? 30_000 : 0,
   });
   console.log({ event, eventLoading, isError });
-
-  const { data: photos } = useQuery({
-    queryKey: ['photos', event?.id],
-    queryFn: event?.id ? () => photo.getPhotos(event.id) : skipToken,
-  });
 
   // ── Gallery upload queue state — lives here so it survives tab switches ──
   const [files, setFiles] = useState<UploadFile[]>([]);
@@ -192,7 +187,7 @@ export default function EventDetails() {
       socketInstance.disconnect();
       setSocket(null);
     };
-  }, [userId]);
+  }, [id, userId]);
 
   // ── Gallery upload helpers (unchanged) ────────────────────────────────
 

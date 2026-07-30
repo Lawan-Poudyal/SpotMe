@@ -67,12 +67,12 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
         old ? old.filter((p) => p.id !== photoId) : [],
       );
 
-      queryClient.setQueryData(['events', event.id], (old: any) => {
+      queryClient.setQueryData(['events', event.id], (old: eventType) => {
         if (!old) return old;
         return { ...old, photoCount: Math.max(0, (old.photoCount ?? 0) - 1) };
       });
 
-      queryClient.setQueryData(['events'], (old: any[] | undefined) => {
+      queryClient.setQueryData(['events'], (old: eventType[] | undefined) => {
         if (!old) return [];
         return old.map((item) => {
           if (item.id !== event.id) return item;
