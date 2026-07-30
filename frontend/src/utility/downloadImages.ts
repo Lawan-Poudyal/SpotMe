@@ -37,7 +37,7 @@ const downloadBulk = async (activeTab : string , event: eventType , userId : str
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(zipBlob);
-  a.download = `${event.eventName}.zip`;
+  a.download = (activeTab === "findme") ? `${event.eventName}-me.zip` : `${event.eventName}-all.zip`;
   a.click();
 };
 
