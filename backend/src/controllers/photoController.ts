@@ -103,6 +103,52 @@ const deletePhotoHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const deleteThumbnailHandler = asyncHandler(async (req: Request, res: Response) => {
+  const { validatedUserId } = req;
+
+  const { photoId, eventId } = validateSchema(deletePhotoSchema, req.query);
+
+  const thumbnailed = await isThumbnail(eventId, photoId);
+
+  if (!thumbnailed) throw new NotFoundError(`The thumbnail can't be found`);
+
+  const dbPhoto = await prisma.photo.findUnique({
+    where: { id: photoId },
+    include: {
+      event: {
+        select: {
+          userId: true,
+          photoCount: true,
+        },
+      },
+    },
+  });
+
+  if (!dbPhoto) throw new NotFoundError('Photo');
+
+  const isUploader = dbPhoto.uploaded_by === validatedUserId;
+  const isEventOwner = dbPhoto.event?.userId === validatedUserId;
+  if (!isUploader && !isEventOwner) {
+    throw new ForbiddenError('User does not have permission to delete this photo');
+  }
+
+  const newPhotoCount = Math.max(0, (dbPhoto.event?.photoCount ?? 1) - 1);
+
+  await prisma.$transaction([
+    prisma.photo.delete({ where: { id: photoId } }),
+    prisma.event.update({
+      where: { id: dbPhoto.event_id },
+      data: { photoCount: newPhotoCount },
+    }),
+  ]);
+
+  res.status(200).json({ success: true, message: 'Photo deleted successfully' });
+
+  cloudinary.uploader.destroy(dbPhoto.public_id).catch((err) => {
+    console.error(`Failed to delete Cloudinary asset ${dbPhoto.public_id}:`, err);
+  });
+});
+
 const getMyPhotosHandler = asyncHandler(async (req: Request, res: Response) => {
   const { validatedUserId } = req;
   const { eventId, userId } = validateSchema(referencePhotoSchema, req.query);
@@ -143,4 +189,4 @@ const getMyPhotosHandler = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export { getPhotoHandler, deletePhotoHandler, getSingularPhotoHandler, getMyPhotosHandler };
+export { getPhotoHandler, deletePhotoHandler, getSingularPhotoHandler, getMyPhotosHandler, deleteThumbnailHandler };

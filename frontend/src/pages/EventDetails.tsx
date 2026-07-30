@@ -27,7 +27,7 @@ import type { Socket } from 'socket.io-client';
 import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
 import { Users } from 'lucide-react'; // new icon for the button
-import ParticipantsDialog from '../components/ParticipantsDialog'; // adjust path
+import ParticipantsDialog from '../components/ParticipantsDialog'; // adjst path
 
 type Tab = 'all' | 'findme' | 'upload';
 

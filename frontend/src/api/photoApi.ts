@@ -12,6 +12,11 @@ export const photo = {
     return res.data.success;
   },
 
+  deleteThumbnail: async (photoId: string, eventId: string) => {
+    const res = await api.delete(`/api/event/photo/thumbnailDelete?photoId=${photoId}&eventId=${eventId}`);
+    return res.data.success;
+  },
+
   getReferencePhoto: async (eventId: string, userId: string) => {
     const res = await api.get(`/api/event/photo/single?eventId=${eventId}&userId=${userId}`);
     return res.data.data ?? null;
