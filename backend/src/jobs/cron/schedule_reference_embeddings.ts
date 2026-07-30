@@ -2,7 +2,7 @@ import { prisma } from '../../config/prismaClientConfig';
 import { referenceEmbeddingQueue } from '../../queues/generate_reference_embeddings.queue';
 import cron  from 'node-cron' 
 
-cron.schedule('*/5 * * * * ' , async()=>{
+cron.schedule('*/1 * * * * ' , async()=>{
     console.log("CRON JOB INITIATED FOR UPLOAD FACE EMBEDDINGS <=========================>")
     const staleDate = new Date(Date.now() - 1 * 60 * 1000)
     const failed_photos = await prisma.referenceFace.findMany({
