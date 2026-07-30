@@ -101,8 +101,8 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
     },
   });
 
-  const mockDeleteThumbnail = useMutation({
-    mutationFn: (photoId: string) => photo.mockPhoto(photoId, event.id),
+  const deleteThumbnail = useMutation({
+    mutationFn: (photoId: string) => photo.deleteThumbnail(photoId, event.id),
     onMutate: async (photoId) => {
       await queryClient.cancelQueries({ queryKey: ['photos', event.id] });
       await queryClient.cancelQueries({ queryKey: ['events', event.id] });
@@ -291,10 +291,10 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
         onConfirm={() => {
           const photoId = data[lightboxIndex]?.id;
           if (photoId) {
-            mockDeleteThumbnail.mutate(photoId);
+            deleteThumbnail.mutate(photoId);
           }
         }}
-        isLoading={mockDeleteThumbnail.isPending}
+        isLoading={deleteThumbnail.isPending}
       />
     </div>
   );

@@ -12,22 +12,9 @@ export const photo = {
     return res.data.success;
   },
 
-  mockPhoto: async (photoId: string, _eventId: string) => {
-    return new Promise<{ success: boolean }>((resolve) => {
-      setTimeout(() => {
-	  console.log("Deleted")
-	  return resolve({ success: true })}, 300);
-    });
-
-  },
-
-  mockDeleteThumbnail: async (photoId: string, _eventId: string) => {
-    return new Promise<{ success: boolean }>((resolve) => {
-
-      setTimeout(() => {
-	  console.log("Deleted")
-	  return resolve({ success: true })}, 300);
-    });
+  deleteThumbnail: async (photoId: string, eventId: string) => {
+    const res = await api.delete(`/api/event/photo/thumbnailDelete?photoId=${photoId}&eventId=${eventId}`);
+    return res.data.success;
   },
 
   getReferencePhoto: async (eventId: string, userId: string) => {
