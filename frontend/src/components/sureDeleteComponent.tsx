@@ -22,12 +22,7 @@ type Props = {
   isLoading?: boolean;
 };
 
-const SureDeleteComponent: React.FC<Props> = ({
-  open,
-  onClose,
-  onConfirm,
-  isLoading = false,
-}) => {
+const SureDeleteComponent: React.FC<Props> = ({ open, onClose, onConfirm, isLoading = false }) => {
   return (
     <Modal
       open={open}

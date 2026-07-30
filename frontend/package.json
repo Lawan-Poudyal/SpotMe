@@ -19,6 +19,7 @@
     "axios": "^1.18.0",
     "better-auth": "^1.5.5",
     "browser-image-compression": "^2.0.2",
+    "date-fns": "^4.4.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.576.0",
     "react": "^19.2.0",
