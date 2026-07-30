@@ -604,7 +604,6 @@ export default function EventDetails() {
                 year: 'numeric',
               })}
             />
-            <MetaPill icon={<ImageIcon size={13} />} label={`${event.potoCount} photos`} />
 
             <div className="w-px h-4 bg-white/10 mx-1" />
 
@@ -615,7 +614,7 @@ export default function EventDetails() {
             />
             <ActionButton
               icon={<Download size={14} />}
-              onClick={() => downloadBulk(photos ?? [], event.eventName)}
+              onClick={() => downloadBulk(activeTab , event, userId)}
               label="Download"
             />
             <ActionButton
