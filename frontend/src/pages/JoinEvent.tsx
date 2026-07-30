@@ -3,6 +3,7 @@ import { Link2, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { inviteLink } from '../api/inviteLinkApi';
+import { isAxiosError } from 'axios';
 
 export default function JoinEvent() {
   const [searchParams] = useSearchParams();
@@ -42,7 +43,7 @@ export default function JoinEvent() {
       hasAutoJoined.current = true;
       joinEvent(urlCode);
     }
-  }, []);
+  }, [joinEvent, searchParams]);
 
   const handleJoin = () => {
     if (!code.trim() || isPending) return;
@@ -50,7 +51,8 @@ export default function JoinEvent() {
   };
 
   const errorMessage = isError
-    ? error?.response?.data?.message || error.message || 'Failed to join event'
+    ? (isAxiosError(error) ? error.response?.data?.message : error?.message) ||
+      'Failed to join event'
     : null;
 
   return (

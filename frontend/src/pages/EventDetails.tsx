@@ -10,7 +10,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { skipToken, useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import AllPhotosTab from './Allphotostab';
 import FindMeTab from './FindMeTab';
 import UploadTab from './Upload';
@@ -27,8 +27,7 @@ import type { Socket } from 'socket.io-client';
 import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
 import { Users } from 'lucide-react'; // new icon for the button
-import ParticipantsDialog from '../components/ParticipantsDialog'; // adjust path
-import type { eventType } from '../types/eventType';
+import ParticipantsDialog from '../components/ParticipantsDialog'; // adjst path
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -63,12 +62,10 @@ type dataType = {
   driveFileId: string;
 };
 
-
-
 export default function EventDetails() {
   const navigate = useNavigate();
   const { eventId: id } = useParams<{ eventId: string }>();
-  const { state: routerState  } = useLocation() ;
+  const { state: routerState } = useLocation();
 
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [isCopied, setIsCopied] = useState<boolean>(false);
@@ -87,11 +84,7 @@ export default function EventDetails() {
     enabled: !!id,
     staleTime: routerState ? 30_000 : 0,
   });
-    
-  useQuery({
-    queryKey: ['photos', event?.id],
-    queryFn: event?.id ? () => photo.getPhotos(event.id) : skipToken,
-  });
+  console.log({ event, eventLoading, isError });
 
   // ── Gallery upload queue state — lives here so it survives tab switches ──
   const [files, setFiles] = useState<UploadFile[]>([]);
@@ -194,7 +187,7 @@ export default function EventDetails() {
       socketInstance.disconnect();
       setSocket(null);
     };
-  }, [userId]);
+  }, [id, userId]);
 
   // ── Gallery upload helpers (unchanged) ────────────────────────────────
 

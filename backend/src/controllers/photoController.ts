@@ -4,11 +4,7 @@ import { NotFoundError, ForbiddenError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { cloudinary } from '../lib/cloudinary';
 import { validateSchema } from '../utils/validateSchema';
-import {
-  deletePhotoSchema,
-  eventSchema,
-  referencePhotoSchema,
-} from '../validations/upload.validation';
+import { deletePhotoSchema, referencePhotoSchema } from '../validations/upload.validation';
 import { isThumbnail } from '../utils/isThumbnail';
 
 const getPhotoHandler = asyncHandler(async (req: Request, res: Response) => {
@@ -166,7 +162,7 @@ const getMyPhotosHandler = asyncHandler(async (req: Request, res: Response) => {
 
   if (!referenceFace) throw new NotFoundError('Reference face');
   if (referenceFace.status !== 'DONE') {
-    return res.status(202).json({
+    res.status(202).json({
       success: true,
       message: 'Your reference photo is still processing, please check back shortly',
       data: [],

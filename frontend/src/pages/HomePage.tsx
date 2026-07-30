@@ -10,7 +10,7 @@ import { useProfile } from '../context/zuContext';
 import type { eventType } from '../types/eventType';
 import { useEvents } from '../hooks/eventHooks';
 
-import { CalendarDays, ImageIcon, Users, Search as SearchIcon, Plus } from 'lucide-react';
+import { CalendarDays, ImageIcon, Plus } from 'lucide-react';
 
 export default function HomePage() {
   const navigate = useNavigate();

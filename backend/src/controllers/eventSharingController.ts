@@ -2,7 +2,7 @@ import type { Response, Request } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { validateSchema } from '../utils/validateSchema';
 import { eventSchema } from '../validations/upload.validation';
-import { ForbiddenError, NotFoundError, UnauthorizedError } from '../errors/Error';
+import { NotFoundError, UnauthorizedError } from '../errors/Error';
 import { prisma } from '../config/prismaClientConfig';
 import { redis } from '../config/redisConfig';
 import { inviteLinkSchema } from '../validations/inviteLink.validation';

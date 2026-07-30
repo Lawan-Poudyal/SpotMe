@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ResponsiveAppBar from '../components/Navbar';
@@ -6,7 +6,7 @@ import type { SidebarSection } from '../components/Sidebar';
 import type { zuContextType } from '../context/zuContext';
 import { useProfile } from '../context/zuContext';
 
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
   const loggedIn = useProfile((s: zuContextType) => s.loggedIn);
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,18 +17,14 @@ const Dashboard: React.FC = () => {
     if (location.pathname.includes('joinevent')) return 'joinevent';
     return 'home';
   };
-
-  const [activeSection, setActiveSection] = useState<SidebarSection>(getSectionFromPath());
-
-  useEffect(() => {
-    setActiveSection(getSectionFromPath());
-  }, [location.pathname]);
+  const activeSection = getSectionFromPath();
 
   useEffect(() => {
     if (!loggedIn) {
       navigate('/signup', { replace: true });
     }
   }, [loggedIn, navigate]);
+
   return (
     <div className="flex flex-col h-screen bg-[#1C1C1E]">
       <ResponsiveAppBar onMenuClick={() => setMobileOpen((o) => !o)} />
@@ -38,7 +34,6 @@ const Dashboard: React.FC = () => {
           setMobileOpen={setMobileOpen}
           activeSection={activeSection}
           setActiveSection={(section) => {
-            setActiveSection(section);
             setMobileOpen(false);
             navigate(`/dashboard/${section}`);
           }}
