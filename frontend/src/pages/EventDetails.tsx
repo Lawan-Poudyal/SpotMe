@@ -28,6 +28,7 @@ import PopUpBox from '../components/PopupBox';
 import { photo } from '../api/photoApi';
 import { Users } from 'lucide-react'; // new icon for the button
 import ParticipantsDialog from '../components/ParticipantsDialog'; // adjst path
+import prepareForUpload from '../utility/imageCompression';
 
 type Tab = 'all' | 'findme' | 'upload';
 
@@ -275,8 +276,9 @@ export default function EventDetails() {
         );
 
         const uploads = localFiles.map(async (f) => {
+          const compressed = await prepareForUpload(f.file);
           const formData = new FormData();
-          formData.append('file', f.file);
+          formData.append('file', compressed);
           formData.append('api_key', sig.apiKey);
           formData.append('timestamp', sig.timestamp.toString());
           formData.append('signature', sig.signature);

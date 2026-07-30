@@ -48,12 +48,12 @@ export default function HomePage() {
     setIsChangeEventModalOpen(true);
   };
 
-  const totalPhotos = events.reduce((sum, item) => sum + Math.max(0, item.photoCount ?? 0), 0);
+  // const totalPhotos = events.reduce((sum, item) => sum + Math.max(0, item.photoCount ?? 0), 0);
 
-  const statsCards = [
-    { label: 'Events', value: events.length, icon: <CalendarDays size={18} /> },
-    { label: 'Photos', value: totalPhotos.toLocaleString(), icon: <ImageIcon size={18} /> },
-  ];
+  // const statsCards = [
+  //   { label: 'Events', value: events.length, icon: <CalendarDays size={18} /> },
+  //   { label: 'Photos', value: totalPhotos.toLocaleString(), icon: <ImageIcon size={18} /> },
+  // ];
 
   const filteredEvents = events.filter((event) =>
     event.eventName.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -115,15 +115,15 @@ export default function HomePage() {
         </div>
 
         {/* STATS */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          {statsCards.map((card) => (
-            <div key={card.label} className="rounded-3xl bg-[#232326] border border-white/5 p-5">
-              <div className="text-white/40 mb-3">{card.icon}</div>
-              <div className="text-3xl font-bold">{card.value}</div>
-              <div className="text-white/35 text-sm mt-1">{card.label}</div>
-            </div>
-          ))}
-        </div>
+        {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10"> */}
+        {/*   {statsCards.map((card) => ( */}
+        {/*     <div key={card.label} className="rounded-3xl bg-[#232326] border border-white/5 p-5"> */}
+        {/*       <div className="text-white/40 mb-3">{card.icon}</div> */}
+        {/*       <div className="text-3xl font-bold">{card.value}</div> */}
+        {/*       <div className="text-white/35 text-sm mt-1">{card.label}</div> */}
+        {/*     </div> */}
+        {/*   ))} */}
+        {/* </div> */}
 
         {/* TOP BAR */}
         <div className="flex flex-col md:flex-row gap-4 justify-between mb-8">

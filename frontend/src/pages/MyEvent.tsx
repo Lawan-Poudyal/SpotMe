@@ -3,7 +3,6 @@ import {
   CalendarDays,
   ImageIcon,
   XCircle,
-  Crown,
   Users,
   Clock,
   ChevronRight,
@@ -14,6 +13,7 @@ import AddEvent from '../components/Addfolder';
 import type { eventType } from '../types/eventType';
 import { useEvents } from '../hooks/eventHooks';
 import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 
 type MyEventsProps = {
   userId: string;
@@ -150,7 +150,6 @@ export default function MyEvents({ userId }: MyEventsProps) {
           <div className="mb-8">
             {activeTab === 'all' && (
               <div className="flex items-center gap-2 mb-4">
-                <Crown size={14} className="text-orange-400" />
                 <span className="text-white/50 text-xs font-semibold uppercase tracking-widest">
                   Created by you
                 </span>
@@ -181,7 +180,6 @@ export default function MyEvents({ userId }: MyEventsProps) {
           <div>
             {activeTab === 'all' && (
               <div className="flex items-center gap-2 mb-4">
-                <Users size={14} className="text-sky-400" />
                 <span className="text-white/50 text-xs font-semibold uppercase tracking-widest">
                   Joined
                 </span>
@@ -270,8 +268,9 @@ function EventCard({
       ? 'bg-orange-500/15 text-orange-400 border-orange-500/20'
       : 'bg-sky-500/15 text-sky-400 border-sky-500/20';
 
-  const daysAgo = Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000);
-  const timeLabel = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
+  const timeLabel = formatDistanceToNow(new Date(createdAt), {
+    addSuffix: true,
+  });
 
   return (
     <div
