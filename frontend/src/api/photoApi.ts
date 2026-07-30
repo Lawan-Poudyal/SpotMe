@@ -12,6 +12,24 @@ export const photo = {
     return res.data.success;
   },
 
+  mockPhoto: async (photoId: string, _eventId: string) => {
+    return new Promise<{ success: boolean }>((resolve) => {
+      setTimeout(() => {
+	  console.log("Deleted")
+	  return resolve({ success: true })}, 300);
+    });
+
+  },
+
+  mockDeleteThumbnail: async (photoId: string, _eventId: string) => {
+    return new Promise<{ success: boolean }>((resolve) => {
+
+      setTimeout(() => {
+	  console.log("Deleted")
+	  return resolve({ success: true })}, 300);
+    });
+  },
+
   getReferencePhoto: async (eventId: string, userId: string) => {
     const res = await api.get(`/api/event/photo/single?eventId=${eventId}&userId=${userId}`);
     return res.data.data ?? null;

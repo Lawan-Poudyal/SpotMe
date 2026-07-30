@@ -24,6 +24,8 @@ import type { zuContextType } from '../context/zuContext';
 import { useProfile } from '../context/zuContext';
 import { useEvents } from '../hooks/eventHooks';
 
+import SureDeleteComponent from '../components/sureDeleteComponent';
+
 interface AllPhotosTabProps {
   event: eventType;
 }
@@ -34,6 +36,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   const [subTitleError, setSubTitleError] = useState('');
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [sureDeleteOpen, setSureDeleteOpen] = useState(false);
   const [isUpdatingThumb, setIsUpdatingThumb] = useState(false);
   const userId = useProfile((s: zuContextType) => s.id);
   const { data: events = [] } = useEvents(userId) as { data: eventType[] };
@@ -81,6 +84,60 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
       });
 
       setConfirmOpen(false);
+      setLightboxIndex(-1);
+      return { previousPhotos, previousEventDetails, previousEventsList };
+    },
+    onError: (_err, _photoId, context) => {
+      if (context) {
+        queryClient.setQueryData(['photos', event.id], context.previousPhotos);
+        queryClient.setQueryData(['events', event.id], context.previousEventDetails);
+        queryClient.setQueryData(['events'], context.previousEventsList);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['photos', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+
+  const mockDeleteThumbnail = useMutation({
+    mutationFn: (photoId: string) => photo.mockPhoto(photoId, event.id),
+    onMutate: async (photoId) => {
+      await queryClient.cancelQueries({ queryKey: ['photos', event.id] });
+      await queryClient.cancelQueries({ queryKey: ['events', event.id] });
+      await queryClient.cancelQueries({ queryKey: ['events'] });
+
+      const previousPhotos = queryClient.getQueryData(['photos', event.id]);
+      const previousEventDetails = queryClient.getQueryData(['events', event.id]);
+      const previousEventsList = queryClient.getQueryData(['events']);
+
+      queryClient.setQueryData(['photos', event.id], (old: Photo[] | undefined) =>
+        old ? old.filter((p) => p.id !== photoId) : [],
+      );
+
+      queryClient.setQueryData(['events', event.id], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          photoCount: Math.max(0, (old.photoCount ?? 0) - 1),
+          thumbnail: old.thumbnail?.id === photoId ? null : old.thumbnail,
+        };
+      });
+
+      queryClient.setQueryData(['events'], (old: any[] | undefined) => {
+        if (!old) return [];
+        return old.map((item) => {
+          if (item.id !== event.id) return item;
+          return {
+            ...item,
+            photoCount: Math.max(0, (item.photoCount ?? 0) - 1),
+            thumbnail: item.thumbnail?.id === photoId ? null : item.thumbnail,
+          };
+        });
+      });
+
+      setSureDeleteOpen(false);
       setLightboxIndex(-1);
       return { previousPhotos, previousEventDetails, previousEventsList };
     },
@@ -176,7 +233,14 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
             <button
               key="delete"
-              onClick={() => setConfirmOpen(true)}
+              onClick={() => {
+                const currentPhotoId = data[lightboxIndex]?.id;
+                if (currentPhotoId && event.thumbnail?.id === currentPhotoId) {
+                  setSureDeleteOpen(true);
+                } else {
+                  setConfirmOpen(true);
+                }
+              }}
               className="flex items-center justify-center w-10 h-10 rounded-lg text-[#555555] hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
               title="Delete photo"
             >
@@ -209,18 +273,29 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
             onClick={() => {
               const photoId = data[lightboxIndex]?.id;
               if (photoId && event.thumbnail?.id !== photoId) {
-
-		deletePhoto.mutate(photoId);
-	      }
-	      else if(photoId && event.thumbnail?.id === photoId) {
-		  alert("can't delete the thumbnail")
-	      }
+                deletePhoto.mutate(photoId);
+              } else if (photoId && event.thumbnail?.id === photoId) {
+                setConfirmOpen(false);
+                setSureDeleteOpen(true);
+              }
             }}
           >
             Delete
           </Button>
         </DialogActions>
       </Dialog>
+
+      <SureDeleteComponent
+        open={sureDeleteOpen}
+        onClose={() => setSureDeleteOpen(false)}
+        onConfirm={() => {
+          const photoId = data[lightboxIndex]?.id;
+          if (photoId) {
+            mockDeleteThumbnail.mutate(photoId);
+          }
+        }}
+        isLoading={mockDeleteThumbnail.isPending}
+      />
     </div>
   );
 }
