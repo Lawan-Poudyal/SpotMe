@@ -83,6 +83,7 @@ export default function EventDetails() {
     enabled: !!id,
     staleTime: routerState ? 30_000 : 0,
   });
+  console.log({ event });
 
   const { data: photos } = useQuery({
     queryKey: ['photos', event?.id],
@@ -604,7 +605,7 @@ export default function EventDetails() {
                 year: 'numeric',
               })}
             />
-            <MetaPill icon={<ImageIcon size={13} />} label={`${event.potoCount} photos`} />
+            <MetaPill icon={<ImageIcon size={13} />} label={`${event.photoCount} photos`} />
 
             <div className="w-px h-4 bg-white/10 mx-1" />
 
