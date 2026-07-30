@@ -170,6 +170,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
   }
 
   const slides = data.map((p) => ({
+    uploader : p.uploaded_by,
     src: p.photo_url,
     width: p.width ?? 800,
     height: p.height ?? 600,
@@ -202,7 +203,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
           buttons: [
             <button
               key="Thumbnail"
-              disabled={isUpdatingThumb}
+              disabled={isUpdatingThumb || userId !== event.userId}
               onClick={() =>
                 updateThumbnail.mutate({
                   thumbnailId: data[lightboxIndex]?.id,
@@ -233,6 +234,7 @@ export default function AllPhotosTab({ event }: AllPhotosTabProps) {
 
             <button
               key="delete"
+	      disabled = {userId !== event.userId && userId !== data[lightboxIndex]?.uploaded_by}
               onClick={() => {
                 const currentPhotoId = data[lightboxIndex]?.id;
                 if (currentPhotoId && event.thumbnail?.id === currentPhotoId) {
