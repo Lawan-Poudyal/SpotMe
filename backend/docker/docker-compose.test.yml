@@ -1,6 +1,6 @@
 services:
   postgres-test:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     environment:
       POSTGRES_DB: spotme_test
       POSTGRES_PASSWORD: test

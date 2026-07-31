@@ -31,6 +31,11 @@ function formatDate(raw: Date | string): string {
   });
 }
 
+const optimizedImageUrl = (url: string, width = 400) =>
+  url.includes('res.cloudinary.com')
+    ? url.replace('/upload/', `/upload/f_auto,q_auto,w_${width},c_fill/`)
+    : url;
+
 const FolderCard: React.FC<FolderCardProps> = ({
   name,
   color,
@@ -43,7 +48,6 @@ const FolderCard: React.FC<FolderCardProps> = ({
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const resolvedColor = color ?? getColorForName(name);
-
   return (
     <div
       onClick={onClick}
@@ -60,10 +64,11 @@ const FolderCard: React.FC<FolderCardProps> = ({
     >
       {thumbNailUrl ? (
         <img
-          src={thumbNailUrl}
+          src={optimizedImageUrl(thumbNailUrl, 400)}
           alt={name}
           className="w-full object-cover"
           style={{ height: 100 }}
+          loading="lazy"
         />
       ) : (
         <div
@@ -73,7 +78,6 @@ const FolderCard: React.FC<FolderCardProps> = ({
           }}
         />
       )}
-
       <div className="flex flex-col justify-between flex-1 p-5 gap-3 bg-[#111111]">
         <div>
           <div className="flex items-center justify-between gap-2">
@@ -84,12 +88,10 @@ const FolderCard: React.FC<FolderCardProps> = ({
               </span>
             )}
           </div>
-
           <p className="text-[#888888] text-sm mt-1">
             {formatDate(createdAt)} • {numberOfImages.toLocaleString()} photos
           </p>
         </div>
-
         <div className="flex gap-2 mt-2">
           {onEdit && (
             <button
@@ -109,7 +111,6 @@ const FolderCard: React.FC<FolderCardProps> = ({
               Edit
             </button>
           )}
-
           {onRemove && (
             <button
               onClick={(e) => {
