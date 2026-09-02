@@ -12,7 +12,7 @@ import { referenceEmbeddingQueue } from '../../queues/generate_reference_embeddi
 export async function processPhotoJob(job: Job<requestPayloadSingular>) {
   try {
     console.log('processing reference photo');
-    const { eventId, ownerId, accessToken, driveFileId , existingPhotoId} = job.data;
+    const { eventId, ownerId, accessToken, driveFileId, existingPhotoId } = job.data;
     const driveResponse = await axios.get(
       `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
       {
@@ -22,7 +22,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
         },
       },
     );
-    const uploadResult = (await new Promise((resolve, reject) => {
+    const uploadResult = await new Promise<toInjectType>((resolve, reject) => {
       cloudinary.uploader
         .upload_chunked_stream(
           { resource_type: 'image', chunk_size: 5000000 },
@@ -30,50 +30,51 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
             if (error) {
               return reject(error);
             }
-            return resolve(uploadResult);
+            if (!uploadResult) {
+              return reject(new Error('Cloudinary upload failed: no result returned'));
+            }
+            return resolve(uploadResult as toInjectType);
           },
         )
         .end(driveResponse.data);
-    })) as toInjectType;
+    });
     try {
       let upsertData = await prisma.referenceFace.upsert({
-	  where : {
-	      eventId_userId : {
-		  eventId : eventId,
-		  userId : ownerId
-	      }
-	  },
-	  update : {
-	      photo_url : uploadResult.secure_url,
-	      public_id : uploadResult.public_id
-	  },
-	  create : {
-	    eventId : eventId,
-	    photo_url : uploadResult.secure_url,
-	    public_id : uploadResult.public_id,
-	    userId : ownerId,
-	    height : Number(uploadResult.height),
-	    width : Number(uploadResult.width)
-	  }
-      })
-
-
-      await referenceEmbeddingQueue.add('generate_reference_embeddings' , {
-	  photoId : upsertData.id,
-	  photoURL : upsertData.photo_url,
-	  eventId : upsertData.eventId,
-	  ownerId : upsertData.userId
-      }).catch((err)=>{
-	  console.error(`The error is ${err}`)
-      })
-      if(existingPhotoId){
-	cloudinary.uploader.destroy(existingPhotoId)
-	.catch((err) => {
-	console.error(`Failed to delete Cloudinary asset ${existingPhotoId}:`, err);
+        where: {
+          eventId_userId: {
+            eventId: eventId,
+            userId: ownerId,
+          },
+        },
+        update: {
+          photo_url: uploadResult.secure_url,
+          public_id: uploadResult.public_id,
+        },
+        create: {
+          eventId: eventId,
+          photo_url: uploadResult.secure_url,
+          public_id: uploadResult.public_id,
+          userId: ownerId,
+          height: Number(uploadResult.height),
+          width: Number(uploadResult.width),
+        },
       });
-      }
 
-      
+      await referenceEmbeddingQueue
+        .add('generate_reference_embeddings', {
+          photoId: upsertData.id,
+          photoURL: upsertData.photo_url,
+          eventId: upsertData.eventId,
+          ownerId: upsertData.userId,
+        })
+        .catch((err) => {
+          console.error(`The error is ${err}`);
+        });
+      if (existingPhotoId) {
+        cloudinary.uploader.destroy(existingPhotoId).catch((err) => {
+          console.error(`Failed to delete Cloudinary asset ${existingPhotoId}:`, err);
+        });
+      }
     } catch (dbError: unknown) {
       if (dbError instanceof PrismaClientKnownRequestError) {
         const dbErrorCode = dbError.code;
@@ -111,7 +112,7 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
       'find_me_image',
       JSON.stringify({ userId: ownerId, success: true, driveFileId: driveFileId }),
     );
-    console.log(`The processing is completed for ${driveFileId}`); 
+    console.log(`The processing is completed for ${driveFileId}`);
   } catch (err: unknown) {
     console.log('thrown error');
     if (err instanceof Error) {
@@ -121,4 +122,3 @@ export async function processPhotoJob(job: Job<requestPayloadSingular>) {
     }
   }
 }
-
