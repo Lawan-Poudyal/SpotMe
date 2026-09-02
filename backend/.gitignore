@@ -3,6 +3,7 @@ node_modules
 .env
 
 src/src/generated/prisma
+dist/
 
 .env.test
 .venv
