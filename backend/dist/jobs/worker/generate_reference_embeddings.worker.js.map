@@ -1,0 +1,1 @@
+{"version":3,"file":"generate_reference_embeddings.worker.js","sourceRoot":"","sources":["../../../src/jobs/worker/generate_reference_embeddings.worker.ts"],"names":[],"mappings":";;;AAAA,mCAAgC;AAChC,8CAA6C;AAC7C,kHAAyF;AAE5E,QAAA,wBAAwB,GAAG,IAAI,eAAM,CAC9C,+BAA+B,EAC/B,4DAAkB,EAClB;IACH,UAAU,EAAG,kBAAU;IACvB,WAAW,EAAG,CAAC;CACX,CACJ,CAAA"}

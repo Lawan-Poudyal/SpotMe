@@ -1,0 +1,1 @@
+{"version":3,"file":"apiFailurePayloadType.d.ts","sourceRoot":"","sources":["../../src/types/apiFailurePayloadType.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,iBAAiB,GAAG;IAC9B,OAAO,EAAE,KAAK,CAAC;IACf,GAAG,EAAG;QACF,OAAO,EAAG,MAAM,GAAG,IAAI,CAAC;QACxB,IAAI,EAAG,MAAM,GAAG,IAAI,CAAC;KACxB,CAAA;CACF,CAAC"}

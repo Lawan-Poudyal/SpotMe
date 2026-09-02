@@ -1,0 +1,1 @@
+{"version":3,"file":"generate_embeddings.queue.js","sourceRoot":"","sources":["../../src/queues/generate_embeddings.queue.ts"],"names":[],"mappings":";;;AAAA,mCAA4B;AAC5B,2CAA0C;AAE7B,QAAA,cAAc,GAAG,IAAI,cAAK,CAAC,qBAAqB,EAAG;IAC5D,UAAU,EAAG,kBAAU;IACvB,iBAAiB,EAAG;QACvB,QAAQ,EAAG,CAAC;QACZ,gBAAgB,EAAG,IAAI;QACvB,YAAY,EAAG,IAAI;KACf;CACJ,CAAC,CAAA"}
